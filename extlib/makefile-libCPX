@@ -1,0 +1,43 @@
+##############################################################################
+################################## makefile ##################################
+##############################################################################
+#                                                                            #
+#   makefile of libCPX                                                       #
+#                                                                            #
+#   Input:  none, this is a pre-built library                                #
+#                                                                            #
+#   Output: accordingly, there is no *H and *OBJ in output, since there is   #
+#           no need to check for changes in the .h and rebuild the .o / .a   #
+#           $(libCPXLIB) = external libreries + -L<libdirs> for libCPX	     #
+#           $(libCPXINC) = the -I$(include directories) for libCPX           #
+#                                                                            #
+#                                VERSION 1.00                                #
+#                               12 - 05 - 2012                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                            Operations Research Group                       #
+#                           Dipartimento di Informatica                      #
+#                              Universita' di Pisa                           #
+#                                                                            #
+##############################################################################
+
+# internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# external libreries that Cplex needs
+# Linux
+libCPXEXTLIB = -lpthread
+# Mac OSX
+#libCPXEXTLIB = -framework CoreFoundation -framework IOKit
+
+# basic Cplex directory
+libCPXBSCDIR = /Users/frangio/Applications/Cplex127/cplex/
+
+# lib Cplex directory
+libCPXINCDIR = $(libCPXBSCDIR)lib/x86-64_osx/static_pic
+
+# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+libCPXLIB = -L$(libCPXINCDIR) -lilocplex -lcplex $(libCPXEXTLIB)
+libCPXINC = -I$(libCPXBSCDIR)include/ilcplex/
+
+############################# End of makefile ################################

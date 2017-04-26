@@ -1,0 +1,61 @@
+##############################################################################
+################################## makefile ##################################
+##############################################################################
+#									     #
+#   makefile of MCFCplex 						     #
+#   all modules are defined here                                             #
+#									     #
+#   Input:  $(CC)        = compiler command				     #
+#           $(SW)        = compiler options                                  #
+#           $(OPTH)      = the OPT****.h files to include		     #
+#           $(OPTINC)    = the -I$(OPT****.h directory)			     #
+#           $(MCXDIR)    = the directory where the source is		     #
+#									     #
+#   Output: $(MCXOBJ)    = the final object(s) / library		     #
+#           $(MCXLIB)    = external libreries + -L<libdirs>		     #
+#           $(MCXH)      = the .h files to include			     #
+#           $(MCXINC)    = the -I$(include directories)			     #
+#									     #
+#                                VERSION 3.00				     #
+#                	        12 - 05 - 2012				     #
+#									     #
+#			      Antonio Frangioni				     #
+#   			   Operations Research Group			     #
+#			  Dipartimento di Informatica			     #
+#   			     Universita' di Pisa			     #
+#									     #
+##############################################################################
+
+# clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+clean::
+	rm -f $(MCXDIR)*.o $(MCXDIR)*~
+
+# define & include the necessary modules- - - - - - - - - - - - - - - - - - -
+# if a module is not used in the current configuration, just comment out the
+# corresponding include line
+# each module outputs some macros to be used here:
+# *OBJ is the final object/library
+# *LIB external libreries + -L<libdirs>
+# *H   is the list of all include files
+# *INC is the -I<include directories>
+
+# MCFClass
+MCFDIR = $(MCXDIR)../MCFClass/
+include $(MCFDIR)makefile
+
+# cplex external libreries
+include $(MCXDIR)../extlib/makefile-libCPX
+
+# MCFCplex (the makefile requiring all external modules in input)
+include $(MCXDIR)makefile
+
+# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# append external libreries to CQKnPCplex as defined in the makefile, thus
+# the := assignment has to be used (hope you have GNU make)
+
+MCXLIB := $(MCXLIB) $(libCPXLIB)
+MCXH   := $(MCXH) $(MCFH)
+MCXINC := $(MCXINC) $(libCPXINC)
+
+############################# End of makefile ################################
