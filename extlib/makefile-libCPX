@@ -30,10 +30,10 @@ libCPXEXTLIB = -lpthread
 #libCPXEXTLIB = -framework CoreFoundation -framework IOKit
 
 # basic Cplex directory
-libCPXBSCDIR = /Users/frangio/Applications/Cplex127/cplex/
+libCPXBSCDIR = YOUR PATH HERE
 
 # lib Cplex directory
-libCPXINCDIR = $(libCPXBSCDIR)lib/x86-64_osx/static_pic
+libCPXINCDIR = $(libCPXBSCDIR)lib/YOUR PATH HERE
 
 # macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
 
