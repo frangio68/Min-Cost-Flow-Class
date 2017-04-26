@@ -51,6 +51,9 @@ This release comprises:
    label-setting and label-correcting variants can be used) that are much
    faster than complete MCF ones
 
+-  pyMCFSimplex-0.9/: a Python-Wrapper for the MCFSimplex solver by Johannes
+   from the G#.Blog, check the README.txt for details
+
 To install the file, go into Main and type "make". If you want to use the
 MCFCplex class, which comes commented out by default, uncomment it from
 lib/makefile and edit extlib/makefile-libCPX to insert the right Cplex path

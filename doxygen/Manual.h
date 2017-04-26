@@ -92,6 +92,9 @@ This release comprises:
    label-setting and label-correcting variants can be used) that are much
    faster than complete MCF ones
 
+-  pyMCFSimplex-0.9/: a Python-Wrapper for the MCFSimplex solver by Johannes
+   from the G#.Blog, check the README.txt for details
+
 More information about (some of) the implemented algorithms can be found at
 
   http://pages.di.unipi.it/frangio/abstracts.html#JOC06
