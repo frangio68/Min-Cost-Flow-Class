@@ -8,7 +8,7 @@
  *
  * \version 3.05
  *
- * \date 25 - 04 - 2017
+ * \date 01 - 09 - 2017
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -1593,9 +1593,9 @@ class MCFClass {
    if USENAME0 == 0 then the first node is "named 1", but its deficit can be
    changed e.g. with ChgDfcts( &new_deficit , 0 , 0 , 1 ).
 
-   @note changing the capacities of nodes that *do not exist* is *not
-         allowed*; only nodes that have not been deleted [see DelNode()
-         below] can be touched with these methods. */
+   @note changing the deficits of nodes that *do not exist* is *not allowed*;
+         only nodes that have not been deleted [see DelNode() below] can be
+	 touched with these methods. */
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
@@ -1603,14 +1603,13 @@ class MCFClass {
 
 /**< Change the deficit of the i-th node.
 
-   Note that, in ChgDfct[s](), node "names" (i, strt/ stp or those contained
-   in nms[]) go from 0 to n - 1, regardless to the value of USENAME0; hence,
-   if USENAME0 == 0 then the first node is "named 1", but its deficit can be
-   changed e.g. with ChgDfcts( 0 , new_deficit ).
+   Note that the node "name" i go from 0 to n - 1, regardless to the value of
+   USENAME0; hence, if USENAME0 == 0 then the first node is "named 1", but its
+   deficit can be changed e.g. with ChgDfcts( 0 , new_deficit ).
 
-   @note changing the capacities of nodes that *do not exist* is *not
-         allowed*; only nodes that have not been deleted [see DelNode()
-         below] can be touched with these methods. */
+   @note changing the deficits of nodes that *do not exist* is *not allowed*;
+         only nodes that have not been deleted [see DelNode() below] can be
+	 touched with these methods. */
 
 /*@} -----------------------------------------------------------------------*/
 /** @name Changing graph topology
