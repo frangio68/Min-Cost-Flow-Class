@@ -6,8 +6,8 @@
 /*-- (primal and dual) simplex algorithm. Conforms to the standard MCF    --*/
 /*-- interface defined in MCFClass.h.                                     --*/
 /*--                                                                      --*/
-/*--                            VERSION 1.11                              --*/
-/*--                           09 - 11 - 2015                             --*/
+/*--                            VERSION 1.12                              --*/
+/*--                           04 - 09 - 2017                             --*/
 /*--                                                                      --*/
 /*--                           Implementation:                            --*/
 /*--                                                                      --*/
@@ -18,7 +18,7 @@
 /*--                      Dipartimento di Informatica                     --*/
 /*--                         Universita' di Pisa                          --*/
 /*--                                                                      --*/
-/*-- Copyright (C) 2008 - 2015 by Alessandro Bertolini, Antonio Frangioni --*/
+/*-- Copyright (C) 2008 - 2017 by Alessandro Bertolini, Antonio Frangioni --*/
 /*--                                                                      --*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -1308,12 +1308,12 @@ void MCFSimplex::ChgDfct( Index nod , cFNumber NDfct )
   return;
 
  #if QUADRATICCOST
-  ( nodesP + nod + USENAME0 - 1 )->balance = NDfct;
+  ( nodesP + nod )->balance = NDfct;
  #else
   if( usePrimalSimplex )
-   ( nodesP + nod + USENAME0 - 1 )->balance = NDfct;
+   ( nodesP + nod )->balance = NDfct;
   else
-   ( nodesD + nod + USENAME0 - 1 )->balance = NDfct;
+   ( nodesD + nod )->balance = NDfct;
  #endif
 
  if( Senstv && ( status != kUnSolved ) )
