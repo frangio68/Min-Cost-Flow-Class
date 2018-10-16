@@ -7,16 +7,16 @@
  * algorithm can be chosen at compile time by setting a proper switch.
  * Conforms to the standard MCF interface defined in MCFClass.h.
  *
- * \version 1.95
+ * \version 1.96
  *
- * \date 30 - 01 - 2014
+ * \date 16 - 10 - 2018
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1996 - 2014 by Antonio Frangioni.
+ * Copyright &copy 1996 - 2018 by Antonio Frangioni.
  */
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -215,7 +215,7 @@ class SPTree : public MCFClass
    void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
 		 cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
 		 cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
-		 cIndex_Set pEn = 0 );
+		 cIndex_Set pEn = 0 ) override;
 
 /**< Inputs a new network, as in MCFClass::LoadNet().
 
@@ -238,30 +238,34 @@ class SPTree : public MCFClass
 /*-------------------- METHODS FOR SOLVING THE PROBLEM ---------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void SolveMCF( void );
+   void SolveMCF( void ) override;
 
 /*--------------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
+   using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
+
    void MCFGetX( FRow F , Index_Set nms = 0  ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() );
+		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
 /*--------------------------------------------------------------------------*/
 
-   void MCFGetRC( CRow CR , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+   using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
-   inline CNumber MCFGetRC( cIndex i );
+   void MCFGetRC( CRow CR , cIndex_Set nms = 0  ,
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+
+   inline CNumber MCFGetRC( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
    void MCFGetPi( CRow P , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-   cCRow MCFGetPi( void );
+   cCRow MCFGetPi( void ) override;
 
 /**< Same meaning as MCFClass::MCFGetPi().
 
@@ -275,7 +279,7 @@ class SPTree : public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-   SPTree::FONumber MCFGetFO( void );
+   SPTree::FONumber MCFGetFO( void ) override;
 
 /**< Same meaning as MCFClass::MCFGetFO().
 
@@ -287,32 +291,32 @@ class SPTree : public MCFClass
 /*--------------------------------------------------------------------------*/
 
    void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0  ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() );
+		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   inline Index MCFSNde( cIndex i );
+   inline Index MCFSNde( cIndex i ) override;
 
-   inline Index MCFENde( cIndex i );
+   inline Index MCFENde( cIndex i ) override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
    void MCFCosts( CRow Costv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   inline CNumber MCFCost( cIndex i );
+   inline CNumber MCFCost( cIndex i ) override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
    void MCFUCaps( FRow UCapv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   inline FNumber MCFUCap( cIndex i );
+   inline FNumber MCFUCap( cIndex i ) override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
    void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   inline FNumber MCFDfct( cIndex i );
+   inline FNumber MCFDfct( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
@@ -321,46 +325,48 @@ class SPTree : public MCFClass
 /*--------------------------------------------------------------------------*/
 
    void ChgCosts( cCRow NCost , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   void ChgCost( Index arc , cCNumber NCost );
+   void ChgCost( Index arc , cCNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
    void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   void ChgDfct( Index nod , cFNumber NDfct );
+   void ChgDfct( Index nod , cFNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
    void ChgUCaps( cFRow NCap , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() );
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-   void ChgUCap( Index arc , cFNumber NCap );
+   void ChgUCap( Index arc , cFNumber NCap ) override;
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
-  void CloseArc( cIndex name );
+  void CloseArc( cIndex name ) override;
 
-  inline bool IsClosedArc( cIndex name );
+  inline bool IsClosedArc( cIndex name ) override;
 
-  void DelNode( cIndex name );
+  void DelNode( cIndex name ) override;
 
-  void OpenArc( cIndex name );
+  void OpenArc( cIndex name ) override;
 
-  Index AddNode( cFNumber aDfct );
+  Index AddNode( cFNumber aDfct ) override;
 
   void ChangeArc( cIndex name ,
-		  cIndex nSS = Inf<Index>() , cIndex nEN = Inf<Index>() );
+		  cIndex nSS = Inf<Index>() , cIndex nEN = Inf<Index>() )
+   override;
 
-  void DelArc( cIndex name );
+  void DelArc( cIndex name ) override;
 
-  inline bool IsDeletedArc( cIndex name );
+  inline bool IsDeletedArc( cIndex name ) override;
 
-  Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC ); 
+  Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
+   override; 
 
 /*--------------------------------------------------------------------------*/
 /*------------------------ SPECIALIZED INTERFACE ---------------------------*/

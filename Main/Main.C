@@ -188,10 +188,10 @@ int main( int argc , char **argv )
 
   if( ! numeric_limits<MCFClass::FNumber>::is_integer ) {
    MCFClass::FNumber eF = 1;
-   for( register MCFClass::Index i = mcf->MCFm() ; i-- ; )
+   for( MCFClass::Index i = mcf->MCFm() ; i-- ; )
     eF = max( eF , ABS( mcf->MCFUCap( i ) ) );
 
-   for( register MCFClass::Index i = mcf->MCFn() ; i-- ; )
+   for( MCFClass::Index i = mcf->MCFn() ; i-- ; )
     eF = max( eF , ABS( mcf->MCFDfct( i ) ) );
 
    mcf->SetPar( MCFSOLVER::kEpsFlw ,
@@ -200,7 +200,7 @@ int main( int argc , char **argv )
 
   if( ! numeric_limits<MCFClass::CNumber>::is_integer ) {
    MCFClass::CNumber eC = 1;
-   for( register MCFClass::Index i = mcf->MCFm() ; i-- ; )
+   for( MCFClass::Index i = mcf->MCFm() ; i-- ; )
     eC = max( eC , ABS( mcf->MCFCost( i ) ) );
 
    mcf->SetPar( MCFSOLVER::kEpsCst ,

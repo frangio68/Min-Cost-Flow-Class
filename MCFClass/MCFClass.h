@@ -6,9 +6,9 @@
  * interface for (linear or convex quadratic separable) Min Cost Flow Problem
  * solvers, to be implemented as derived classes.
  *
- * \version 3.05
+ * \version 3.06
  *
- * \date 01 - 09 - 2017
+ * \date 16 - 10 - 2018
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -24,7 +24,7 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2017 by Antonio Frangioni, Claudio Gentile
+ * Copyright &copy 1996 - 2018 by Antonio Frangioni, Claudio Gentile
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -601,7 +601,14 @@ class MCFClass {
 
 /*--------------------------------------------------------------------------*/
 
-   virtual inline void GetPar( int par , int &val );
+   virtual inline void GetPar( int par , int &val ) const
+   {
+    switch( par ) {
+     case( kMaxIter ): val = MaxIter; break;
+     case( kReopt ):   val = Senstv ? kYes : kNo; break;
+     default: throw( MCFException( "GetPar: unknown parameter" ) );
+     }
+    }
 
 /**< This method returns one of the integer parameter of the algorithm.
 
@@ -614,7 +621,16 @@ class MCFClass {
 
 /*--------------------------------------------------------------------------*/
 
-   virtual inline void GetPar( int par , double &val );
+   virtual inline void GetPar( int par , double &val ) const
+   {
+    switch( par ) {
+     case( kEpsFlw ):  val = double( EpsFlw ); break;
+     case( kEpsDfct ): val = double( EpsDfct ); break;
+     case( kEpsCst ):  val = double( EpsCst ); break;
+     case( kMaxTime ): val = MaxTime; break;
+     default: throw( MCFException( "GetPar: unknown parameter" ) );
+     }
+    }
 
 /**< This method returns one of the integer parameter of the algorithm.
 
@@ -1852,7 +1868,7 @@ class MCFClass {
 
 /*--------------------------------------------------------------------------*/
 
- };   // end( class MCFClass )
+  };   // end( class MCFClass )
 
 /*@} -----------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
@@ -2069,51 +2085,6 @@ inline void MCFClass::SetPar( int par, double val )
 
  default:
   throw( MCFException( "Error using SetPar: unknown parameter" ) );
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void MCFClass::GetPar( int par, int &val )
-{
- switch( par ) {
- case( kMaxIter ):
-  val = MaxIter;
-  break;
-
- case( kReopt ):
-  if( Senstv ) val = kYes;
-  else         val = kNo;
-  break;
-  
- default:
-  throw( MCFException( "Error using GetPar: unknown parameter" ) );
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void MCFClass::GetPar( int par , double &val )
-{
- switch( par ) {
- case( kEpsFlw ):
-  val = double( EpsFlw );
-  break;
-
- case( kEpsDfct ):
-  val = double( EpsDfct );
-  break;
-
- case( kEpsCst ):
-  val = double( EpsCst );
-  break;
-  
- case( kMaxTime ):
-  val = MaxTime;
-  break;
-
- default:
-  throw( MCFException( "Error using GetPar: unknown parameter" ) );
   }
  }
 

@@ -7,16 +7,16 @@
  * class Slave (both deriving from MCFClass), that does whatever Master does
  * but also does whatever Slave does. The output is that of Master.
  *
- * \version 2.00
+ * \version 2.01
  *
- * \date 07 - 05 - 2012
+ * \date 16 - 10 - 2018
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright(C) 1992 - 2012 Antonio Frangioni
+ * Copyright(C) 1992 - 2018 Antonio Frangioni
  */
 
 /*--------------------------------------------------------------------------*/
@@ -47,10 +47,6 @@ namespace MCFClass_di_unipi_it
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFClone --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** Testing template class for Min Cost Flow Problem solvers deriving from
- * MCFClass. It is a template deriving from Master and holding an object of
- * class Slave (both deriving from MCFClass), that does whatever Master does
- * but also does whatever Slave does. The output is that of Master. */
 
 template<class Master, class Slave>
 class MCFClone : public Master {
@@ -82,7 +78,7 @@ class MCFClone : public Master {
    void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
 		 cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
 		 cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
-		 cIndex_Set pEn = 0 )
+		 cIndex_Set pEn = 0 ) override
    {
     Master::LoadNet( nmx , mmx , pn , pm , pU , pC , pDfct , pSn , pEn );
     SlvMCF->LoadNet( nmx , mmx , pn , pm , pU , pC , pDfct , pSn , pEn );
@@ -90,7 +86,7 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-   void PreProcess( void )
+   void PreProcess( void ) override
    {
     Master::PreProcess();
     SlvMCF->PreProcess();
@@ -98,13 +94,13 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-   void SetPar( int par , int val )
+   void SetPar( int par , int val ) override
    {
     Master::SetPar( par , val );
     SlvMCF->SetPar( par , val );
     }
 
-   void SetPar( int par , double val )
+   void SetPar( int par , double val ) override
    {
     Master::SetPar( par , val );
     SlvMCF->SetPar( par , val );
@@ -112,7 +108,7 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-   void SetMCFTime( bool TimeIt = TRUE )
+   void SetMCFTime( bool TimeIt = TRUE ) override
    {
     Master::SetMCFTime( TimeIt );
     SlvMCF->SetMCFTime( TimeIt );
@@ -122,7 +118,7 @@ class MCFClone : public Master {
 /*---------------------- METHODS FOR SOLVING THE PROBLEM -------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void SolveMCF( void )
+   void SolveMCF( void ) override
    {
     Master::SolveMCF();
     SlvMCF->SolveMCF();
@@ -132,7 +128,7 @@ class MCFClone : public Master {
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void TimeMCF( double &t_us , double &t_ss )
+   void TimeMCF( double &t_us , double &t_ss ) override
    {
     Master::TimeMCF( t_us , t_ss );
 
@@ -145,7 +141,7 @@ class MCFClone : public Master {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   double TimeMCF( void )
+   double TimeMCF( void ) override
    {
     return( Master::TimeMCF() + SlvMCF->TimeMCF() );
     }
@@ -159,7 +155,7 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() )
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override
    {
     Master::ChgCosts( NCost , nms , strt , stp );
     SlvMCF->ChgCosts( NCost , nms , strt , stp );
@@ -174,13 +170,13 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() )
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override
    {
     Master::ChgQCoef( NQCoef , nms , strt , stp );
     SlvMCF->ChgQCoef( NQCoef , nms , strt , stp );
     }
 
-   void ChgQCoef( Index arc , cCNumber NQCoef )
+   void ChgQCoef( Index arc , cCNumber NQCoef ) override
    {
     Master::ChgQCoef( arc , NQCoef );
     SlvMCF->ChgQCoef( arc , NQCoef );
@@ -189,13 +185,13 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChgUCaps( cFRow NCap  , cIndex_Set nms = 0 ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() )
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override
    {
     Master::ChgUCaps( NCap  , nms , strt , stp );
     SlvMCF->ChgUCaps( NCap  , nms , strt , stp );
     }
 
-   void ChgUCap( Index arc  , cFNumber NCap  )
+   void ChgUCap( Index arc  , cFNumber NCap  ) override
    {
     Master::ChgUCap( arc  , NCap  );
     SlvMCF->ChgUCap( arc  , NCap  );
@@ -204,13 +200,13 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() )
+		  cIndex strt = 0 , Index stp = Inf<Index>() ) override
    {
     Master::ChgDfcts( NDfct , nms , strt , stp );
     SlvMCF->ChgDfcts( NDfct , nms , strt , stp );
     }
 
-   void ChgDfct( Index node , cFNumber NDfct )
+   void ChgDfct( Index node , cFNumber NDfct ) override
    {
     Master::ChgDfct( node , NDfct );
     SlvMCF->ChgDfct( node , NDfct );
@@ -218,7 +214,7 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-   void CloseArc( cIndex name )
+   void CloseArc( cIndex name ) override
    {
     Master::CloseArc( name );
     SlvMCF->CloseArc( name );
@@ -226,7 +222,7 @@ class MCFClone : public Master {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   void DelNode( cIndex name )
+   void DelNode( cIndex name ) override
    {
     Master::DelNode( name );
     SlvMCF->DelNode( name );
@@ -234,13 +230,13 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-   void OpenArc( cIndex name )
+   void OpenArc( cIndex name ) override
    {
     Master::OpenArc( name );
     SlvMCF->OpenArc( name );
     }
 
-   Index AddNode( cFNumber aDfct )
+   Index AddNode( cFNumber aDfct ) override
    {
     SlvMCF->AddNode( aDfct );
     return( Master::AddNode( aDfct ) );
@@ -249,7 +245,7 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChangeArc( cIndex name , cIndex nSN = Inf<Index>() ,
-		   cIndex nEN = Inf<Index>() )
+		   cIndex nEN = Inf<Index>() ) override
    {
     Master::ChangeArc( name , nSN , nEN );
     SlvMCF->ChangeArc( name , nSN , nEN );
@@ -257,7 +253,7 @@ class MCFClone : public Master {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   void DelArc( cIndex name )
+   void DelArc( cIndex name ) override
    {
     Master::DelArc( name );
     SlvMCF->DelArc( name );
@@ -265,7 +261,8 @@ class MCFClone : public Master {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC ) 
+   Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
+     override
    {
     SlvMCF->AddArc( Start , End , aU , aC );
     return( Master::AddArc( Start , End , aU , aC ) );

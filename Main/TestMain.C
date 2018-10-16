@@ -249,62 +249,6 @@ static inline void SolveMCF( MCFClass *mcf1 , MCFClass *mcf2 )
 
 /*--------------------------------------------------------------------------*/
 
-static inline void CheckSolution( MCFClass *mcf1 )
-{
- MCFClass::FRow X = new  MCFClass::FNumber[ mcf1->MCFm() ];
- mcf1->MCFGetX( X );
-
- MCFClass::CNumber res = 0;
- for(  MCFClass::Index i = 0 ; i < mcf1->MCFm() ; i++ ) {
-  #if( DYNMC_MCF )
-   if( ( X[ i ] > 0 ) && mcf1->IsClosedArc( i ) )
-    cout << "X[ " << i << " ] = " << X[ i ] << " but the arc is closed"
-	 << endl;
-  #endif
-
-  if( X[ i ] < 0 )
-   cout << "X[ " << i << " ] = " << X[ i ] << " < 0" << endl;
-  else
-   if( X[ i ] > mcf1->MCFUCap( i ) )
-    cout << "X[ " << i << " ] = " << X[ i ] << " > U[ " << i << " ] = "
-	 << mcf1->MCFUCap( i ) << endl;
-
-  res += mcf1->MCFCost( i ) * X[ i ];
-  }
-
- cout << "c * x = " << res;
-
- MCFClass::FRow B = new  MCFClass::FNumber[ mcf1->MCFn() ];
- mcf1->MCFDfcts( B );
-
- for( MCFClass::Index i = 0 ; i < mcf1->MCFm() ; i++ ) {
-  MCFClass::Index tl = mcf1->MCFSNde( i );
-  MCFClass::Index hd = mcf1->MCFENde( i );
-  #if( ! USENAME0 )
-   tl--;
-   hd--;
-  #endif
-
-  B[ tl ] += X[ i ];
-  B[ hd ] -= X[ i ];
-  }
-
- MCFClass::FNumber viol = 0;
- for( MCFClass::Index i = 0 ; i < mcf1->MCFn() ; i++ )
-  if( B[ i ] > viol )
-   viol = B[ i ];
-  else
-   if( - B[ i ] > viol )
-    viol = - B[ i ];
-
- cout << ", || b - E * x || = " << viol << endl;
-
- delete[] B;
- delete[] X;
- }
-
-/*--------------------------------------------------------------------------*/
-
 int main( int argc , char **argv )
 {
  // reading command line parameters - - - - - - - - - - - - - - - - - - - - -

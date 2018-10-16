@@ -24,7 +24,7 @@ DIR = ./
 LIB = -lm
 
 # debug switches
-SW = -Wall -g
+SW = -Wall -g -std=c++14
 
 # production switches
 #SW = -O3
