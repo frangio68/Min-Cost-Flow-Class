@@ -4,13 +4,13 @@
 #									     #
 #   makefile of MCFClone 						     #
 #									     #
-#   Input:  $(MCLDIR) = the directory where the source is		     #
+#   Input:  $(MCFCeDIR) = the directory where the source is                  #
 #									     #
-#   Output: $(MCLH)   = the .h files to include				     #
-#           $(MCLINC) = the -I$(MCFClone directory)			     #
+#   Output: $(MCFCeH)   = the .h files to include			     #
+#           $(MCFCeINC) = the -I$(MCFClone directory)			     #
 #									     #
-#                                VERSION 1.60				     #
-#                	        09 - 05 - 2012				     #
+#                                VERSION 2.00				     #
+#                	        13 - 11 - 2018				     #
 #									     #
 #			      Antonio Frangioni				     #
 #   			   Operations Research Group			     #
@@ -22,12 +22,12 @@
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(MCLDIR)*~
+	rm -f $(MCFCeDIR)*~
 
 # macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCLH   = $(MCLDIR)MCFClone.h
-MCLINC = -I$(MCLDIR)
+MCFCeH   = $(MCFCeDIR)MCFClone.h
+MCFCeINC = -I$(MCFCeDIR)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 

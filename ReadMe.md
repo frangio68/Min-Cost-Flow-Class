@@ -26,10 +26,8 @@ This release comprises:
 
 -  doxygen/: doxygen files to produce the documentation
 
--  Main/: contains two example Main files to use the library. One solves
-   a given MCF instance with any one MCF solver, which can be chosen by
-   just changing two lines of code. The other compares the results of two
-   solvers in order to verify that they are correct
+-  License.md: the text of the "GNU Lesser General Public License",
+   Version 2.1, under which this code is distributed
 
 -  MCFClass/: definition of the base class
 
@@ -44,6 +42,10 @@ This release comprises:
 -  MCFSimplex/: implements a MCF solver conforming to the MCFClass interface
    based on the primal and dual revised network simplex algorithm
 
+-  OPTUtils/: contains the OPTUtils.h file with a few minor utility functions
+
+-  ReadMe.md: this file
+
 -  SPTree/: implements a MCF solver partly conforming to the MCFClass
    interface, in the sense that is is only able to solve MCF instances that
    are in fact Shortest Path Tree ones (that is, only one source node and
@@ -54,19 +56,35 @@ This release comprises:
 -  pyMCFSimplex-0.9/: a Python-Wrapper for the MCFSimplex solver by Johannes
    from the G#.Blog, check the README.txt for details
 
-To install the file, go into Main and type "make". If you want to use the
-MCFCplex class, which comes commented out by default, uncomment it from
-lib/makefile and edit extlib/makefile-libCPX to insert the right Cplex path
-libraries.
+-  test/: contains two example Main files to use the library. One solves
+   a given MCF instance with any one MCF solver, which can be chosen by
+   just changing two lines of code. The other compares the results of two
+   solvers in order to verify that they agree. See the comments in both
+   files for more details
 
-This code is provided free of charge under the "GNU Lesser General Public 
-License". There are actually three more complete solvers available under the
-MCFClass interface, namely RelaxIV, CS2 and MCFZIB. These are, however,
-distributed under a more restrictive academic license, which has to be
-explicitly accepted before getting hold of the code. Request forms are available
-at
+There are three more complete solvers available under the MCFClass interface,
+namely RelaxIV, CS2 and MCFZIB. These are, however, distributed under a more
+restrictive academic license, which has to be explicitly accepted before
+getting hold of the code. Request forms are available at
 
   http://www.di.unipi.it/optimize/Software/MCF.html
+
+To create the library, go into lib/ and type
+
+    make -f makefile-lib
+
+To test the library, go into test and type "make".
+
+If you want to use the MCFCplex class, which comes commented out by default,
+uncomment the two lines
+
+    #MCFCxDIR = $(libMCFClDIR)MCFCplex/
+    #include $(MCFCxDIR)makefile
+
+in lib/makefile and edit extlib/makefile-libCPLEX to insert the right Cplex
+path libraries. You can similarly enable (or disable) any solver, both the
+LGPL ones and those under the academic license, if you have obtained them,
+by commenting out (or commenting) the corresponding two lines in lib/makefile.
 
 More information about (some of) the implemented algorithms can be found at
 

@@ -27,7 +27,7 @@ LIB = -lm
 SW = -Wall -g -std=c++14
 
 # production switches
-#SW = -O3
+#SW = -O3 -DNDEBUG -std=c++14
 
 # compiler
 CC = g++
@@ -45,29 +45,25 @@ default: MCFSolve TestMCF
 # *H   is the list of all include files
 # *INC is the -I<include directories>
 
-# OPT****.h
-OPTH	= $(DIR)OPTUtils.h
-OPTINC	= -I$(DIR)
-
 # the whole libMCF, with all required external libreries
-libMCFDIR = ../
-include $(libMCFDIR)lib/makefile-c
+libMCFClDIR = ../
+include $(libMCFClDIR)lib/makefile-inc
 
 # main module (linking phase) - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCFSolve: Main.o $(libMCFOBJ)
-	$(CC) -o MCFSolve Main.o $(libMCFOBJ) $(libMCFLIB) $(LIB) $(SW)
+MCFSolve: Main.o $(libMCFClOBJ)
+	$(CC) -o MCFSolve Main.o $(libMCFClOBJ) $(libMCFClLIB) $(LIB) $(SW)
 
 TestMCF: TestMain.o $(libMCFOBJ)
-	$(CC) -o TestMCF TestMain.o $(libMCFOBJ) $(libMCFLIB) $(LIB) $(SW)
+	$(CC) -o TestMCF TestMain.o $(libMCFClOBJ) $(libMCFClLIB) $(LIB) $(SW)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(DIR)Main.o: $(DIR)Main.C $(libMCFH)
-	$(CC) -c $*.C -o $@ $(libMCFINC) $(OPTINC) $(SW)
+$(DIR)Main.o: $(DIR)Main.C $(libMCFClH)
+	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
-$(DIR)TestMain.o: $(DIR)TestMain.C $(libMCFH)
-	$(CC) -c $*.C -o $@ $(libMCFINC) $(OPTINC) $(SW)
+$(DIR)TestMain.o: $(DIR)TestMain.C $(libMCFClH)
+	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

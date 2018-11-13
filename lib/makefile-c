@@ -1,25 +1,25 @@
 ##############################################################################
-################################# makefile ###################################
+################################ makefile-c ##################################
 ##############################################################################
 #									     #
-#   makefile of libMCF							     #
-#   all modules are defined here                                             #
+#   complete makefile of libMCF                                              #
 #									     #
-#   Input:  $(CC)        = compiler command				     #
-#           $(SW)        = compiler options                                  #
-#           $(OPTH)      = the OPT****.h files to include		     #
-#           $(OPTINC)    = the -I$(OPT****.h directory)			     #
-#           $(libMCFDIR) = the basic directory for the library		     #
+#   The makefile defines internally all external libraries required by       #
+#   libMCFCl. Accordingly, all necessary OBJ, H, -I directives, and          #
+#   external libraries + -L<libdirs> are added to the corresponding          #
+#   libMCFCl* macros.                                                        #
 #									     #
-#   Output: $(MCFH)      = the include files for MCFClass		     #
-#           $(MCFINC)    = the -I$(MCFClass.h directory)		     #
-#           $(libMCFOBJ) = the library (that must be built)		     #
-#           $(libMCFLIB) = the library + external libreries + -L<libdirs>    #
-#           $(libMCFH)   = all the .h files of the MCF library		     #
-#           $(libMCFINC) = all the -I$(include dirs) of the MCF library	     #
+#   Input:  $(CC)          = compiler command				     #
+#           $(SW)          = compiler options                                #
+#           $(libMCFClDIR) = the basic directory for the library	     #
 #									     #
-#                                VERSION 2.00				     #
-#                	        16 - 05 - 2012				     #
+#   Output: $(libMCFClOBJ) = the library (that must be built)		     #
+#           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
+#           $(libMCFClH)   = all the .h files of the MCF library	     #
+#           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
+#									     #
+#                                VERSION 3.00				     #
+#                	        12 - 11 - 2018				     #
 #									     #
 #			      Antonio Frangioni				     #
 #   			   Operations Research Group			     #
@@ -37,18 +37,23 @@
 # *H   is the list of all include files
 # *INC is the -I<include directories>
 
-# cplex external libreries
-include $(libMCFDIR)extlib/makefile-libCPX
+# OPTUtils.h
+OPTUxH   = $(libMCFClDIR)OPTUtils/OPTUtils.h
+OPTUxINC = -I$(libMCFClDIR)OPTUtils
 
-# libMCF (the makefile requiring all external modules in input)
-include $(libMCFDIR)lib/makefile
+# cplex external libreries (comment out if MCFCplex is not compiled, or if
+# the makefile-c of MCFCplex is included rather than the "plain" one)
+include $(libMCFClDIR)extlib/makefile-libCPLEX
+
+# libMCFCl (the makefile requiring all external modules in input)
+include $(libMCFClDIR)lib/makefile
 
 # macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
-# append external libreries to libMCFLIB as defined in the makefile, thus
+# append external libreries to libMCFClLIB as defined in the makefile, thus
 # the := assignment has to be used (hope you have GNU make)
 
 # libreries
-libMCFLIB := $(libMCFLIB) $(libCPXLIB)
-libMCFINC := $(libMCFINC) $(libCPXINC)
+libMCFClLIB := $(libMCFClLIB) $(libCPLEXLIB)
+libMCFClINC := $(libMCFClINC) $(libCPLEXINC)
 
 ############################ End of makefile #################################

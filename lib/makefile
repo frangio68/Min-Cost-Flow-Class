@@ -2,22 +2,19 @@
 ################################# makefile ###################################
 ##############################################################################
 #									     #
-#   makefile of libMCF							     #
+#   makefile of libMCFCl						     #
 #   all modules are given in input                                           #
 #									     #
 #   Input:  $(CC)        = compiler command				     #
 #           $(SW)        = compiler options                                  #
 #           $(OPTH)      = the OPT****.h files to include		     #
 #           $(OPTINC)    = the -I$(OPT****.h directory)			     #
-#           $(libCPXINC) = the -I$(include directories)	for libCPX	     #
-#           $(libMCFDIR) = the basic directory for the library		     #
+#           $(libMCFClDIR) = the basic directory for the library	     #
 #									     #
-#   Output: $(MCFH)      = the include files for MCFClass		     #
-#           $(MCFINC)    = the -I$(MCFClass.h directory)		     #
-#           $(libMCFOBJ) = the library (that must be built)		     #
-#           $(libMCFLIB) = the library + external libreries + -L<libdirs>    #
-#           $(libMCFH)   = all the .h files of the MCF library		     #
-#           $(libMCFINC) = all the -I$(include dirs) of the MCF library	     #
+#   Output: $(libMCFClOBJ) = the library (that must be built)		     #
+#           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
+#           $(libMCFClH)   = all the .h files of the MCF library	     #
+#           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
 #									     #
 #                                VERSION 2.10				     #
 #                	        24 - 04 - 2017				     #
@@ -29,9 +26,6 @@
 #									     #
 ##############################################################################
 
-# module name
-libMCFOBJ = $(libMCFDIR)lib/libMCF.a
-
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
 # corresponding include line
@@ -42,79 +36,70 @@ libMCFOBJ = $(libMCFDIR)lib/libMCF.a
 # *INC is the -I<include directories>
 
 # MCFClass
-MCFDIR = $(libMCFDIR)MCFClass/
-include $(MCFDIR)makefile
+MCFClDIR = $(libMCFClDIR)MCFClass/
+include $(MCFClDIR)makefile
 
 # CS2
-#CS2DIR = $(libMCFDIR)CS2/
-#include $(CS2DIR)makefile
+MCFC2DIR = $(libMCFClDIR)CS2/
+include $(MCFC2DIR)makefile
 
 # MCFClone
-MCLDIR = $(libMCFDIR)MCFClone/
-include $(MCLDIR)makefile
+MCFCeDIR = $(libMCFClDIR)MCFClone/
+include $(MCFCeDIR)makefile
 
 # MCFCplex
-MCXDIR = $(libMCFDIR)MCFCplex/
-include $(MCXDIR)makefile
+MCFCxDIR = $(libMCFClDIR)MCFCplex/
+include $(MCFCxDIR)makefile
 
 # MCFSimplex
-MFSDIR = $(libMCFDIR)MCFSimplex/
-include $(MFSDIR)makefile
+MCFSxDIR = $(libMCFClDIR)MCFSimplex/
+include $(MCFSxDIR)makefile
 
 # MCFZIB
-#ZIBDIR = $(libMCFDIR)MCFZIB/
-#include $(ZIBDIR)makefile
+MCFZBDIR = $(libMCFClDIR)MCFZIB/
+include $(MCFZBDIR)makefile
 
 # RelaxIV
-#RIVDIR = $(libMCFDIR)RelaxIV/
-#include $(RIVDIR)makefile
+MCFR4DIR = $(libMCFClDIR)RelaxIV/
+include $(MCFR4DIR)makefile
 
 # SPTree
-SPTDIR = $(libMCFDIR)SPTree/
-include $(SPTDIR)makefile
+MCFSTDIR = $(libMCFClDIR)SPTree/
+include $(MCFSTDIR)makefile
 
-# main module (archiving phase) - - - - - - - - - - - - - - - - - - - - - - -
+# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # object files (this is local)
-lcllibMCFOBJ =	$(CS2OBJ)\
-		$(MCXOBJ)\
-		$(MFSOBJ)\
-		$(ZIBOBJ)\
-		$(SPTOBJ)\
-		$(RIVOBJ)
+libMCFClOBJ =	$(MCFC2OBJ)\
+		$(MCFCxOBJ)\
+		$(MCFSxOBJ)\
+		$(MCFZBOBJ)\
+		$(MCFSTOBJ)\
+		$(MCFR4OBJ)
 # libreries
-libMCFLIB =	$(CS2LIB)\
-		$(MCXLIB)\
-		$(MFSLIB)\
-		$(ZIBLIB)\
-		$(SPTLIB)\
-		$(RIVLIB)
+libMCFClLIB =	$(MCFC2LIB)\
+		$(MCFCxLIB)\
+		$(MCFSxLIB)\
+		$(MCFZBLIB)\
+		$(MCFSTLIB)\
+		$(MCFR4LIB)
 # includes
-libMCFH   =	$(OPTH)\
-		$(MCFH)\
-		$(CS2H)\
-		$(MCLH)\
-		$(MCXH)\
-		$(MFSH)\
-		$(ZIBH)\
-		$(RIVH)\
-		$(SPTH)
+libMCFClH   =	$(MCFClH)\
+		$(MCFC2H)\
+		$(MCFCeH)\
+		$(MCFCxH)\
+		$(MCFSxH)\
+		$(MCFZBH)\
+		$(MCFR4H)\
+		$(MCFSTH)
 # include dirs
-libMCFINC =	$(MCFINC)\
-		$(CS2INC)\
-		$(MCLINC)\
-		$(MCXINC)\
-		$(MFSINC)\
-		$(ZIBINC)\
-		$(RIVINC)\
-		$(SPTINC)
-
-$(libMCFOBJ): $(lcllibMCFOBJ)
-	ar -ruv $(libMCFOBJ) $(lcllibMCFOBJ)
-
-# clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-clean::
-	rm -f $(libMCFOBJ)
+libMCFClINC =	$(MCFClINC)\
+		$(MCFC2INC)\
+		$(MCFCeINC)\
+		$(MCFCxINC)\
+		$(MCFSxINC)\
+		$(MCFZBINC)\
+		$(MCFR4INC)\
+		$(MCFSTINC)
 
 ############################ End of makefile #################################

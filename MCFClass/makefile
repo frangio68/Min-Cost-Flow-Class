@@ -1,25 +1,27 @@
 ##############################################################################
 ################################# makefile ###################################
 ##############################################################################
-#		                                                             #
-#   makefile of MCFClass	                                             #
-#				                                             #
-#   Input:  $(MCFDIR) = the directory where the source is                    #
-#									     #
-#   Output: $(MCFH)   = the .h files to include				     #
-#           $(MCFINC) = the -I$(include directories)			     #
-#									     #
-#                                VERSION 1.00				     #
-#                	        09 - 05 - 2012				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#   makefile of MCFClass                                                     #
+#                                                                            #
+#   Input:  $(MCFClDIR) = the directory where the source is                  #
+#           $(OPTUxH)   = the OPTUtils.h files to include                    #
+#           $(OPTUxINC) = the -I$( OPTUtils.h directory )                    #
+#                                                                            #
+#   Output: $(MCFClH)   = the .h files to include for MCFClass               #
+#           $(MCFClINC) = the -I$( include directories for MCFClass )        #
+#                                                                            #
+#                                VERSION 2.00                                #
+#                               13 - 11 - 2018                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
-MCFH = $(MCFDIR)MCFClass.h
-MCFINC = -I$(MCFDIR)
+MCFClH = $(MCFClDIR)MCFClass.h $(OPTUxH)
+MCFClINC = -I$(MCFClDIR) $(OPTUxINC)
 
 ############################ End of makefile #################################

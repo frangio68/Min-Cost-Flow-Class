@@ -32,7 +32,7 @@
 /*------------------------------ DEFINES -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#define HAVE_CSCL2 0
+#define HAVE_CSCL2 1
 // > 0 if the CS2 class is available
 
 #define HAVE_CPLEX 1
@@ -41,10 +41,10 @@
 #define HAVE_MFSMX 1
 // > 0 if the MCFSimplex class is available
 
-#define HAVE_MFZIB 0
+#define HAVE_MFZIB 1
 // > 0 if the MCFZIP class is available
 
-#define HAVE_RELAX 0
+#define HAVE_RELAX 1
 // > 0 if the RelaxIV class is available
 
 #define HAVE_SPTRE 1
