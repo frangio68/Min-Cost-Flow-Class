@@ -35,9 +35,11 @@ include $(libMCFClDIR)lib/makefile-c
 libMCFClOBJ = $(libMCFClDIR)lib/libMCFCl.a
 
 # ensure that the library is properly constructed - - - - - - - - - - - - - -
+# force the make to be always executed
 
-$(libMCFClOBJ):
+$(libMCFClOBJ): FORCE
 	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR)
+FORCE:
 
 # clean-up unrequired things- - - - - - - - - - - - - - - - - - - - - - - - -
 
