@@ -281,6 +281,8 @@ void MCFSimplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
     arc->upper = pU ? pU[ arc - arcsP ] : Inf<FNumber>();
     arc->tail = nodesP + pSn[ arc - arcsP ] - 1 + USENAME0;
     arc->head = nodesP + pEn[ arc - arcsP ] - 1 + USENAME0;
+    arc->flow = 0;
+    arc->ident = AT_LOWER;
     }
    }
   #if( ! QUADRATICCOST )
@@ -304,6 +306,8 @@ void MCFSimplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
      arc->upper = pU ? pU[ arc - arcsD ] : Inf<FNumber>();
      arc->tail = nodesD + pSn[ arc - arcsD ] - 1 + USENAME0;
      arc->head = nodesD + pEn[ arc - arcsD ] - 1 + USENAME0;
+     arc->flow = 0;
+     arc->ident = AT_LOWER;
      }
 
     CreateAdditionalDualStructures();
