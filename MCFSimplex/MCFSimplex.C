@@ -518,11 +518,12 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
    //#endif
    }
 #endif
- if( newPricingRule == kFirstEligibleArc )
+ if( newPricingRule == kFirstEligibleArc ) {
   if( newUsePrimalSimplex )
    arcToStartP = arcsP;
   else
    arcToStartD = arcsD;
+  }
 
  if( ( nmax && mmax ) && ( newPricingRule == kCandidateListPivot ) )
   MemAllocCandidateList();
@@ -608,11 +609,12 @@ void MCFSimplex::SolveMCF( void )
   if( recomputeInitialBase )
    CreateInitialPrimalBase();
  #else
-  if( recomputeInitialBase )
+  if( recomputeInitialBase ) {
    if( usePrimalSimplex )
     CreateInitialPrimalBase();
    else
     CreateInitialDualBase();
+   }
  #endif
   
  status = kUnSolved;
@@ -1081,7 +1083,7 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
      ComputePotential( dummyRootP );
     else {
      for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ )
-      if( arc->ident > BASIC )
+      if( arc->ident > BASIC ) {
        if( GTZ( ReductCost( arc ) , EpsCst ) ) {
 	arc->flow = 0;
 	arc->ident = AT_LOWER;
@@ -1090,6 +1092,7 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
 	arc->flow = arc->upper; 
 	arc->ident = AT_UPPER;
         }
+       }
 
      CreateInitialDModifiedBalanceVector();
      PostDVisit( dummyRootD );
@@ -1150,7 +1153,7 @@ void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
 
     ComputePotential( dummyRootD );
     for( arcDType *a = arcsD ; a != stopArcsD ; a++)
-     if( a->ident > BASIC )
+     if( a->ident > BASIC ) {
       if( GTZ( ReductCost( a ) , EpsCst ) ) {
        a->flow = 0;
        a->ident = AT_LOWER;
@@ -1159,6 +1162,7 @@ void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
        a->flow = a->upper; 
        a->ident = AT_UPPER;
        }
+      }
 
     CreateInitialDModifiedBalanceVector();
     PostDVisit( dummyRootD );
@@ -1610,7 +1614,7 @@ void MCFSimplex::CloseArc( cIndex name )
      ComputePotential( dummyRootD );
 
      for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
-      if( a->ident > BASIC )
+      if( a->ident > BASIC ) {
        if( GTZ( ReductCost( a ) , EpsCst ) ) {
 	a->flow = 0;
 	a->ident = AT_LOWER;
@@ -1619,6 +1623,7 @@ void MCFSimplex::CloseArc( cIndex name )
 	a->flow = a->upper; 
 	a->ident = AT_UPPER;
         }
+       }
      }
 
     CreateInitialDModifiedBalanceVector();
@@ -2194,7 +2199,7 @@ void MCFSimplex::MemAlloc( void )
    }
  #endif
 
- modifiedBalance = new FNumber[ nmax ];  // node modified balance
+ modifiedBalance = new FNumber[ nmax + 1 ];  // node modified balance
 
  }  // end( MemAlloc )
 
@@ -3004,11 +3009,12 @@ void MCFSimplex::DualSimplex( void )
     while( fine == false ) {
      /* If node is the root of subtree T2, Dual Simplex jumps to the node
 	(if exists) which follows the last node of T2 */
-     if( node == h2 )
+     if( node == h2 ) {
       if( lastNodeOfT2->nextInT )
        node = lastNodeOfT2->nextInT;
       else
        break;
+      }
 
      // Search arc in the Backward Star of nodes of T1
      arcDType *arc = node->firstBs;
@@ -3977,13 +3983,12 @@ inline void MCFSimplex::ComputePotential( N *r )
 void MCFSimplex::CreateInitialPModifiedBalanceVector( void )
 {
  int i = 0;
- //delete[] modifiedBalance;
- //modifiedBalance = new FNumber[ n ];
- // Initialited every node's modifiedBalance to his balance
- for ( nodePType *node = nodesP ; node != stopNodesP ; node++ ) {
-  modifiedBalance[i] = node->balance;
-  i++;
-  }
+ // initialize every node's modifiedBalance to its balance
+ for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
+  modifiedBalance[ i++ ] = node->balance;
+
+ // don't forget the root
+ modifiedBalance[ nmax ] = dummyRootP->balance;
 
  // Modify the vector according to the arcs out of base with flow non zero
  // Scan the real arcs
@@ -4064,11 +4069,12 @@ void MCFSimplex::PostPVisit( nodePType *r )
    desc = desc->nextInT;
    }
 
-  if( r != dummyRootP )
+  if( r != dummyRootP ) {
    if( ( r->enteringTArc )->head == r ) // If enteringTArc of "r" goes in "r"
     ( r->enteringTArc )->flow = modifiedBalance[ i ];
    else // If enteringTArc of "r" goes out "r"
     ( r->enteringTArc )->flow = - modifiedBalance[ i ];
+   }
   }
  }
 
@@ -4198,12 +4204,12 @@ void MCFSimplex::CreateInitialDModifiedBalanceVector( void )
 {
  #if( ! QUADRATICCOST )
   int i = 0;
-  //modifiedBalance = new FNumber[ n ];
-  // Initialited every node's modifiedBalance to his balance
-  for( nodeDType *node = nodesD ; node != stopNodesD ; node++ ) {
-   modifiedBalance[ i ] = node->balance;
-   i++;
-   }
+  // initialize every node's modifiedBalance to its balance
+  for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
+   modifiedBalance[ i++ ] = node->balance;
+
+  // don't forget the root
+  modifiedBalance[ nmax ] = dummyRootD->balance;
 
   // Modify the vector according to the arcs out of base with flow non zero
   // Scan the real arcs
@@ -4262,11 +4268,12 @@ void MCFSimplex::PostDVisit( nodeDType *r )
     desc = desc->nextInT;
     }
 
-   if( r != dummyRootD )
+   if( r != dummyRootD ) {
     if( ( r->enteringTArc )->head == r ) // If enteringTArc of "r" goes in "r"
      ( r->enteringTArc )->flow = modifiedBalance[ i ];
     else // If enteringTArc of "r" goes out "r"
      ( r->enteringTArc )->flow = - modifiedBalance[ i ];
+    }
    }
  #endif
  }
