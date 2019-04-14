@@ -27,7 +27,8 @@ This release comprises:
 -  doxygen/: doxygen files to produce the documentation
 
 -  License.md: the text of the "GNU Lesser General Public License",
-   Version 2.1, under which this code is distributed
+   Version 3.0, under which this most of this code is distributed
+   (but not all of it, see RelaxIV below)
 
 -  MCFClass/: definition of the base class
 
@@ -46,6 +47,19 @@ This release comprises:
 
 -  ReadMe.md: this file
 
+-  RelaxIV/: implements a MCF solver conforming to the MCFClass interface
+   based on the RELAXIV code by D. Bertsekas and P. Tseng, as described in
+
+      Bertsekas, Dimitri P., and Paul Tseng.
+      "RELAX-IV: A faster version of the RELAX code for solving minimum
+       cost flow problems." (1994), Report LIDS-P-2276, MIT.
+
+   be avare that RelaxIV is distributed under a less permissive academic
+   license than the rest of the code (see RelaxIV/academicl.txt for details),
+   which only applies to researchers of noncommercial and academic
+   institutions, e.g., universities; if the license does not apply to you,
+   you must not download the source or delete it immediately
+
 -  SPTree/: implements a MCF solver partly conforming to the MCFClass
    interface, in the sense that is is only able to solve MCF instances that
    are in fact Shortest Path Tree ones (that is, only one source node and
@@ -62,8 +76,8 @@ This release comprises:
    solvers in order to verify that they agree. See the comments in both
    files for more details
 
-There are three more complete solvers available under the MCFClass interface,
-namely RelaxIV, CS2 and MCFZIB. These are, however, distributed under a more
+There are two more complete solvers available under the MCFClass interface,
+namely CS2 and MCFZIB. These are, however, distributed under a more
 restrictive academic license, which has to be explicitly accepted before
 getting hold of the code. Request forms are available at
 
