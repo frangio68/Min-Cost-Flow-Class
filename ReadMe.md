@@ -1,7 +1,7 @@
 # Min-Cost-Flow-Class
-ReadMe for the "pure LGPL part" of MCFClass project, a set of C++ solvers for
-(Linear or Convex Quadratic Separable) Min Cost Flow Problem solvers under the
-same interface seriving from the base class MCFClass.
+ReadMe for the MCFClass project, a set of C++ solvers for (Linear or Convex
+Quadratic Separable) Min Cost Flow Problem solvers under the same interface
+deriving from the base class MCFClass.
 
 The aim of MCFClass is to provide an abstraction layer between practitioners
 who need to solve MCF problems within complex applications and developers of
@@ -27,7 +27,7 @@ This release comprises:
 -  doxygen/: doxygen files to produce the documentation
 
 -  License.md: the text of the "GNU Lesser General Public License",
-   Version 3.0, under which this most of this code is distributed
+   Version 3.0, under which most of this code is distributed
    (but not all of it, see RelaxIV below)
 
 -  MCFClass/: definition of the base class
