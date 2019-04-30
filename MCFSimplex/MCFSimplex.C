@@ -1835,7 +1835,7 @@ void MCFSimplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
 
  CloseArc( name );
 
- #if QUADRATICCOST == 0
+ #if QUADRATICCOST
   if( nSN <= n )
    (arcsP + name)->tail = (nodesP + nSN + USENAME0 - 1 );
   if( nEN <= n )
