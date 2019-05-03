@@ -1555,7 +1555,6 @@ void MCFSimplex::CloseArc( cIndex name )
   #if( QUADRATICCOST )
    if( arc->cost == Inf<CNumber>() )
     return;
-
   #else
    if( arc->ident < BASIC )
     return;
@@ -1738,7 +1737,7 @@ void MCFSimplex::OpenArc( cIndex name )
    arcPType *arc = arcsP + name;
    if( arc->ident == CLOSED ) {
     arc->cost = 0;
-	arc->ident = AT_LOWER;
+    arc->ident = AT_LOWER;
     arc->flow = 0; 
     }
   #endif
@@ -1875,26 +1874,44 @@ void MCFSimplex::DelArc( cIndex name )
    CloseArc( name );
 
   arc->upper = -Inf<FNumber>();
+
+  while( ( stopArcsP - 1 )->upper == -Inf<FNumber>() ) {
+   --stopArcsP;
+   if( ! --m )
+    break;
+   }
  #else
   if( usePrimalSimplex ) {
    arcPType *arc = arcsP + name;
-   if( arc->cost == DELETED )
+   if( arc->ident == DELETED )
     return;
 
-   if( arc->cost >= BASIC )
+   if( arc->ident >= BASIC )
     CloseArc( name );
 
    arc->ident = DELETED;
+
+   while( ( stopArcsP - 1 )->ident == DELETED ) {
+    --stopArcsP;
+    if( ! --m )
+     break;
+    }
    }
   else {
    arcDType *arc = arcsD + name;
    if( arc->cost == DELETED )
     return;
 
-   if( arc->cost >= BASIC )
+   if( arc->ident >= BASIC )
     CloseArc( name );
 
    arc->ident = DELETED;
+
+   while( ( stopArcsD - 1 )->ident == DELETED ) {
+    --stopArcsD;
+    if( ! --m )
+     break;
+    }
    }
  #endif
 
