@@ -120,7 +120,7 @@
 
 /*----------------------------- DYNMC_MCF_RIV ------------------------------*/
 
-#define DYNMC_MCF_RIV 0
+#define DYNMC_MCF_RIV 3
 
 /**< Decides if the graph topology (arcs, nodes) can be changed.
    If DYNMC_MCF_RIV > 0, the methods of the public interface of class that
@@ -296,6 +296,13 @@ class RelaxIV : public MCFClass {
    */
 
 /*--------------------------------------------------------------------------*/
+
+ virtual inline void GetPar( int par , double &val ) const override
+ {
+  MCFClass::GetPar( par , val );
+  }
+
+ /*--------------------------------------------------------------------------*/
 
    void PreProcess( void ) override;
 

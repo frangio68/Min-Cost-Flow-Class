@@ -60,8 +60,8 @@ include $(MCFSxDIR)makefile
 #include $(MCFZBDIR)makefile
 
 # RelaxIV
-#MCFR4DIR = $(libMCFClDIR)RelaxIV/
-#include $(MCFR4DIR)makefile
+MCFR4DIR = $(libMCFClDIR)RelaxIV/
+include $(MCFR4DIR)makefile
 
 # SPTree
 MCFSTDIR = $(libMCFClDIR)SPTree/

@@ -39,7 +39,7 @@ MCFR4INC = -I$(MCFR4DIR)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(MCFR4OBJ): $(MCFR4DIR)RelaxIV.C $(MCFClH)
+$(MCFR4OBJ): $(MCFR4DIR)RelaxIV.C $(MCFR4H) $(MCFClH)
 	$(CC) -c $*.C -o $@ $(MCFClINC) $(SW)
 
 ############################# End of makefile ################################

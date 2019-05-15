@@ -1925,9 +1925,9 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP;
   #if( QUADRATICCOST )
-   while( ( arc->upper != -Inf<FNumber>() ) && ( arc != stopArcsP ) )
+   while( ( arc != stopArcsP ) && ( arc->upper != -Inf<FNumber>() ) )
   #else
-   while( ( arc->ident > DELETED ) && ( arc != stopArcsP ) )
+   while( ( arc != stopArcsP ) && ( arc->ident > DELETED ) )
   #endif
     arc++;
 
@@ -1939,7 +1939,7 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
    stopArcsP++;
    }
 
-  Index pos = ( arc - arcsP ) + 1;
+  Index pos = arc - arcsP;
   arc->tail = nodesP + Start + USENAME0 - 1;
   arc->head = nodesP + End + USENAME0 - 1;
   arc->upper = aU;
@@ -1967,7 +1967,7 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
     stopArcsD++;
     }
 
-   Index pos = ( arc - arcsD ) + 1;
+   Index pos = arc - arcsD;
    arc->tail = nodesD + Start + USENAME0 - 1;
    arc->head = nodesD + End + USENAME0 - 1;
    arc->upper = aU;
