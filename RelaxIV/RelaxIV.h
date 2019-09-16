@@ -54,9 +54,9 @@
  *          least half of its feasible values, or SIndex has to be a "bigger"
  *          data type than Index. The default value for SIndex is int.
  *
- * \version 1.83
+ * \version 1.84
  *
- * \date 14 - 04 - 2019
+ * \date 16 - 09 - 2019
  *
  * \author <b>(original FORTRAN code)</b> \n
  *         Dimitri P. Bertsekas \n
@@ -255,10 +255,8 @@ class RelaxIV : public MCFClass {
    *not* ignored. */
 
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void SetPar( int par , int val ) override;
-
-/**< Set integer parameters of the algorithm.
+/// set integer parameters of the algorithm
+/** Set integer parameters of the algorithm.
 
    @param par   is the parameter to be set;
 
@@ -271,6 +269,30 @@ class RelaxIV : public MCFClass {
 	       set to kNo (default), then the default initialization based on
 	       special single-node relaxation iterations is used instead.
 	       Note that this parameter is *ignored* if AUCTION == 0. */
+
+   virtual void SetPar( int par , int val ) override
+   {
+    if( par == kAuction ) {
+     #if( AUCTION )
+      crash = ( val == kYes ) ? TRUE : FALSE;
+     #else
+      if( val == kYes )
+       throw( MCFException( "Auction initialization not available" ) );
+     #endif
+     }
+    else
+     MCFClass::SetPar( par , val );
+  }
+
+/*--------------------------------------------------------------------------*/
+/// set double parameters of the algorithm
+/** Set double parameters of the algorithm. This only calls the base class
+ * method. It should not be necessary, but sometimes it is. */
+
+   virtual void SetPar( int par , double val ) override
+   {
+    MCFClass::SetPar( par , val );
+    }
 
 /*--------------------------------------------------------------------------*/
 
@@ -815,22 +837,6 @@ class RelaxIV : public MCFClass {
 /* @} end( group( RELAXIV_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
-/*--------------------------------------------------------------------------*/
-
-inline void RelaxIV::SetPar( int par , int val )
-{
- if( par == kAuction ) {
-  #if( AUCTION )
-   crash = ( val == kYes ) ? TRUE : FALSE;
-  #else
-   if( val == kYes )
-    throw( MCFException( "Auction initialization not available" ) );
-  #endif
-  }
- else
-  MCFClass::SetPar( par , val );
- }
-
 /*--------------------------------------------------------------------------*/
 
 inline MCFClass::cIndex_Set RelaxIV::MCFSNdes( void )
