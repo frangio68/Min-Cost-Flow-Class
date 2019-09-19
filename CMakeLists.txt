@@ -6,13 +6,6 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 # ----- Project description and directories ------------------------------------
 project(MCFClass DESCRIPTION "C++ solvers for Minimum Cost Flow Problems")
 
-# ----- Requirements -----------------------------------------------------------
-# This is to find FindCPLEX.cmake in current folder
-# TODO: Move FindCPLEX.cmake in a proper directory
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
-find_package(CPLEX REQUIRED)
-
-# ----- Includes ---------------------------------------------------------------
 set(PROJECT_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/MCFClass
     ${PROJECT_SOURCE_DIR}/MCFClone
@@ -22,10 +15,14 @@ set(PROJECT_INCLUDE_DIR
     ${PROJECT_SOURCE_DIR}/RelaxIV
     ${PROJECT_SOURCE_DIR}/SPTree
     )
-include_directories(${PROJECT_INCLUDE_DIR})
-include_directories(${CPLEX_INCLUDE_DIR}/ilcplex)
 
-# ----- SOURCE FILES -----------------------------------------------------------
+# This is to find FindCPLEX.cmake in cmake folder
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# ----- Requirements -----------------------------------------------------------
+#find_package(CPLEX REQUIRED)
+
+# ----- Library ----------------------------------------------------------------
 set(${PROJECT_NAME}_SOURCES
     MCFCplex/MCFCplex.C
     MCFSimplex/MCFSimplex.C
@@ -34,25 +31,14 @@ set(${PROJECT_NAME}_SOURCES
     )
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_INCLUDE_DIR})
+#target_include_directories(${PROJECT_NAME} PUBLIC ${CPLEX_INCLUDE_DIR}/ilcplex)
 
-# ----- Install (optional) -----------------------------------------------------
-set(${PROJECT_NAME}_HEADERS
-    ${PROJECT_SOURCE_DIR}/MCFClass/MCFClass.h
-    ${PROJECT_SOURCE_DIR}/MCFClone/MCFClone.h
-    ${PROJECT_SOURCE_DIR}/MCFCplex/MCFCplex.h
-    ${PROJECT_SOURCE_DIR}/MCFSimplex/MCFSimplex.h
-    ${PROJECT_SOURCE_DIR}/OPTUtils/OPTUtils.h
-    ${PROJECT_SOURCE_DIR}/RelaxIV/RelaxIV.h
-    ${PROJECT_SOURCE_DIR}/SPTree/SPTree.h
-    )
+# FIXME: Workaround for CPLEX
+if (OVERRIDE_CPLEX_INC)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${OVERRIDE_CPLEX_INC}/ilcplex)
+else ()
+    find_package(CPLEX REQUIRED)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CPLEX_INCLUDE_DIR}/ilcplex)
+endif ()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-                      PUBLIC_HEADER "${${PROJECT_NAME}_HEADERS}"
-                      )
-
-install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib/static
-        PUBLIC_HEADER DESTINATION include/${PROJECT_NAME}
-        )
