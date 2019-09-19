@@ -20,7 +20,7 @@ set(PROJECT_INCLUDE_DIR
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # ----- Requirements -----------------------------------------------------------
-#find_package(CPLEX REQUIRED)
+find_package(CPLEX REQUIRED)
 
 # ----- Library ----------------------------------------------------------------
 set(${PROJECT_NAME}_SOURCES
@@ -32,13 +32,4 @@ set(${PROJECT_NAME}_SOURCES
 
 add_library(${PROJECT_NAME} STATIC ${${PROJECT_NAME}_SOURCES})
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_INCLUDE_DIR})
-#target_include_directories(${PROJECT_NAME} PUBLIC ${CPLEX_INCLUDE_DIR}/ilcplex)
-
-# FIXME: Workaround for CPLEX
-if (OVERRIDE_CPLEX_INC)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${OVERRIDE_CPLEX_INC}/ilcplex)
-else ()
-    find_package(CPLEX REQUIRED)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${CPLEX_INCLUDE_DIR}/ilcplex)
-endif ()
-
+target_include_directories(${PROJECT_NAME} PUBLIC ${CPLEX_INCLUDE_DIR}/ilcplex)
