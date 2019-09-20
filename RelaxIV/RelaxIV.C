@@ -932,17 +932,19 @@ void RelaxIV::SolveMCF( void )
       if( ETZ( RC[ arc ] , EpsCst ) ) {
        Index t2 = Endn[ arc ];
        if( ! mark[ t2 ] )  // t2 is not labeled
-        if( GTZ( X[ arc ] , EpsFlw ) ) {
-         if( LTZ( Dfct[ t2 ] , EpsDfct ) )  
+       {
+        if( GTZ( X[ arc ], EpsFlw ) ) {
+         if( LTZ( Dfct[ t2 ], EpsDfct ) )
           save[ naugnod++ ] = t2;
 
          Prdcsr[ t2 ] = arc;
          label[ nlabel++ ] = t2;
          mark[ t2 ] = true;
          delx += X[ arc ];
-         }
-        else
+        } else {
          Prdcsr[ t2 ] = 0;
+        }
+       }
 
        prvarc = arc;
        arc = tnxtou[ arc ];
@@ -966,17 +968,19 @@ void RelaxIV::SolveMCF( void )
       if( ETZ( RC[ arc ] , EpsCst ) ) {
        Index t2 = Startn[ arc ];
        if( ! mark[ t2 ] )  // t2 is not labeled
-        if( GTZ( U[ arc ] , EpsFlw ) )  {
-         if( LTZ( Dfct[ t2 ] , EpsDfct ) )  
+       {
+        if( GTZ( U[ arc ], EpsFlw ) ) {
+         if( LTZ( Dfct[ t2 ], EpsDfct ) )
           save[ naugnod++ ] = t2;
 
          Prdcsr[ t2 ] = -arc;
          label[ nlabel++ ] = t2;
          mark[ t2 ] = true;
          delx += U[ arc ];
-         }
-        else
+        } else {
          Prdcsr[ t2 ] = 0;
+        }
+       }
 
        prvarc = arc;
        arc = tnxtin[ arc ];
@@ -1001,17 +1005,19 @@ void RelaxIV::SolveMCF( void )
       if( ETZ( RC[ arc ] , EpsCst ) ) {
        Index t2 = Startn[ arc ];
        if( ! mark[ t2 ] )  // t2 is not labelled
-        if( GTZ( X[ arc ] , EpsFlw ) ) {
-         if( GTZ( Dfct[ t2 ] , EpsDfct ) )  
+       {
+        if( GTZ( X[ arc ], EpsFlw ) ) {
+         if( GTZ( Dfct[ t2 ], EpsDfct ) )
           save[ naugnod++ ] = t2;
 
          Prdcsr[ t2 ] = arc;
          label[ nlabel++ ] = t2;
          mark[ t2 ] = true;
          delx += X[ arc ];
-         }
-        else
+        } else {
          Prdcsr[ t2 ] = 0;
+        }
+       }
 
        prvarc = arc;
        arc = tnxtin[ arc ];
@@ -1035,17 +1041,19 @@ void RelaxIV::SolveMCF( void )
       if( ETZ( RC[ arc ] , EpsCst ) ) {
        Index t2 = Endn[ arc ];
        if( ! mark[ t2 ] )  // t2 is not albelled
-        if( GTZ( U[ arc ] , EpsFlw ) ) {
-         if( GTZ( Dfct[ t2 ] , EpsDfct ) ) 
+       {
+        if( GTZ( U[ arc ], EpsFlw ) ) {
+         if( GTZ( Dfct[ t2 ], EpsDfct ) )
           save[ naugnod++ ] = t2;
 
          Prdcsr[ t2 ] = -arc;
          label[ nlabel++ ] = t2;
          mark[ t2 ] = true;
          delx += U[ arc ];
-         }
-        else
+        } else {
          Prdcsr[ t2 ] = 0;
+        }
+       }
 
        prvarc = arc;
        arc = tnxtou[ arc ];
@@ -2148,13 +2156,15 @@ MCFClass::Index RelaxIV::AddArc( cIndex Start , cIndex End , cFNumber aU ,
    arc = ffp;
    }
 
-  if( ! arc )
-   if( m < mmax ) 
+  if( ! arc ) {
+   if( m < mmax ) {
     arc = ++m;
-   else
-    return( Inf<Index>() );
+   } else {
+    return ( Inf< Index >() );
+   }
+  }
 
-  // insert new arc in position arc - - - - - - - - - - - - - - - - - - - - -
+ // insert new arc in position arc - - - - - - - - - - - - - - - - - - - - -
 
   C[ arc ] = aC;
   Cap[ arc ] = aU;
@@ -2310,7 +2320,7 @@ inline void RelaxIV::init_standard( void )
   Index_Set tFIn = FIn + n;
   for( tDfct = Dfct + n , tDDPos = DDPos + n , tDDNeg = DDNeg + n ;
        tDfct > Dfct ; tDfct-- , tDDPos-- , tDDNeg-- , tFOu-- , tFIn-- )
-   if( ! ETZ( *tDfct , EpsDfct ) )
+   if( ! ETZ( *tDfct , EpsDfct ) ) {
     if( LEZ( *tDDPos , EpsDfct ) ) {
      // compute delprc, the stepsize to the next breakpoint in the dual cost
      // as the price of node is increased: since the reduced cost of all
@@ -2365,7 +2375,7 @@ inline void RelaxIV::init_standard( void )
        break;
       }         // end for( ever )
      }
-    else
+    else {
      if( LEZ( *tDDNeg , EpsDfct ) ) {
       // Compute delprc, the stepsize to the next breakpoint in the dual cost
       // as the price of node is decreased. Since the reduced cost of all
@@ -2420,7 +2430,8 @@ inline void RelaxIV::init_standard( void )
         break;
        }  // end for( ever )
       }
-
+    }
+   }
   }  // end( for( npass ) )
  }  // end( init_standard )
 

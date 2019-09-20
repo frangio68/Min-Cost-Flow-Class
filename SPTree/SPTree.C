@@ -368,12 +368,14 @@ void SPTree::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
   if( di > 0 )
    DstBse[ NDsts++ ] = i;
   else
-   if( di < 0 )
-    if( Origin < InINF )
-     throw( MCFException( "SPTree::LoadNet: more than one source in pDfct" ) );
-    else
+   if( di < 0 ) {
+    if( Origin < InINF ) {
+     throw ( MCFException( "SPTree::LoadNet: more than one source in pDfct" ) );
+    } else {
      Origin = i;
-  }
+    }
+   }
+ }
 
  if( Origin == InINF )
   throw( MCFException( "SPTree::LoadNet: no sources in pDfct" ) );

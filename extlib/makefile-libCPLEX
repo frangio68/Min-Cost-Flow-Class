@@ -39,6 +39,6 @@ libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
 # macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 libCPLEXLIB = -L$(libCPLEXINCDIR) -lilocplex -lcplex $(libCPLEXEXTLIB)
-libCPLEXINC = -I$(libCPLEXBSCDIR)include/ilcplex/
+libCPLEXINC = -I$(libCPLEXBSCDIR)include/
 
 ############################# End of makefile ################################

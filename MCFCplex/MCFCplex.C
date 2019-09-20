@@ -1285,13 +1285,14 @@ void MCFCplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
 {
  int temp = int( name );
  int sn , en;
- if( ( nSN == Inf<Index>() ) || ( nEN == Inf<Index>() ) ) 
-  if( net ) 
-   CPXNETgetarcnodes( env , net , &sn , &en , temp , temp );
-  else {
+ if( ( nSN == Inf<Index>() ) || ( nEN == Inf<Index>() ) ) {
+  if( net ) {
+   CPXNETgetarcnodes( env, net, &sn, &en, temp, temp );
+  } else {
    sn = Startn[ name ];
    en = Endn[ name ];
-   }
+  }
+ }
 
  if( nSN < Inf<Index>() )
   sn = int( nSN MINUSONE );
