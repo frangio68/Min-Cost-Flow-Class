@@ -1,0 +1,14 @@
+# This file contains instructions on how to generate the MCFClassConfig.cmake file
+
+get_filename_component(MCFClass_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${MCFClass_CMAKE_DIR})
+find_package(CPLEX REQUIRED)
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if(NOT TARGET MCFClass::MCFClass)
+    include("${MCFClass_CMAKE_DIR}/MCFClassTargets.cmake")
+endif()
+
+set(MCFClass_LIBRARIES MCFClass::MCFClass)
