@@ -19,10 +19,8 @@
 #   - MinSizeRel:     -Os -DNDEBUG                                            #
 #   - Release:        -O3 -DNDEBUG                                            #
 #   - RelWithDebInfo: -O2 -g -DNDEBUG                                         #
-#                                                                             #
-# The default build type is Debug.                                            #
 # --------------------------------------------------------------------------- #
-#set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_BUILD_TYPE "Debug")
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Add compilation flags

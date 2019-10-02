@@ -6,10 +6,9 @@
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
-cmake_minimum_required(VERSION 3.8)
-# ----- Project description and directories --------------------------------- #
+cmake_minimum_required(VERSION 3.8...3.15)
 # TODO: set proper version
-project(MCFClass VERSION 1.0.0)
+project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
 # ----- Requirements -------------------------------------------------------- #
 # find_package() is used to find libraries and automatically configure them.
@@ -21,7 +20,7 @@ project(MCFClass VERSION 1.0.0)
 # If we are building this project alone we use its settings but we check
 # also for settings in its parent directory.
 # TODO: Check if this behaviour is correct
-if (NOT SMS++_CONFIG_ALL)
+if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CMakeCustom.txt OPTIONAL)
     include(../CMakeCustom.txt OPTIONAL)
 endif ()
@@ -44,21 +43,21 @@ target_sources(MCFClass PRIVATE
 # Different INSTALL_INTERFACE and BUILD_INTERFACE paths are used when
 # generating the target import file (***Targets.cmake), that must be different
 # for local build and installation.
-target_include_directories(MCFClass PUBLIC
-                           $<INSTALL_INTERFACE:include/MCFClass>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/MCFClass>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/MCFClone>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/MCFSimplex>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/OPTUtils>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/RelaxIV>
-                           $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/SPTree>
-                           )
+target_include_directories(
+        MCFClass PUBLIC
+        $<INSTALL_INTERFACE:include/MCFClass>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFClass>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFClone>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFSimplex>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/OPTUtils>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/RelaxIV>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SPTree>)
 
 if (CPLEX_FOUND)
     target_sources(MCFClass PRIVATE MCFCplex/MCFCplex.C)
     target_include_directories(
             MCFClass PUBLIC
-            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/MCFCplex>)
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex>)
     target_link_libraries(MCFClass PUBLIC CPLEX::Cplex)
 endif ()
 
@@ -70,7 +69,6 @@ add_library(MCFClass::MCFClass ALIAS MCFClass)
 # Not required for local builds (see below).
 
 include(GNUInstallDirs)
-set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
 
 # Install library
 install(TARGETS MCFClass
@@ -80,20 +78,20 @@ install(TARGETS MCFClass
 
 # Install headers
 install(FILES
-        ${PROJECT_SOURCE_DIR}/MCFClass/MCFClass.h
-        ${PROJECT_SOURCE_DIR}/MCFClone/MCFClone.h
-        ${PROJECT_SOURCE_DIR}/MCFCplex/MCFCplex.h
-        ${PROJECT_SOURCE_DIR}/MCFSimplex/MCFSimplex.h
-        ${PROJECT_SOURCE_DIR}/OPTUtils/OPTUtils.h
-        ${PROJECT_SOURCE_DIR}/RelaxIV/RelaxIV.h
-        ${PROJECT_SOURCE_DIR}/SPTree/SPTree.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MCFClass/MCFClass.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MCFClone/MCFClone.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex/MCFCplex.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/MCFSimplex/MCFSimplex.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/OPTUtils/OPTUtils.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/RelaxIV/RelaxIV.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/SPTree/SPTree.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/MCFClass)
 
 # Install target import file
 install(EXPORT MCFClass-targets
         FILE MCFClassTargets.cmake
         NAMESPACE MCFClass::
-        DESTINATION ${INSTALL_CONFIGDIR})
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
 
 # Generate package version file
 include(CMakePackageConfigHelpers)
@@ -106,33 +104,37 @@ write_basic_package_version_file(
 configure_package_config_file(
         ${CMAKE_CURRENT_LIST_DIR}/cmake/MCFClassConfig.cmake.in
         ${CMAKE_CURRENT_BINARY_DIR}/MCFClassConfig.cmake
-        INSTALL_DESTINATION ${INSTALL_CONFIGDIR})
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
 
 # Install package version and configuration files
-# TODO: Check if we should install also find modules
 install(FILES
         ${CMAKE_CURRENT_BINARY_DIR}/MCFClassConfig.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/MCFClassConfigVersion.cmake
-        # ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-        DESTINATION ${INSTALL_CONFIGDIR})
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
+
+# Shipping custom find modules should not be encouraged because third
+# party developers should provide them.
+# We ship FindCPLEX because CPLEX does not on its own.
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SMS++)
 
 # ----- Export from the build tree ------------------------------------------ #
 # This is needed so other projects can find the library in a local build.
 # It does not affect installation.
 
-export(EXPORT MCFClass-targets
-       FILE ${CMAKE_CURRENT_BINARY_DIR}/MCFClassTargets.cmake
-       NAMESPACE MCFClass::)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
 
-# Export also the find modules for the local config file to use it
-configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-               ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
-               COPYONLY)
+    export(EXPORT MCFClass-targets
+           FILE ${CMAKE_CURRENT_BINARY_DIR}/MCFClassTargets.cmake
+           NAMESPACE MCFClass::)
 
-# FIXME: I think that exporting this is a bad idea
-#configure_file(${CMAKE_CURRENT_LIST_DIR}/CMakeCustom.txt
-#               ${CMAKE_CURRENT_BINARY_DIR}/CMakeCustom.txt
-#               COPYONLY)
+    # Export also the find modules for the local config file to use it
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
+                   ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
+                   COPYONLY)
 
-# Register package in user's package registry (~/.cmake/registry)
-export(PACKAGE MCFClass)
+    # Register package in user's package registry (~/.cmake/registry)
+    export(PACKAGE MCFClass)
+endif ()

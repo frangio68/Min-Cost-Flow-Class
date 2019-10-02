@@ -21,9 +21,6 @@ include(CMakeFindDependencyMacro)
 # This is needed to find the custom modules we provide
 list(APPEND CMAKE_MODULE_PATH ${MCFClass_CMAKE_DIR})
 
-# FIXME: Not a good idea because CMakeCustom.txt is not to be installed
-#include(${MCFClass_CMAKE_DIR}/CMakeCustom.txt OPTIONAL)
-
 find_dependency(CPLEX)
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
