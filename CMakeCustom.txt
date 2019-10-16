@@ -30,7 +30,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 # Note: add_compile_options() is recommended over CMAKE_<LANG>_FLAGS_<CONFIG>
 add_compile_options(
 #        "-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
-        "$<$<CONFIG:DEBUG>:-fno-inline;-ferror-limit=1>"
+        "$<$<CONFIG:DEBUG>:-fno-inline>"
 #        "$<$<CONFIG:MINSIZEREL>:>"
 #        "$<$<CONFIG:RELEASE>:>"
 #        "$<$<CONFIG:RELWITHDEBINFO>:>"
