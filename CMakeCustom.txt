@@ -12,6 +12,9 @@
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
 
+# Enable testing
+enable_testing()
+
 # ----- Build settings ------------------------------------------------------ #
 # CMake already adds the following flags for each build type:                 #
 #                                                                             #
@@ -26,11 +29,11 @@ set(CMAKE_BUILD_TYPE "Debug")
 # Add compilation flags
 # Note: add_compile_options() is recommended over CMAKE_<LANG>_FLAGS_<CONFIG>
 add_compile_options(
-        #        "-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
+#        "-Wall" "-Wpedantic" "-Wextra" "-fexceptions"
         "$<$<CONFIG:DEBUG>:-fno-inline;-ferror-limit=1>"
-        #        "$<$<CONFIG:MINSIZEREL>:>"
-        #        "$<$<CONFIG:RELEASE>:>"
-        #        "$<$<CONFIG:RELWITHDEBINFO>:>"
+#        "$<$<CONFIG:MINSIZEREL>:>"
+#        "$<$<CONFIG:RELEASE>:>"
+#        "$<$<CONFIG:RELWITHDEBINFO>:>"
 )
 
 # Custom output directories

@@ -17,12 +17,9 @@ project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
 # If we are configuring from the umbrella project, we assume that the valid
 # settings are there.
-# If we are building this project alone we use its settings but we check
-# also for settings in its parent directory.
-# TODO: Check if this behaviour is correct
+# If we are building this project alone we use its own settings.
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CMakeCustom.txt OPTIONAL)
-    include(../CMakeCustom.txt OPTIONAL)
 endif ()
 
 # This is to use the find modules we provide
