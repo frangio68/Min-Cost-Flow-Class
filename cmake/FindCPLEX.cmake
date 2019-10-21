@@ -40,9 +40,7 @@ if (UNIX)
     else ()
         set(CPLEX_LIB_PATH_SUFFIXES
             lib/${CPLEX_ARCH}_sles10_4.1/static_pic
-            lib/${CPLEX_ARCH}_linux/static_pic
-            lib/${CPLEX_ARCH}-64_linux/static_pic
-            )
+            lib/${CPLEX_ARCH}_linux/static_pic)
     endif ()
 
 else ()
