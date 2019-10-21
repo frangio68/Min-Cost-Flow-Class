@@ -40,7 +40,9 @@ if (UNIX)
     else ()
         set(CPLEX_LIB_PATH_SUFFIXES
             lib/${CPLEX_ARCH}_sles10_4.1/static_pic
-            lib/${CPLEX_ARCH}_linux/static_pic)
+            lib/${CPLEX_ARCH}_linux/static_pic
+            lib/${CPLEX_ARCH}-64_linux/static_pic
+            )
     endif ()
 
 else ()
@@ -180,6 +182,8 @@ if (CPLEX_FOUND AND NOT TARGET CPLEX::Cplex)
     if (HAVE_LIBM)
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} m)
     endif ()
+
+    set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
 
     add_library(CPLEX::Cplex STATIC IMPORTED GLOBAL)
     set_target_properties(CPLEX::Cplex PROPERTIES
