@@ -98,17 +98,6 @@ cd build
 cmake ..
 ```
 
-  If you can't or wont install the required libraries, you will need to specify
-  their custom path in the [`CMakeCustom.txt`](CMakeCustom.txt), e.g.:
-```cmake
-...
-# Boost main directory
-set(BOOST_ROOT  "/my/custom/path/to/boost/")
-...
-```
-
-  See [`CMakeCustom.txt`](CMakeCustom.txt) for other ways to customize the configuration of SMS++ projects.
-
 - You can now build the library:
 ```sh
 make
