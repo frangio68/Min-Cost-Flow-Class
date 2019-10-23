@@ -15,11 +15,10 @@ project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 # It requires either a package configuration module (***Config.cmake) or a
 # find module (Find***.cmake), usually provided by libraries.
 
-# If we are configuring from the umbrella project, we assume that the valid
-# settings are there.
-# If we are building this project alone we use its own settings.
-if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    include(CMakeCustom.txt OPTIONAL)
+# We can provide a settings file with -DSETTINGS="filename"
+if ((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND SETTINGS)
+    message(STATUS "Using CMake custom settings in ${SETTINGS}")
+    include(${SETTINGS} OPTIONAL)
 endif ()
 
 # This is to use the find modules we provide
