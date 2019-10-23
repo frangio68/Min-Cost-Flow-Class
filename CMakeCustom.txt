@@ -24,6 +24,7 @@ enable_testing()
 #   - RelWithDebInfo: -O2 -g -DNDEBUG                                         #
 # --------------------------------------------------------------------------- #
 set(CMAKE_BUILD_TYPE "Debug")
+set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Add compilation flags
