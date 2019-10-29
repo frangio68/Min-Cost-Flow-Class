@@ -113,7 +113,7 @@ install(FILES
 # We ship FindCPLEX because CPLEX does not on its own.
 install(FILES
         ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SMS++)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
 
 # ----- Export from the build tree ------------------------------------------ #
 # This is needed so other projects can find the library in a local build.
