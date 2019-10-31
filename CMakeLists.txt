@@ -33,8 +33,7 @@ target_compile_features(MCFClass PUBLIC cxx_std_17)
 target_sources(MCFClass PRIVATE
                MCFSimplex/MCFSimplex.C
                RelaxIV/RelaxIV.C
-               SPTree/SPTree.C
-               )
+               SPTree/SPTree.C)
 
 # Different INSTALL_INTERFACE and BUILD_INTERFACE paths are used when
 # generating the target import file (***Targets.cmake), that must be different
@@ -76,12 +75,17 @@ install(TARGETS MCFClass
 install(FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/MCFClass/MCFClass.h
         ${CMAKE_CURRENT_SOURCE_DIR}/MCFClone/MCFClone.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex/MCFCplex.h
         ${CMAKE_CURRENT_SOURCE_DIR}/MCFSimplex/MCFSimplex.h
         ${CMAKE_CURRENT_SOURCE_DIR}/OPTUtils/OPTUtils.h
         ${CMAKE_CURRENT_SOURCE_DIR}/RelaxIV/RelaxIV.h
         ${CMAKE_CURRENT_SOURCE_DIR}/SPTree/SPTree.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/MCFClass)
+
+if (CPLEX_FOUND)
+    install(FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex/MCFCplex.h
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/MCFClass)
+endif ()
 
 # Install target import file
 install(EXPORT MCFClass-targets
