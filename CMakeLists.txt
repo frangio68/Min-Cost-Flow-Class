@@ -10,17 +10,12 @@ cmake_minimum_required(VERSION 3.8...3.15)
 # TODO: set proper version
 project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
-# ----- Requirements -------------------------------------------------------- #
-# find_package() is used to find libraries and automatically configure them.
-# It requires either a package configuration module (***Config.cmake) or a
-# find module (Find***.cmake), usually provided by libraries.
-
-# We can provide a settings file with -DSETTINGS="filename"
-if ((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME) AND SETTINGS)
-    message(STATUS "Using CMake custom settings in ${SETTINGS}")
-    include(${SETTINGS} OPTIONAL)
+# ----- Settings ------------------------------------------------------------ #
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    enable_testing()
 endif ()
 
+# ----- Requirements -------------------------------------------------------- #
 # This is to use the find modules we provide
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
