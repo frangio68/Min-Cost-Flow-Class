@@ -10,11 +10,6 @@ cmake_minimum_required(VERSION 3.8...3.15)
 # TODO: set proper version
 project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
-# ----- Settings ------------------------------------------------------------ #
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-    enable_testing()
-endif ()
-
 # ----- Requirements -------------------------------------------------------- #
 # This is to use the find modules we provide
 list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -118,8 +113,7 @@ install(FILES
 # This is needed so other projects can find the library in a local build.
 # It does not affect installation.
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_EXPORT_PACKAGE_REGISTRY ON)
+if (CMAKE_EXPORT_PACKAGE_REGISTRY)
 
     export(EXPORT MCFClass-targets
            FILE ${CMAKE_CURRENT_BINARY_DIR}/MCFClassTargets.cmake
