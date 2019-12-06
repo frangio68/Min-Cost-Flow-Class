@@ -6,7 +6,7 @@
 #    Accepts the following HINT:                                              #
 #                                                                             #
 #    - CPLEX_STUDIO_DIR - Custom path to CPLEX Studio                         #
-#
+#                                                                             #
 #    Provides the following imported targets:                                 #
 #                                                                             #
 #    - CPLEX::Cplex - the CPLEX library                                       #
@@ -181,7 +181,10 @@ if (CPLEX_FOUND AND NOT TARGET CPLEX::Cplex)
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} m)
     endif ()
 
-    set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES})
+    if (UNIX)
+        # Required under Linux since 12.8
+        set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
+    endif ()
 
     add_library(CPLEX::Cplex STATIC IMPORTED GLOBAL)
     set_target_properties(CPLEX::Cplex PROPERTIES
