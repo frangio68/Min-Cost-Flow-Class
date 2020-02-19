@@ -38,8 +38,8 @@
 // just change the two lines below and any MCFClass solver can be used
 // (with all-default parameters, which is not necessarily the best way)
 
-#include "MCFSimplex.h"
-#define MCFSOLVER MCFSimplex
+#include "MCFCplex.h"
+#define MCFSOLVER MCFCplex
 
 
 /*--------------------------------------------------------------------------*/
