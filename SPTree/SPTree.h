@@ -7,21 +7,19 @@
  * algorithm can be chosen at compile time by setting a proper switch.
  * Conforms to the standard MCF interface defined in MCFClass.h.
  *
- * \version 1.96
+ * \version 1.97
  *
- * \date 16 - 10 - 2018
+ * \date 27 - 02 - 2020
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1996 - 2018 by Antonio Frangioni.
+ * Copyright &copy 1996 - 2020 by Antonio Frangioni.
  */
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #ifndef _SPTree
@@ -45,7 +43,7 @@
 
 /*------------------------------ SPT_ALGRTM --------------------------------*/
 
-#define SPT_ALGRTM 0
+#define SPT_ALGRTM 4
 
 /**< This macro decides which SPT algorithm has to be used.
    Possible values are:
@@ -151,14 +149,12 @@
    - 1 => all the methods that change the topology of the graph are
           implemented. */
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CLASSES -------------------------------------*/
@@ -687,7 +683,7 @@ class SPTree : public MCFClass
 
  };  // end( class SPTree )
 
-/* @} end( group( SPTREE_CLASSES ) ) */
+/** @} end( group( SPTREE_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -850,9 +846,7 @@ inline MCFClass::Index SPTree::ReadFS( cIndex i , cIndex h )
 
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
- };  // end( namespace MCFClass_di_unipi_it )
-#endif
+};  // end( namespace MCFClass_di_unipi_it )
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

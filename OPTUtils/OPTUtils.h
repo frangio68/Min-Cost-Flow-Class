@@ -13,16 +13,16 @@
  * Additionally, a function is provided for safely reading numbers out of a
  * istream.
  *
- * \version 3.03
+ * \version 3.10
  *
- * \date 25 - 04 - 2017
+ * \date 27 - 02 - 2020
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright(C) 1994 - 2017 by Antonio Frangioni
+ * Copyright(C) 1994 - 2020 by Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -40,14 +40,6 @@
     or program a new version if no value suits you.
     Also, namespaces can be eliminated if they create problems.
     @{ */
-
-/*----------------------- OPT_USE_NAMESPACES -------------------------------*/
-/** Setting OPT_USE_NAMESPACES == 0 should instruct all codes that use
-    OPTUtils stuff to avoid using namespaces; to start with, the common
-    namespace OPTUtils_di_unipi_it, that contains all the types defined
-    herein, is *not* defined. */
-
-#define OPT_USE_NAMESPACES 1
 
 /*---------------------------- OPT_TIMERS ----------------------------------*/
 /** The class OPTtimers is defined below to give an abstract interface to the
@@ -101,7 +93,7 @@
 
 #define OPT_RANDOM 1
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -134,14 +126,12 @@
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace OPTtypes_di_unipi_it
 {
  /** @namespace OPTtypes_di_unipi_it
      The namespace OPTtypes_di_unipi_it is defined to hold all the data
      types, constants, classes and functions defined here. It also
      comprises the namespace std. */
-#endif
 
  using namespace std;  // I know it's not elegant, but ...
 
@@ -257,7 +247,6 @@ class OPTtimers {
 /*--------------------------------------------------------------------------*/
 /*------------------------------ OPTrand() ---------------------------------*/
 /*--------------------------------------------------------------------------*/
-
 /** Provide a common interface to the different random generators that are
     available in different platforms. */
 
@@ -388,7 +377,7 @@ class OPTrand {
   operator T() { return( std::numeric_limits<T>::epsilon() ); }
   };
 
-/* @} end( group( OPTUtils_CLASSES ) ) */
+/** @} end( group( OPTUtils_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
 /*--------------------------- DfltdSfInpt() --------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -437,12 +426,10 @@ inline void DfltdSfInpt( istream *iStrm , T &Param , const T Dflt ,
 
  }  // end( DfltdSfInpt )
 
-/* @} end( group( OPTUtils_FUNCTIONS ) ) */
+/** @} end( group( OPTUtils_FUNCTIONS ) ) */
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
  }  // end( namespace OPTtypes_di_unipi_it )
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

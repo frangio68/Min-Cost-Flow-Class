@@ -6,9 +6,9 @@
  * dual) simplex algorithm. Conforms to the standard MCF interface defined in
  * MCFClass.h.
  *
- * \Version 1.20
+ * \Version 1.21
  *
- * \date 16 - 10 - 2018
+ * \date 27 - 02 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Antonio Frangioni \n
@@ -16,12 +16,10 @@
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2008 - 2018 by Alessandro Bertolini, Antonio Frangioni
+ * Copyright &copy 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #ifndef __MCFSimplex
@@ -36,14 +34,12 @@
 #include <iostream>
 #include <fstream>
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------- MACROS ----------------------------------*/
@@ -76,7 +72,7 @@ namespace MCFClass_di_unipi_it
    Thus, with QUADRATICCOST == 0 the solver cannot solve problems with
    quadratic costs, but it does solve problems with linear costs faster. */
 
-/*@}  end( group( MCFCLASS_MACROS ) ) */ 
+/**@}  end( group( MCFCLASS_MACROS ) ) */ 
 
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CLASSES -------------------------------------*/
@@ -1042,10 +1038,7 @@ class MCFSimplex: public MCFClass
     
   };  // end( class MCFSimplex )
 
-/* @} end( group( MCFSimplex_CLASSES ) ) */
-
-#endif  /* MCFSimplex.h included */
-
+/** @} end( group( MCFSimplex_CLASSES ) ) */
 /*-------------------------------------------------------------------------*/
 /*-------------------inline methods implementation-------------------------*/
 /*-------------------------------------------------------------------------*/
@@ -1139,12 +1132,12 @@ inline MCFSimplex::CNumber MCFSimplex::ReductCost( A *a )
 
 /*-------------------------------------------------------------------------*/
  
-#if( OPT_USE_NAMESPACES )
 };  // end( namespace MCFClass_di_unipi_it )
-#endif
 
 /*-------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------*/
+
+#endif  /* MCFSimplex.h included */
 
 /*-------------------------------------------------------------------------*/
 /*---------------------- End File MCFSimplex.h ----------------------------*/

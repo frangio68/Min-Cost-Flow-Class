@@ -11,9 +11,9 @@
  * results don't match, then at least one of the two solvers is incorrect. If
  * the results match, chances are the two solvers are correct.
  *
- * \version 2.01
+ * \version 2.02
  *
- * \date 24 - 04 - 2017
+ * \date 27 - 02 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -25,9 +25,8 @@
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1996 - 2017 by Antonio Frangioni, Claudio Gentile
+ * Copyright &copy 1996 - 2020 by Antonio Frangioni, Claudio Gentile
  */
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DEFINES -----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -95,30 +94,10 @@
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
- using namespace MCFClass_di_unipi_it;
-#endif
+using namespace MCFClass_di_unipi_it;
 
 /*--------------------------------------------------------------------------*/
-
-/*!!
-template<class T>
-static inline T min( const T x , const T y )
-{
- return( x <= y ? x : y );
- }
-!!*/
-
-/*--------------------------------------------------------------------------*/
-
-/*!!
-template<class T>
-static inline T max( const T x , const T y )
-{
- return( x >= y ? x : y );
- }
-!!*/
-
+/*------------------------------ FUNCTIONS ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 template<class T>

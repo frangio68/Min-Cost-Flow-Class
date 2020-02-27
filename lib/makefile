@@ -44,8 +44,8 @@ include $(MCFClDIR)makefile
 #include $(MCFC2DIR)makefile
 
 # MCFClone
-MCFCeDIR = $(libMCFClDIR)MCFClone/
-include $(MCFCeDIR)makefile
+#MCFCeDIR = $(libMCFClDIR)MCFClone/
+#include $(MCFCeDIR)makefile
 
 # MCFCplex
 #MCFCxDIR = $(libMCFClDIR)MCFCplex/

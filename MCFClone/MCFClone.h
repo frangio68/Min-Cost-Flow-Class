@@ -7,22 +7,19 @@
  * class Slave (both deriving from MCFClass), that does whatever Master does
  * but also does whatever Slave does. The output is that of Master.
  *
- * \version 2.01
+ * \version 2.02
  *
- * \date 16 - 10 - 2018
+ * \date 27 - 02 - 2020
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright(C) 1992 - 2018 Antonio Frangioni
+ * Copyright(C) 1992 - 2020 Antonio Frangioni
  */
-
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #ifndef __MCFClone
@@ -38,11 +35,9 @@
 /*------------------------- NAMESPACE and USING ----------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
  using namespace OPTtypes_di_unipi_it;
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFClone --------------------------------*/
@@ -289,9 +284,7 @@ class MCFClone : public Master {
 
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
- };  // end( namespace MCFClass_di_unipi_it )
-#endif
+};  // end( namespace MCFClass_di_unipi_it )
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

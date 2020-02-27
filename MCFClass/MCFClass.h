@@ -6,9 +6,9 @@
  * interface for (linear or convex quadratic separable) Min Cost Flow Problem
  * solvers, to be implemented as derived classes.
  *
- * \version 3.06
+ * \version 3.07
  *
- * \date 16 - 10 - 2018
+ * \date 27 - 02 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -24,7 +24,7 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2018 by Antonio Frangioni, Claudio Gentile
+ * Copyright &copy 1996 - 2020 by Antonio Frangioni, Claudio Gentile
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -44,17 +44,16 @@
     @{ */
 
 /*-------------------------------- USENAME0 --------------------------------*/
+/** Decides if 0 or 1 is the "name" of the first node.
+ * If USENAME0 == 1, (warning: it has to be *exactly* 1), then the node
+ * names go from 0 to n - 1, otherwise from 1 to n. Note that this does not
+ * affect the position of the deficit in the deficit vectors, i.e., the
+ * deficit of the i-th node - be its "name" `i' or `i - 1' - is always in
+ * the i-th position of the vector. */
 
 #define USENAME0 0
 
-/**< Decides if 0 or 1 is the "name" of the first node.
-   If USENAME0 == 1, (warning: it has to be *exactly* 1), then the node
-   names go from 0 to n - 1, otherwise from 1 to n. Note that this does not
-   affect the position of the deficit in the deficit vectors, i.e., the
-   deficit of the i-th node - be its "name" `i' or `i - 1' - is always in
-   the i-th position of the vector. */
-
-/*@}  end( group( MCFCLASS_MACROS ) ) */ 
+/**@}  end( group( MCFCLASS_MACROS ) ) */ 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -62,9 +61,7 @@
 #include "OPTUtils.h"
 
 /* OPTUtils.h defines standard interfaces for timing and random routines, as
-   well as the namespace OPTtypes_di_unipi_it and the macro
-   OPT_USE_NAMESPACES, useful for switching off all namespaces in one blow
-   for those strange cases where they create problems. */
+   well as the namespace OPTtypes_di_unipi_it. */
 
 #include <iomanip>
 #include <sstream>
@@ -74,7 +71,6 @@
 /*------------------------- NAMESPACE and USING ----------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
  /** @namespace MCFClass_di_unipi_it
@@ -83,9 +79,7 @@ namespace MCFClass_di_unipi_it
      OPTtypes_di_unipi_it. */
 
  using namespace OPTtypes_di_unipi_it;
-#endif
 
-/*@}  end( group( MCFCLASS_CONSTANTS ) ) */
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFClass --------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -114,13 +108,15 @@ namespace MCFClass_di_unipi_it
                                 Q[ i , j ] X[ i, j ]^2 / 2
     \f]
     \f[
-     (1) \sum_{ (j, i) \in A } X[ j , i ] -
-         \sum_{ (i, j) \in A } X[ i , j ] = b[ i ]
-         \hspace{1cm} i \in N
+      \sum_{ (j, i) \in A } X[ j , i ] -
+      \sum_{ (i, j) \in A } X[ i , j ] = b[ i ]
+      \hspace{1cm} i \in N
+      \hspace{1cm} (1)
     \f]
     \f[
-     (2) 0 \leq X[ i , j ] \leq U[ i , j ]
-         \hspace{1cm} (i, j) \in A
+      0 \leq X[ i , j ] \leq U[ i , j ]
+      \hspace{1cm} (i, j) \in A
+      \hspace{1cm} (2)
     \f]
     The n equations (1) are the flow conservation constraints and the 2m
     inequalities (2) are the flow nonnegativity and capacity constraints.
@@ -140,21 +136,21 @@ namespace MCFClass_di_unipi_it
           \sum_{ (i, j) \in AQ } V[ i , j ]^2 / ( 2 * Q[ i , j ] )
     \f]
     \f[
-     (3.a) C[ i , j ] - Pi[ j ] + Pi[ i ] + W[ i , j ] - Z[ i , j ] = 0
-           \hspace{1cm} (i, j) \in AL
+      C[ i , j ] - Pi[ j ] + Pi[ i ] + W[ i , j ] - Z[ i , j ] = 0
+      \hspace{1cm} (i, j) \in AL
+      \hspace{1cm} (3.a)
     \f]
     \f[
-     (3.b) C[ i , j ] - Pi[ j ] + Pi[ i ] + W[ i , j ] - Z[ i , j ] =
-           V[ i , j ]
-           \hspace{1cm} (i, j) \in AQ
+     C[ i , j ] - Pi[ j ] + Pi[ i ] + W[ i , j ] - Z[ i , j ] = V[ i , j ]
+     \hspace{1cm} (i, j) \in AQ
+     \hspace{1cm} (3.b)
     \f]
     \f[
-     (4.a) W[ i , j ] \geq 0 \hspace{1cm} (i, j) \in A
+     W[ i , j ] \geq 0 \hspace{1cm} (i, j) \in A  \hspace{1cm} (4.a) 
     \f]
     \f[
-     (4.b) Z[ i , j ] \geq 0 \hspace{1cm} (i, j) \in A
+     Z[ i , j ] \geq 0 \hspace{1cm} (i, j) \in A  \hspace{1cm} (4.b) 
     \f]
-
     Pi[] is said the vector of node potentials for the problem, W[] are
     bound variables and Z[] are slack variables. Given Pi[], the quantities
     \f[
@@ -351,7 +347,7 @@ class MCFClass {
 
  typedef MCFState *MCFStatePtr;  ///< pointer to a MCFState
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*--------------------------- PUBLIC METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
@@ -359,26 +355,7 @@ class MCFClass {
 /** @name Constructors
     @{ */
 
-   MCFClass( cIndex nmx = 0 , cIndex mmx = 0 )
-   {
-    nmax = nmx;
-    mmax = mmx;
-    n = m = 0;
-
-    status = kUnSolved;
-    Senstv = true;
-
-    EpsFlw = Eps<FNumber>() * 100;
-    EpsCst = Eps<CNumber>() * 100;
-    EpsDfct = EpsFlw * ( nmax ? nmax : 100 );
-
-    MaxTime = 0;
-    MaxIter = 0;
-
-    MCFt = 0;
-    }
-
-/**< Constructor of the class.
+/** Constructor of the class.
 
    nmx and mmx, if provided, are taken to be respectively the maximum number 
    of nodes and arcs in the network. If nonzero values are passed, memory
@@ -396,24 +373,41 @@ class MCFClass {
    set to 0 in the constructor precisely to indicate that no instance is
    currently loaded. */
 
-/*@} -----------------------------------------------------------------------*/
+ MCFClass( cIndex nmx = 0 , cIndex mmx = 0 )
+ {
+  nmax = nmx;
+  mmax = mmx;
+  n = m = 0;
+
+  status = kUnSolved;
+  Senstv = true;
+
+  EpsFlw = Eps<FNumber>() * 100;
+  EpsCst = Eps<CNumber>() * 100;
+  EpsDfct = EpsFlw * ( nmax ? nmax : 100 );
+
+  MaxTime = 0;
+  MaxIter = 0;
+
+  MCFt = 0;
+  }
+
+
+/**@} ----------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Other initializations
     @{ */
 
-   virtual void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-                         cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
-                         cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
-                         cIndex_Set pEn = 0 ) = 0;
+/// inputs a new network from memory
+/** Inputs a new network from memory
 
-/**< Inputs a new network.
- 
    The parameters nmx and mmx are the new max number of nodes and arcs,
    possibly overriding those set in the constructor [see above], altough at
    the likely cost of memory allocation and deallocation. Passing nmx == 
    mmx == 0 is intended as a signal to the solver to deallocate everything
-   and wait for new orders; in this case, all the other parameters are ignored.
+   and wait for new orders; in this case, all the other parameters are
+   ignored.
 
    Otherwise, in principle all the other parameters have to be provided.
    Actually, some of them may not be needed for special classes of MCF
@@ -466,27 +460,30 @@ class MCFClass {
    coefficients of the second-order terms in the objective function are
    assumed to be zero. */
 
+ virtual void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
+		       cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
+		       cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
+		       cIndex_Set pEn = 0 ) = 0;
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void LoadDMX( istream &DMXs , bool IsQuad = false );
-
-/**< Read a MCF instance in DIMACS standard format from the istream. The
+/// read a MCF instance from a stream
+/** Read a MCF instance in DIMACS standard format from the istream. The
    format is the following. The first line must be
 
-      p min <number of nodes> <number of arcs>
+      p min  number_of_nodes  number_of_arcs
 
    Then the node definition lines must be found, in the form
 
-      n <node number> <node supply>
+      n  node_number  node_supply
 
    Not all nodes need have a node definition line; these are given zero
-   supply, i.e., they are transhipment nodes (supplies are the inverse of
+   supply, i.e., they are transhipment nodes (supplies are the opposite of
    deficits, i.e., a node with positive supply is a source node). Finally,
    the arc definition lines must be found, in the form
 
-      a <start node> <end node> <lower bound> <upper bound> <flow cost>
+      a  start_node  end_node  lower_bound  upper_bound  flow_cost
 
-   There must be exactly <number of arcs> arc definition lines in the file.
+   There must be exactly number_of_arcs arc definition lines in the file.
 
    This method is *not* pure virtual because an implementation is provided by
    the base class, using the LoadNet() method (which *is* pure virtual).
@@ -506,11 +503,11 @@ class MCFClass {
          istream is assumed to be quadratic Dimacs file if IsQuad is true,
          and a regular linear Dimacs file otherwise. */
 
+ virtual inline void LoadDMX( istream &DMXs , bool IsQuad = false );
+
 /*--------------------------------------------------------------------------*/
-
-   virtual void PreProcess( void ) {}
-
-/**< Extract a smaller/easier equivalent MCF problem. The data of the instance
+/// pre-process the instamce
+/** Extract a smaller/easier equivalent MCF problem. The data of the instance
    is changed and the easier one is solved instead of the original one. In the
    MCF case, preprocessing may involve reducing bounds, identifying
    disconnected components of the graph etc. However, proprocessing is
@@ -528,11 +525,11 @@ class MCFClass {
    A valid preprocessing is doing nothing, and that's what the default
    implementation of this method (that is *not* pure virtual) does. */
 
+ virtual void PreProcess( void ) {}
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void SetPar( int par , int val );
-
-/**< Set integer parameters of the algorithm.
+/// set integer parameters of the algorithm
+/** Set integer parameters of the algorithm.
 
    @param par   is the parameter to be set; the enum MCFParam can be used, but
                 'par' is an int (every enum is an int) so that the method can
@@ -548,20 +545,20 @@ class MCFClass {
 
    - kReopt:   tells the solver if it has to reoptimize. The implementation in
                the base class sets a flag, the protected \c bool field \c
-               Senstv; if true (default) this field instructs the MCF solver to
-               to try to exploit the information about the latest optimal
+               Senstv; if true (default) this field instructs the MCF solver
+	       to try to exploit the information about the latest optimal
 	       solution to speedup the optimization of the current problem,
 	       while if the field is false the MCF solver should restart the
-	       optimization "from scratch" discarding any previous information.
-	       Usually reoptimization speeds up the computation considerably,
-	       but this is not always true, especially if the data of the
-	       problem changes a lot.*/
+	       optimization "from scratch" discarding any previous
+	       information. Usually reoptimization speeds up the computation
+	       considerably, but this is not always true, especially if the
+	       data of the problem changes a lot.*/
+
+ virtual inline void SetPar( int par , int val );
 
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void SetPar( int par , double val );
-
-/**< Set float parameters of the algorithm.
+/// set float parameters of the algorithm.
+/** Set float parameters of the algorithm.
 
    @param par   is the parameter to be set; the enum MCFParam can be used, but
                 'par' is an int (every enum is an int) so that the method can
@@ -572,20 +569,20 @@ class MCFClass {
 
    The base class implementation handles these parameters: 
 
-   - kEpsFlw:  sets the tolerance for controlling if the flow on an arc is zero 
-               to val. This also sets the tolerance for controlling if a node
-	       deficit is zero (see kEpsDfct) to val * < max number of nodes >;
+   - kEpsFlw:  sets the tolerance for controlling if the flow on an arc is
+               zero. This also sets the tolerance for controlling if a node
+	       deficit is zero (see kEpsDfct) to val * max_number_of_nodes;
 	       this value should be safe for graphs in which any node has less
-	       than < max number of nodes > adjacent nodes, i.e., for all graphs
+	       than max_number_of_nodes adjacent nodes, i.e., for all graphs
 	       but for very dense ones with "parallel arcs"
 
-   - kEpsDfct: sets the tolerance for controlling if a node deficit is zero to 
-               val, in case a better value than that autmatically set by
+   - kEpsDfct: sets the tolerance for controlling if a node deficit is zero,
+               in case a better value than that autmatically set by
                kEpsFlw (see above) is available (e.g., val * k would be good
 	       if no node has more than k neighbours)
 
-   - kEpsCst:  sets the tolerance for controlling if the reduced cost of an arc
-               is zero to val. A feasible solution satisfying eps-complementary
+   - kEpsCst:  sets the tolerance for controlling if the reduced cost of an
+               arc is zero. A feasible solution satisfying eps-complementary
                slackness, i.e., such that
                \f[
                 RC[ i , j ] < - eps \Rightarrow X[ i , j ] = U[ ij ]
@@ -597,20 +594,13 @@ class MCFClass {
                is known to be ( eps * n )-optimal.
 
    - kMaxTime: sets the max time (in seconds) in which the MCF Solver can find
-               an optimal solution  (default 0, which means no limit). */
+               an optimal solution (default 0, which means no limit). */
+
+ virtual inline void SetPar( int par , double val );
 
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void GetPar( int par , int &val ) const
-   {
-    switch( par ) {
-     case( kMaxIter ): val = MaxIter; break;
-     case( kReopt ):   val = Senstv ? kYes : kNo; break;
-     default: throw( MCFException( "GetPar: unknown parameter" ) );
-     }
-    }
-
-/**< This method returns one of the integer parameter of the algorithm.
+/// returns one of the integer parameter of the algorithm
+/** This method returns one of the integer parameter of the algorithm.
 
    @param par  is the parameter to return [see SetPar( int ) for comments];
 
@@ -619,20 +609,18 @@ class MCFClass {
    The base class implementation handles the parameters kMaxIter and kReopt.
    */
 
+ virtual inline void GetPar( int par , int &val ) const
+ {
+  switch( par ) {
+   case( kMaxIter ): val = MaxIter; break;
+   case( kReopt ):   val = Senstv ? kYes : kNo; break;
+   default: throw( MCFException( "GetPar: unknown parameter" ) );
+   }
+  }
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void GetPar( int par , double &val ) const
-   {
-    switch( par ) {
-     case( kEpsFlw ):  val = double( EpsFlw ); break;
-     case( kEpsDfct ): val = double( EpsDfct ); break;
-     case( kEpsCst ):  val = double( EpsCst ); break;
-     case( kMaxTime ): val = MaxTime; break;
-     default: throw( MCFException( "GetPar: unknown parameter" ) );
-     }
-    }
-
-/**< This method returns one of the integer parameter of the algorithm.
+/// returns one of the integer parameter of the algorithm
+/** This method returns one of the integer parameter of the algorithm.
 
    @param par  is the parameter to return [see SetPar( double ) for comments];
 
@@ -641,22 +629,20 @@ class MCFClass {
    The base class implementation handles the parameters kEpsFlw, kEpsDfct,
    kEpsCst, and kMaxTime. */
 
+ virtual inline void GetPar( int par , double &val ) const
+ {
+  switch( par ) {
+   case( kEpsFlw ):  val = double( EpsFlw ); break;
+   case( kEpsDfct ): val = double( EpsDfct ); break;
+   case( kEpsCst ):  val = double( EpsCst ); break;
+   case( kMaxTime ): val = MaxTime; break;
+   default: throw( MCFException( "GetPar: unknown parameter" ) );
+   }
+  }
+
 /*--------------------------------------------------------------------------*/
-
-   virtual void SetMCFTime( bool TimeIt = true )
-   {
-    if( TimeIt )
-     if( MCFt )
-      MCFt->ReSet();
-     else
-      MCFt = new OPTtimers();
-    else {
-     delete MCFt;
-     MCFt = 0;
-     }
-    }
-
-/**< Allocate an OPTtimers object [see OPTtypes.h] to be used for timing the
+/// set the timer of the code
+/** Allocate an OPTtimers object [see OPTtypes.h] to be used for timing the
    methods of the class. The time can be read with TimeMCF() [see below]. By
    default, or if SetMCFTime( false ) is called, no timing is done. Note that,
    since all the relevant methods ot the class are pure virtual, MCFClass can
@@ -669,26 +655,35 @@ class MCFClass {
    @note of course, setting kMaxTime [see SetPar() above] to any nonzero
          value has no effect unless SetMCFTime( true ) has been called. */
 
-/*@} -----------------------------------------------------------------------*/
+ virtual void SetMCFTime( bool TimeIt = true )
+ {
+  if( TimeIt )
+   if( MCFt )
+    MCFt->ReSet();
+   else
+    MCFt = new OPTtimers();
+  else {
+   delete MCFt;
+   MCFt = 0;
+   }
+  }
+
+/**@} ----------------------------------------------------------------------*/
 /*---------------------- METHODS FOR SOLVING THE PROBLEM -------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Solving the problem
     @{ */
 
-   virtual void SolveMCF( void ) = 0;
+/// solve the problem
+/** Solver of the Min Cost Flow Problem. Attempts to solve the MCF instance
+    currently loaded in the object. */
 
-/**< Solver of the Min Cost Flow Problem. Attempts to solve the MCF instance
-   currently loaded in the object. */
+ virtual void SolveMCF( void ) = 0;
 
 /*--------------------------------------------------------------------------*/
-
-   inline int MCFGetStatus( void )
-   {
-    return( status );
-    }
-
-/**< Returns an int describing the current status of the MCF solver. Possible
-   return values are:
+/// returns the solution status
+/** Returns an int describing the current status of the MCF solver. Possible
+    return values are:
 
    - kUnSolved    SolveMCF() has not been called yet, or the data of the
                   problem has been changed since the last call;
@@ -721,128 +716,115 @@ class MCFClass {
    method, in order to allow the derived classes to extend the set of return
    values if they need to do so. */
 
-/*@} -----------------------------------------------------------------------*/
+ int MCFGetStatus( void ) { return( status ); }
+
+/**@} ----------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Reading flow solution
     @{ */
 
-   virtual void MCFGetX( FRow F ,  Index_Set nms = 0 ,
-                         cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+/// write the optimal flow solution in a vector
+/** Write the optimal flow solution in the vector F[]. If nms == 0, F[]
+    will be in "dense" format, i.e., the flow relative to arc `i'
+    (i in 0 .. m - 1) is written in F[ i ]. If nms != 0, F[] will be in 
+    "sparse" format, i.e., the indices of the nonzero elements in the flow
+    solution are written in nms (that is then Inf<Index>()-terminated) and
+    the flow value of arc nms[ i ] is written in F[ i ]. Note that nms is
+    *not* guaranteed to be ordered. Also, note that, unlike MCFGetRC() and
+    MCFGetPi() [see below], nms is an *output* of the method.
 
-/**< Write the optimal flow solution in the vector F[]. If nms == 0, F[]
-   will be in "dense" format, i.e., the flow relative to arc `i'
-   (i in 0 .. m - 1) is written in F[ i ]. If nms != 0, F[] will be in 
-   "sparse" format, i.e., the indices of the nonzero elements in the flow
-   solution are written in nms (that is then Inf<Index>()-terminated) and
-   the flow value of arc nms[ i ] is written in F[ i ]. Note that nms is
-   *not* guaranteed to be ordered. Also, note that, unlike MCFGetRC() and
-   MCFGetPi() [see below], nms is an *output* of the method.
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). */
 
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cFRow MCFGetX( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal data structure containing the
-   flow solution in "dense" format. Since this may *not always be available*,
-   depending on the implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
+ virtual void MCFGetX( FRow F ,  Index_Set nms = 0 ,
+		       cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the flow solution
+/** Return a read-only pointer to an internal data structure containing the
+    flow solution in "dense" format. Since this may *not always be available*,
+    depending on the implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
 
-   virtual bool HaveNewX( void )
-   {
-    return( false );
-    }
+ virtual cFRow MCFGetX( void ) { return( 0 ); }
 
-/**< Return true if a different (approximately) optimal primal solution is
-   available. If the method returns true, then any subsequent call to (any
-   form of) MCFGetX() will return a different primal solution w.r.t. the one
-   that was being returned *before* the call to HaveNewX(). This solution need
-   not be optimal (although, ideally, it has to be "good); this can be checked
-   by comparing its objective function value, that will be returned by a call
-   to MCFGetFO() [see below].
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// tells if a different flow solution is available
+/** Return true if a different (approximately) optimal primal solution is
+    available. If the method returns true, then any subsequent call to (any
+    form of) MCFGetX() will return a different primal solution w.r.t. the one
+    that was being returned *before* the call to HaveNewX(). This solution
+    need not be optimal (although, ideally, it has to be "good); this can be
+    checked by comparing its objective function value, that will be returned
+    by a call to MCFGetFO().
 
-   Any subsequent call of HaveNewX() that returns true produces a new
-   solution, until the first that returns false; from then on, no new
-   solutions will be generated until something changes in the problem's
-   data.
+    Any subsequent call of HaveNewX() that returns true produces a new
+    solution, until the first that returns false; from then on, no new
+    solutions will be generated until something changes in the problem's
+    data.
 
-   Note that a default implementation of HaveNewX() is provided which is
-   good for those solvers that only produce one optimal primal solution. */
+    Note that a default implementation of HaveNewX() is provided which is
+    good for those solvers that only produce one optimal primal solution. */
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Reading potentials
+ virtual bool HaveNewX( void ) { return( false ); }
+
+/**@} ----------------------------------------------------------------------*/
+/** @name Reading the dual solution
     @{ */
 
-   virtual void MCFGetPi( CRow P ,  cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+/// writes the optimal node potentials in a vector
+/** Writes the optimal node potentials in the vector P[]. If nms == 0,
+    the node potential of node `i' (i in 0 .. n - 1) is written in P[ i ]
+    (note that here node names always start from zero, regardless to the value
+    of USENAME0). If nms != 0, it must point to a vector of indices in
+    0 .. n - 1 (ordered in increasing sense and Inf<Index>()-terminated), and
+    the node potential of nms[ i ] is written in P[ i ]. Note that, unlike
+    MCFGetX() above, nms is an *input* of the method.
 
-/**< Writes the optimal node potentials in the vector P[]. If nms == 0,
-   the node potential of node `i' (i in 0 .. n - 1) is written in P[ i ]
-   (note that here node names always start from zero, regardless to the value
-   of USENAME0). If nms != 0, it must point to a vector of indices in
-   0 .. n - 1 (ordered in increasing sense and Inf<Index>()-terminated), and
-   the node potential of nms[ i ] is written in P[ i ]. Note that, unlike
-   MCFGetX() above, nms is an *input* of the method.
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the nodes `i' with strt <= i < min( MCFn() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to nodes which are *both* in nms[] and whose index is
+    in the correct range are returned. */
 
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the nodes `i' with strt <= i < min( MCFn() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to nodes which are *both* in nms[] and whose index is
-   in the correct range are returned. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cCRow MCFGetPi( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal data structure containing the
-   node potentials. Since this may *not always be available*, depending on
-   the implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
+ virtual void MCFGetPi( CRow P ,  cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the node potentials
+/** Return a read-only pointer to an internal data structure containing the
+    node potentials. Since this may *not always be available*, depending on
+    the implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
 
-   virtual bool HaveNewPi( void )
-   {
-    return( false );
-    }
+ virtual cCRow MCFGetPi( void ) { return( 0 ); }
 
-/**< Return true if a different (approximately) optimal dual solution is
-   available. If the method returns true, then any subsequent call to (any
-   form of) MCFGetPi() will return a different dual solution, and MCFGetRC()
-   [see below] will return the corresponding reduced costs. The new solution
-   need not be optimal (although, ideally, it has to be "good); this can be
-   checked by comparing its objective function value, that will be returned
-   by a call to MCFGetDFO() [see below].
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// tells if a different dual solution is available
+/** Return true if a different (approximately) optimal dual solution is
+    available. If the method returns true, then any subsequent call to (any
+    form of) MCFGetPi() will return a different dual solution, and MCFGetRC()
+    [see below] will return the corresponding reduced costs. The new solution
+    need not be optimal (although, ideally, it has to be "good); this can be
+    checked by comparing its objective function value, that will be returned
+    by a call to MCFGetDFO() [see below].
 
-   Any subsequent call of HaveNewPi() that returns true produces a new
-   solution, until the first that returns false; from then on, no new
-   solutions will be generated until something changes in the problem's
-   data.
+    Any subsequent call of HaveNewPi() that returns true produces a new
+    solution, until the first that returns false; from then on, no new
+    solutions will be generated until something changes in the problem's
+    data.
 
-   Note that a default implementation of HaveNewPi() is provided which is
-   good for those solvers that only produce one optimal dual solution. */
+    Note that a default implementation of HaveNewPi() is provided which is
+    good for those solvers that only produce one optimal dual solution. */
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Reading reduced costs
-    @{ */
+ virtual bool HaveNewPi( void ) { return( false ); }
 
-   virtual void MCFGetRC(  CRow CR ,  cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
-
-/**< Write the reduced costs corresponding to the current dual solution in
+/*--------------------------------------------------------------------------*/
+/// write the reduced costs in a vector
+/** Write the reduced costs corresponding to the current dual solution in
    RC[]. If nms == 0, the reduced cost of arc `i' (i in 0 .. m - 1) is
    written in RC[ i ]; if nms != 0, it must point to a vector of indices
    in 0 .. m - 1 (ordered in increasing sense and Inf<Index>()-terminated),
@@ -858,85 +840,81 @@ class MCFClass {
    @note the output of MCFGetRC() will change after any call to HaveNewPi()
          [see above] which returns true. */
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cCRow MCFGetRC( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal data structure containing the
-   reduced costs. Since this may *not always be available*, depending on the
-   implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method.
-
-   @note the output of MCFGetRC() will change after any call to HaveNewPi()
-         [see above] which returns true. */
+ virtual void MCFGetRC(  CRow CR ,  cIndex_Set nms = 0 ,
+			 cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to an the reduced costs 
+/** Return a read-only pointer to an internal data structure containing the
+    reduced costs. Since this may *not always be available*, depending on the
+    implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method.
 
-   virtual CNumber MCFGetRC( cIndex i ) = 0;
+    @note the output of MCFGetRC() will change after any call to HaveNewPi()
+          which returns true. */
 
-/**< Return the reduced cost of the i-th arc. This information should be
-   cheapily available in most implementations.
+ virtual cCRow MCFGetRC( void ) { return( 0 ); }
 
-   @note the output of MCFGetRC() will change after any call to HaveNewPi()
-         [see above] which returns true. */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the reduced cost of the i-th arc
+/** Return the reduced cost of the i-th arc. This information should be
+    cheapily available in most implementations.
 
-/*@} -----------------------------------------------------------------------*/
+    @note the output of MCFGetRC() will change after any call to HaveNewPi()
+          which returns true. */
+
+ virtual CNumber MCFGetRC( cIndex i ) = 0;
+
+/**@} ----------------------------------------------------------------------*/
 /** @name Reading the objective function value
    @{ */
 
-   virtual FONumber MCFGetFO( void ) = 0;
-
-/**< Return the objective function value of the primal solution currently
-   returned by MCFGetX().
+/// return the objective function value of the primal solution
+/** Return the objective function value of the primal solution currently
+    returned by MCFGetX().
    
-   If MCFGetStatus() == kOK, this is guaranteed to be the optimal objective
-   function value of the problem (to within the optimality tolerances), but
-   only prior to any call to HaveNewX() that returns true. MCFGetFO()
-   typically returns Inf<FONumber>() if MCFGetStatus() == kUnfeasible and
-   - Inf<FONumber>() if MCFGetStatus() == kUnbounded. If MCFGetStatus() ==
-   kStopped and MCFGetFO() returns a finite value, it must be an upper bound
-   on the optimal objective function value (typically, the objective function
-   value of one primal feasible solution). */
+    If MCFGetStatus() == kOK, this is guaranteed to be the optimal objective
+    function value of the problem (to within the optimality tolerances), but
+    only prior to any call to HaveNewX() that returns true. MCFGetFO()
+    typically returns Inf<FONumber>() if MCFGetStatus() == kUnfeasible and
+    - Inf<FONumber>() if MCFGetStatus() == kUnbounded. If MCFGetStatus() ==
+    kStopped and MCFGetFO() returns a finite value, it must be an upper bound
+    on the optimal objective function value (typically, the objective function
+    value of one primal feasible solution). */
+
+ virtual FONumber MCFGetFO( void ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the objective function value of the dual solution
+/** Return the objective function value of the dual solution currently
+    returned by MCFGetPi() / MCFGetRC(). This value (possibly) changes after
+    any call to HaveNewPi() that returns true. The relations between
+    MCFGetStatus() and MCFGetDFO() are analogous to these of MCFGetFO(),
+    except that a finite value corresponding to kStopped must be a lower
+    bound on the optimal objective function value (typically, the objective
+    function value one dual feasible solution).
 
-   virtual FONumber MCFGetDFO( void )
-   {
-    switch( MCFGetStatus() ) {
-     case( kUnSolved ):
-     case( kStopped ):
-     case( kError ):    return( -Inf<FONumber>() );
-     default:           return( MCFGetFO() );
-     }
-    }
+    A default implementation is provided for MCFGetDFO(), which is good for
+    MCF solvers where the primal and dual optimal solution values always
+    are identical (except if the problem is unfeasible/unbounded). */
 
-/**< Return the objective function value of the dual solution currently
-   returned by MCFGetPi() / MCFGetRC(). This value (possibly) changes after
-   any call to HaveNewPi() that returns true. The relations between
-   MCFGetStatus() and MCFGetDFO() are analogous to these of MCFGetFO(),
-   except that a finite value corresponding to kStopped must be a lower
-   bound on the optimal objective function value (typically, the objective
-   function value one dual feasible solution).
+ virtual FONumber MCFGetDFO( void )
+ {
+  switch( MCFGetStatus() ) {
+   case( kUnSolved ):
+   case( kStopped ):
+   case( kError ):    return( -Inf<FONumber>() );
+   default:           return( MCFGetFO() );
+   }
+  }
 
-   A default implementation is provided for MCFGetDFO(), which is good for
-   MCF solvers where the primal and dual optimal solution values always
-   are identical (except if the problem is unfeasible/unbounded). */
+/**@} ----------------------------------------------------------------------*/
+/** @name Getting unfeasibility / unboundedness certificates
+    @{ */
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Getting unfeasibility certificate
-   @{ */
-
-   virtual FNumber MCFGetUnfCut( Index_Set Cut )
-   {
-    *Cut = Inf<Index>();
-    return( 0 );
-    }
-
-/**< Return an unfeasibility certificate. In an unfeasible MCF problem,
+/// return an unfeasibility certificate
+/** Return an unfeasibility certificate. In an unfeasible MCF problem,
    unfeasibility can always be reduced to the existence of a cut (subset of
    nodes of the graph) such as either:
 
@@ -966,475 +944,439 @@ class MCFClass {
    information; thus, returning 0 (no cut) is allowed, as in the base class
    implementation, to signify that this information is not available. */
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Getting unboundedness certificate
-   @{ */
+ virtual FNumber MCFGetUnfCut( Index_Set Cut )
+ {
+  *Cut = Inf<Index>();
+  return( 0 );
+  }
 
-   virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
-   {
-    return( Inf<Index>() );
-    }
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return an unboundedness certificate
+/** Return an unboundedness certificate. In an unbounded MCF problem,
+    unboundedness can always be reduced to the existence of a directed cycle
+    with negative cost and all arcs having infinite capacity.
+    When detecting unboundedness, MCF solvers are typically capable to provide
+    one such cycle. This information can be useful, and this method is
+    provided for getting it. It can be called only if MCFGetStatus() ==
+    kUnbounded, and writes in Pred[] and ArcPred[], respectively, the node
+    and arc predecessor function of the cycle. That is, if node `i' belongs
+    to the cycle then `Pred[ i ]' contains the name of the predecessor of `j'
+    of `i' in the cycle (note that node names depend on USENAME0), and
+    `ArcPred[ i ]' contains the index of the arc joining the two (note that
+    in general there may be multiple copies of each arc). Entries of the
+    vectors for nodes not belonging to the cycle are in principle undefined,
+    and the name of one node belonging to the cycle is returned by the method.
+    Note that if there are multiple cycles with negative costs this method
+    will return just one of them (finding the cycle with most negative cost
+    is an NP-hard problem), although solvers should be able to produce cycles
+    with "large negative" cost.
 
-/**< Return an unboundedness certificate. In an unbounded MCF problem,
-   unboundedness can always be reduced to the existence of a directed cycle
-   with negative cost and all arcs having infinite capacity.
-   When detecting unboundedness, MCF solvers are typically capable to provide
-   one such cycle. This information can be useful, and this method is provided
-   for getting it. It can be called only if MCFGetStatus() == kUnbounded, and
-   writes in Pred[] and ArcPred[], respectively, the node and arc predecessor
-   function of the cycle. That is, if node `i' belongs to the cycle then
-   `Pred[ i ]' contains the name of the predecessor of `j' of `i' in the cycle
-   (note that node names depend on USENAME0), and `ArcPred[ i ]' contains the
-   index of the arc joining the two (note that in general there may be
-   multiple copies of each arc). Entries of the vectors for nodes not
-   belonging to the cycle are in principle undefined, and the name of one node
-   belonging to the cycle is returned by the method. 
-   Note that if there are multiple cycles with negative costs this method
-   will return just one of them (finding the cycle with most negative cost
-   is an NO-hard problem), although solvers should be able to produce cycles
-   with "large negative" cost.
+    However, not all solvers may be (easily) capable of providing this
+    information; thus, returning Inf<Index>() is allowed, as in the base class
+    implementation, to signify that this information is not available. */
 
-   However, not all solvers may be (easily) capable of providing this
-   information; thus, returning Inf<Index>() is allowed, as in the base class
-   implementation, to signify that this information is not available. */
+ virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
+ {
+  return( Inf<Index>() );
+  }
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /** @name Saving/restoring the state of the solver
     @{ */
 
-   virtual MCFStatePtr MCFGetState( void )
-   {
-    return( 0 );
-    }
+ /// save the state of the MCF solver
+ /** Save the state of the MCF solver. The MCFClass interface supports the
+     notion of saving and restoring the state of the MCF solver, such as the
+     current/optimal basis in a simplex solver. The "empty" class MCFState is
+     defined as a placeholder for state descriptions.
 
- /**< Save the state of the MCF solver. The MCFClass interface supports the
-   notion of saving and restoring the state of the MCF solver, such as the
-   current/optimal basis in a simplex solver. The "empty" class MCFState is
-   defined as a placeholder for state descriptions.
+     MCFGetState() creates and returns a pointer to an object of (a proper
+     derived class of) class MCFState which describes the current state of the
+     MCF solver. */
 
-   MCFGetState() creates and returns a pointer to an object of (a proper
-   derived class of) class MCFState which describes the current state of the
-   MCF solver. */
+ virtual MCFStatePtr MCFGetState( void ) { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// restore the state of the solver
+/** Restore the solver to the state in which it was when the state `S' was
+    created with MCFGetState() [see above].
 
-   virtual void MCFPutState( MCFStatePtr S ) {}
+    The typical use of this method is the following: a MCF problem is solved
+    and the "optimal state" is set aside. Then the problem changes and it is
+    re-solved. Then, the problem has to be changed again to a form that is
+    close to the original one but rather different from the second one (think
+    of a long backtracking in a Branch & Bound) to which the current "state"
+    referes. Then, the old optimal state can be expected to provide a better
+    starting point for reoptimization [see ReOptimize() below].
 
-/**< Restore the solver to the state in which it was when the state `S' was
-   created with MCFGetState() [see above].
+    Note, however, that the state is only relative to the optimization
+    process, i.e., this operation is meaningless if the data of the problem
+    has changed in the meantime. So, if a state has to be used for speeding up
+    reoptimization, the following has to be done:
 
-   The typical use of this method is the following: a MCF problem is solved
-   and the "optimal state" is set aside. Then the problem changes and it is
-   re-solved. Then, the problem has to be changed again to a form that is
-   close to the original one but rather different from the second one (think
-   of a long backtracking in a Branch & Bound) to which the current "state"
-   referes. Then, the old optimal state can be expected to provide a better
-   starting point for reoptimization [see ReOptimize() below].
+    - first, the data of the solver is brought back to *exactly* the same as
+      it was at the moment where the state `S' was created (prior than this
+      operation a ReOptimize( false ) call is probably advisable);
 
-   Note, however, that the state is only relative to the optimization process,
-   i.e., this operation is meaningless if the data of the problem has changed
-   in the meantime. So, if a state has to be used for speeding up
-   reoptimization, the following has to be done:
+    - then, MCFPutState() is called (and ReOptimize( true ) is called);
 
-   - first, the data of the solver is brought back to *exactly* the same as
-     it was at the moment where the state `S' was created (prior than this
-     operation a ReOptimize( false ) call is probably advisable);
+    - only afterwards the data of the problem is changed to the final state
+      and the problem is solved.
 
-   - then, MCFPutState() is called (and ReOptimize( true ) is called);
+    A "put state" operation does not "deplete" the state, which can therefore
+    be used more than once. Indeed, a state is constructed inside the solver
+    for each call to MCFGetState(), but the solver never deletes statuses;
+    this has to be done on the outside when they are no longer needed (the
+    solver must be "resistent" to deletion of the state at any moment).
 
-   - only afterwards the data of the problem is changed to the final state
-     and the problem is solved.
+    Since not all the MCF solvers reoptimize (efficiently enough to make these
+    operations worth), an "empty" implementation that does nothing is provided
+    by the base class. */
 
-   A "put state" operation does not "deplete" the state, which can therefore
-   be used more than once. Indeed, a state is constructed inside the solver
-   for each call to MCFGetState(), but the solver never deletes statuses;
-   this has to be done on the outside when they are no longer needed (the
-   solver must be "resistent" to deletion of the state at any moment).
+ virtual void MCFPutState( MCFStatePtr S ) {}
 
-   Since not all the MCF solvers reoptimize (efficiently enough to make these
-   operations worth), an "empty" implementation that does nothing is provided
-   by the base class. */
-
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /** @name Time the code
     @{ */
 
-   void TimeMCF( double &t_us , double &t_ss )
-   {
-    t_us = t_ss = 0;
-    if( MCFt )
-     MCFt->Read( t_us , t_ss ); 
-    }
+/// time the code
+/** Time the code. If called within any of the methods of the class that are
+    "actively timed" (this depends on the subclasses), this method returns the
+    user and sistem time (in seconds) since the start of that method. If
+    methods that are actively timed call other methods that are actively
+    timed, TimeMCF() returns the (...) time since the beginning of the
+    *outer* actively timed method. If called outside of any actively timed
+    method, this method returns the (...) time spent in all the previous
+    executions of all the actively timed methods of the class.
 
-/**< Time the code. If called within any of the methods of the class that are
-   "actively timed" (this depends on the subclasses), this method returns the
-   user and sistem time (in seconds) since the start of that method. If
-   methods that are actively timed call other methods that are actively
-   timed, TimeMCF() returns the (...) time since the beginning of the
-   *outer* actively timed method. If called outside of any actively timed
-   method, this method returns the (...) time spent in all the previous
-   executions of all the actively timed methods of the class.
+    Implementing the proper calls to MCFt->Start() and MCFt->Stop() is due to
+    derived classes; these should at least be placed at the beginning and at
+    the end, respectively, of SolveMCF() and presumably the Chg***() methods,
+    that is, at least these methods should be "actively timed". */
 
-   Implementing the proper calls to MCFt->Start() and MCFt->Stop() is due to
-   derived classes; these should at least be placed at the beginning and at
-   the end, respectively, of SolveMCF() and presumably the Chg***() methods,
-   that is, at least these methods should be "actively timed". */
+ void TimeMCF( double &t_us , double &t_ss )
+ {
+  t_us = t_ss = 0;
+  if( MCFt )
+   MCFt->Read( t_us , t_ss ); 
+  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// Like TimeMCF(double,double) [see above], but returns the total time
 
-   double TimeMCF( void )
-   {
-    return( MCFt ? MCFt->Read() : 0 );
-    }
+ double TimeMCF( void ) { return( MCFt ? MCFt->Read() : 0 ); }
 
-/**< Like TimeMCF(double,double) [see above], but returns the total time. */
-
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /** @name Check the solutions
-   @{ */
-
-   inline void CheckPSol( void );
-
-/**< Check that the primal solution returned by the solver is primal feasible.
-   (to within the tolerances set by SetPar(kEps****) [see above], if any). Also,
-   check that the objective function value is correct.
-
-   This method is implemented by the base class, using the above methods
-   for collecting the solutions and the methods of the next section for
-   reading the data of the problem; as such, they will work for any derived
-   class that properly implements all these methods. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   inline void CheckDSol( void );
-
-/**< Check that the dual solution returned by the solver is dual feasible.
-   (to within the tolerances set by SetPar(kEps****) [see above], if any). Also,
-   check that the objective function value is correct.
-
-   This method is implemented by the base class, using the above methods
-   for collecting the solutions and the methods of the next section for
-   reading the data of the problem; as such, they will work for any derived
-   class that properly implements all these methods. */
-
-/*@} -----------------------------------------------------------------------*/
-/*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
-/*--------------------------------------------------------------------------*/
-/** @name Reading graph size
     @{ */
 
-   inline Index MCFnmax( void )
-   {
-    return( nmax );
-    }
+/// checks the primal solution
+/** Check that the primal solution returned by the solver is primal feasible.
+    (to within the tolerances set by SetPar(kEps****), if any). Also,
+    check that the objective function value is correct.
 
-/**< Return the maximum number of nodes for this instance of MCFClass.
+    This method is implemented by the base class, using the above methods
+    for collecting the solutions and the methods of the next section for
+    reading the data of the problem; as such, they will work for any derived
+    class that properly implements all these methods. */
+
+ void CheckPSol( void );
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// checks the dual solution
+/** Check that the dual solution returned by the solver is dual feasible.
+    (to within the tolerances set by SetPar(kEps****), if any). Also,
+    check that the objective function value is correct.
+
+    This method is implemented by the base class, using the above methods
+    for collecting the solutions and the methods of the next section for
+    reading the data of the problem; as such, they will work for any derived
+    class that properly implements all these methods. */
+
+ void CheckDSol( void );
+
+/**@} ----------------------------------------------------------------------*/
+/*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
+/*--------------------------------------------------------------------------*/
+/** @name Reading graph size and topology
+    @{ */
+
+/// return the maximum number of nodes
+/** Return the maximum number of nodes for this instance of MCFClass.
    The implementation of the method in the base class returns the protected
    fields \c nmax, which is provided for derived classes to hold this
    information. */
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   inline Index MCFmmax( void )
-   {
-    return( mmax );
-    }
-
-/**< Return the maximum number of arcs for this instance of MCFClass.
-   The implementation of the method in the base class returns the protected
-   fields \c mmax, which is provided for derived classes to hold this
-   information. */
+ Index MCFnmax( void ) { return( nmax ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the maximum number of arcs
+/** Return the maximum number of arcs for this instance of MCFClass.
+    The implementation of the method in the base class returns the protected
+    fields \c mmax, which is provided for derived classes to hold this
+    information. */
 
-   inline Index MCFn( void )
-   {
-    return( n );
-    }
-
-/**< Return the number of nodes in the current graph.
-   The implementation of the method in the base class returns the protected
-   fields \c n, which is provided for derived classes to hold this
-   information. */
+ Index MCFmmax( void ) { return( mmax ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the current number of nodes
+/** Return the number of nodes in the current graph.
+    The implementation of the method in the base class returns the protected
+    fields \c n, which is provided for derived classes to hold this
+    information. */
 
-   inline Index MCFm( void )
-   {
-    return( m );
-    }
-
-/**< Return the number of arcs in the current graph.
-   The implementation of the method in the base class returns the protected
-   fields \c m, which is provided for derived classes to hold this
-   information. */
-
-/*@} -----------------------------------------------------------------------*/
-/** @name Reading graph topology
-   @{ */
-
-   virtual void MCFArcs( Index_Set Startv ,  Index_Set Endv ,
-                         cIndex_Set nms = 0 , cIndex strt = 0 ,
-                         Index stp = Inf<Index>() ) = 0;
-
-/**< Write the starting (tail) and ending (head) nodes of the arcs in Startv[]
-   and Endv[]. If nms == 0, then the information relative to all arcs is
-   written into Startv[] and Endv[], otherwise Startv[ i ] and Endv[ i ]
-   contain the information relative to arc nms[ i ] (nms[] must be
-   Inf<Index>()-terminated).
-
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to arcs which are *both* in nms and whose index is in
-   the correct range are returned.
-
-   Startv or Endv can be 0, meaning that only the other information is
-   required.
-
-   @note If USENAME0 == 0 then the returned node names will be in the range
-         1 .. n, while if USENAME0 == 1 the returned node names will be in
-         the range 0 .. n - 1.
-
-   @note If the graph is "dynamic", be careful to use MCFn() e MCFm() to
-         properly choose the dimension of nodes and arcs arrays. */
+ Index MCFn( void ) { return( n ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the current number of arcs
+/** Return the number of arcs in the current graph.
+    The implementation of the method in the base class returns the protected
+    fields \c m, which is provided for derived classes to hold this
+    information. */
 
-   virtual Index MCFSNde( cIndex i ) = 0;
+ Index MCFm( void ) { return( m ); }
 
-/**< Return the starting (tail) node of the arc `i'.
+/*--------------------------------------------------------------------------*/
+/// write the starting and ending nodes in vectors
+/** Write the starting (tail) and ending (head) nodes of the arcs in Startv[]
+    and Endv[]. If nms == 0, then the information relative to all arcs is
+    written into Startv[] and Endv[], otherwise Startv[ i ] and Endv[ i ]
+    contain the information relative to arc nms[ i ] (nms[] must be
+    Inf<Index>()-terminated).
+
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to arcs which are *both* in nms and whose index is in
+    the correct range are returned.
+
+    Startv or Endv can be 0, meaning that only the other information is
+    required.
+
+    @note If USENAME0 == 0 then the returned node names will be in the range
+          1 .. n, while if USENAME0 == 1 the returned node names will be in
+          the range 0 .. n - 1.
+
+    @note If the graph is "dynamic", be careful to use MCFn() e MCFm() to
+          properly choose the dimension of nodes and arcs arrays. */
+
+ virtual void MCFArcs( Index_Set Startv ,  Index_Set Endv ,
+		       cIndex_Set nms = 0 , cIndex strt = 0 ,
+		       Index stp = Inf<Index>() ) = 0;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the starting (tail) node of the arc `i'
+/** Return the starting (tail) node of the arc `i'.
 
    @note If USENAME0 == 0 then the returned node names will be in the range
          1 .. n, while if USENAME0 == 1 the returned node names will be in
          the range 0 .. n - 1. */
 
+ virtual Index MCFSNde( cIndex i ) = 0;
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual Index MCFENde( cIndex i ) = 0;
-
-/**< Return the ending (head) node of the arc `i'.
+/// return the ending (head) node of the arc `i'
+/** Return the ending (head) node of the arc `i'.
 
    @note If USENAME0 == 0 then the returned node names will be in the range
          1 .. n, while if USENAME0 == 1 the returned node names will be in
          the range 0 .. n - 1. */
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cIndex_Set MCFSNdes( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal vector containing the starting
-   (tail) nodes for each arc. Since this may *not always be available*,
-   depending on the implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
+ virtual Index MCFENde( cIndex i ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the vector of starting nodes
+/** Return a read-only pointer to an internal vector containing the starting
+    (tail) nodes for each arc. Since this may *not always be available*,
+    depending on the implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
 
-   virtual cIndex_Set MCFENdes( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal vector containing the ending
-   (head) nodes for each arc. Since this may *not always be available*,
-   depending on the implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
-
-/*@} -----------------------------------------------------------------------*/
-/** @name Reading arc costs
-   @{ */
-
-   virtual void MCFCosts( CRow Costv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
-
-/**< Write the arc costs into Costv[]. If nms == 0, then all the costs are
-   written, otherwise Costv[ i ] contains the information relative to arc
-   nms[ i ] (nms[] must be Inf<Index>()-terminated).
-
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to arcs which are *both* in nms and whose index is in
-   the correct range are returned. */
+ virtual cIndex_Set MCFSNdes( void ) { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the vector of ending nodes
+/** Return a read-only pointer to an internal vector containing the ending
+    (head) nodes for each arc. Since this may *not always be available*,
+    depending on the implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
 
-   virtual CNumber MCFCost( cIndex i ) = 0;
+ virtual cIndex_Set MCFENdes( void ) { return( 0 ); }
 
-/**< Return the cost of the i-th arc. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cCRow MCFCosts( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal vector containing the arc
-   costs. Since this may *not always be available*, depending on the
-   implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void MCFQCoef( CRow Qv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() )
-
-/**< Write the quadratic coefficients of the arc costs into Qv[]. If
-   nms == 0, then all the costs are written, otherwise Costv[ i ] contains
-   the information relative to arc nms[ i ] (nms[] must be
-   Inf<Index>()-terminated).
-
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to arcs which are *both* in nms and whose index is in
-   the correct range are returned.
-
-   Note that the method is *not* pure virtual: an implementation is provided
-   for "pure linear" MCF solvers that only work with all zero quadratic
-   coefficients. */
-   {
-    if( nms ) {
-     while( *nms < strt )
-      nms++;
-
-     for( Index h ; ( h = *(nms++) ) < stp ; )
-      *(Qv++) = 0;
-     }
-    else {
-     if( stp > m )
-      stp = m;
-
-     while( stp-- > strt )
-      *(Qv++) = 0;
-     }
-    }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual CNumber MCFQCoef( cIndex i )
-
-/**< Return the quadratic coefficients of the cost of the i-th arc. Note that
-   the method is *not* pure virtual: an implementation is provided for "pure
-   linear" MCF solvers that only work with all zero quadratic coefficients. */
-   {
-    return( 0 );
-    }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual cCRow MCFQCoef( void )
-   {
-    return( 0 );
-    }
-
-/**< Return a read-only pointer to an internal vector containing the arc
-   costs. Since this may *not always be available*, depending on the
-   implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready (such as "pure linear" MCF solvers that only
-   work with all zero quadratic coefficients) does not need to implement the
-   method. */
-
-/*@} -----------------------------------------------------------------------*/
-/** @name Reading arc capacities
+/**@} ----------------------------------------------------------------------*/
+/** @name Reading arc costs / capacities
     @{ */
 
-   virtual void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+/// write the arc costs into a vector
+/** Write the arc costs into Costv[]. If nms == 0, then all the costs are
+    written, otherwise Costv[ i ] contains the information relative to arc
+    nms[ i ] (nms[] must be Inf<Index>()-terminated).
 
-/**< Write the arc capacities into UCapv[]. If nms == 0, then all the
-   capacities are written, otherwise UCapv[ i ] contains the information
-   relative to arc nms[ i ] (nms[] must be Inf<Index>()-terminated).
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to arcs which are *both* in nms and whose index is in
+    the correct range are returned. */
 
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to arcs which are *both* in nms and whose index is in
-   the correct range are returned. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual FNumber MCFUCap( cIndex i ) = 0;
-
-/**< Return the capacity of the i-th arc. */
+ virtual void MCFCosts( CRow Costv , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the cost of the i-th arc
 
-   virtual cFRow MCFUCaps( void )
-   {
-    return( 0 );
-    }
+ virtual CNumber MCFCost( cIndex i ) = 0;
 
-/**< Return a read-only pointer to an internal vector containing the arc
-   capacities. Since this may *not always be available*, depending on the
-   implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method. */
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the vector of arc costs
+/** Return a read-only pointer to an internal vector containing the arc
+    costs. Since this may *not always be available*, depending on the
+    implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
 
-/*@} -----------------------------------------------------------------------*/
+ virtual cCRow MCFCosts( void ) { return( 0 ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// write the quadratic coefficients of the arc costs into a vector
+/** Write the quadratic coefficients of the arc costs into Qv[]. If
+    nms == 0, then all the costs are written, otherwise Costv[ i ] contains
+    the information relative to arc nms[ i ] (nms[] must be
+    Inf<Index>()-terminated).
+
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to arcs which are *both* in nms and whose index is in
+    the correct range are returned.
+
+    Note that the method is *not* pure virtual: an implementation is provided
+    for "pure linear" MCF solvers that only work with all zero quadratic
+    coefficients. */
+
+ virtual void MCFQCoef( CRow Qv , cIndex_Set nms = 0 ,
+                          cIndex strt = 0 , Index stp = Inf<Index>() )
+ {
+  if( nms ) {
+   while( *nms < strt )
+    nms++;
+
+   for( Index h ; ( h = *(nms++) ) < stp ; )
+    *(Qv++) = 0;
+   }
+  else {
+   if( stp > m )
+    stp = m;
+
+   while( stp-- > strt )
+    *(Qv++) = 0;
+   }
+  }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the quadratic coefficients of the cost of the i-th arc
+/** Return the quadratic coefficients of the cost of the i-th arc. Note that
+    the method is *not* pure virtual: an implementation is provided for "pure
+    linear" MCF solvers that only work with all zero quadratic coefficients.
+    */
+
+ virtual CNumber MCFQCoef( cIndex i ) { return( 0 ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the vector of arc quadratic costs
+/** Return a read-only pointer to an internal vector containing the arc
+    costs. Since this may *not always be available*, depending on the
+    implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready (such as "pure linear" MCF solvers that only
+    work with all zero quadratic coefficients) does not need to implement the
+    method. */
+
+ virtual cCRow MCFQCoef( void ) { return( 0 ); }
+
+/*--------------------------------------------------------------------------*/
+/// write the arc capacities into a vector
+/** Write the arc capacities into UCapv[]. If nms == 0, then all the
+    capacities are written, otherwise UCapv[ i ] contains the information
+    relative to arc nms[ i ] (nms[] must be Inf<Index>()-terminated).
+
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to arcs which are *both* in nms and whose index is in
+    the correct range are returned. */
+
+ virtual void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return the capacity of the i-th arc
+
+ virtual FNumber MCFUCap( cIndex i ) = 0;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to an the vector of arc capacities
+/** Return a read-only pointer to an internal vector containing the arc
+    capacities. Since this may *not always be available*, depending on the
+    implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method. */
+
+ virtual cFRow MCFUCaps( void ) { return( 0 ); }
+
+/**@} ----------------------------------------------------------------------*/
 /** @name Reading node deficits
     @{ */
 
-   virtual void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+/// write the node deficits into a vector
+/** Write the node deficits into Dfctv[]. If nms == 0, then all the
+    defcits are written, otherwise Dfctvv[ i ] contains the information
+    relative to node nms[ i ] (nms[] must be Inf<Index>()-terminated).
 
-/**< Write the node deficits into Dfctv[]. If nms == 0, then all the
-   defcits are written, otherwise Dfctvv[ i ] contains the information
-   relative to node nms[ i ] (nms[] must be Inf<Index>()-terminated).
+    The parameters `strt' and `stp' allow to restrict the output of the method
+    to all and only the nodes `i' with strt <= i < min( MCFn() , stp ). `strt'
+    and `stp' work in "&&" with nms; that is, if nms != 0 then only the
+    values corresponding to nodes which are *both* in nms and whose index is
+    in the correct range are returned.
 
-   The parameters `strt' and `stp' allow to restrict the output of the method
-   to all and only the nodes `i' with strt <= i < min( MCFn() , stp ). `strt'
-   and `stp' work in "&&" with nms; that is, if nms != 0 then only the
-   values corresponding to nodes which are *both* in nms and whose index is in
-   the correct range are returned.
+    @note Here node "names" (strt and stp, those contained in nms[] or `i'
+          in MCFDfct()) go from 0 to n - 1, regardless to the value of
+          USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
+	  but its deficit is returned by MCFDfcts( Dfctv , 0 , 0 , 1 ). */
 
-   @note Here node "names" (strt and stp, those contained in nms[] or `i'
-         in MCFDfct()) go from 0 to n - 1, regardless to the value of
-         USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
-         but its deficit is returned by MCFDfcts( Dfctv , 0 , 0 , 1 ). */
+ virtual void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual FNumber MCFDfct( cIndex i ) = 0;
-
-/**< Return the deficit of the i-th node.
+/// return the deficit of the i-th node
+/** Return the deficit of the i-th node.
 
    @note Here node "names" go from 0 to n - 1, regardless to the value of
          USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
          but its deficit is returned by MCFDfct( 0 ). */
 
+ virtual FNumber MCFDfct( cIndex i ) = 0;
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return a read-only pointer to the vector of node deficits
+/** Return a read-only pointer to an internal vector containing the node
+    deficits.  Since this may *not always be available*, depending on the
+    implementation, this method can (uniformly) return 0.
+    This is done by the base class already, so a derived class that does not
+    have the information ready does not need to implement the method.
 
-   virtual cFRow MCFDfcts( void )
-   {
-    return( 0 );
-    }
+    @note Here node "names" go from 0 to n - 1, regardless to the value of
+          USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
+	  but its deficit is contained in MCFDfcts()[ 0 ]. */
 
-/**< Return a read-only pointer to an internal vector containing the node
-   deficits.  Since this may *not always be available*, depending on the
-   implementation, this method can (uniformly) return 0.
-   This is done by the base class already, so a derived class that does not
-   have the information ready does not need to implement the method.
+ virtual cFRow MCFDfcts( void ) { return( 0 ); }
 
-   @note Here node "names" go from 0 to n - 1, regardless to the value of
-         USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
-         but its deficit is contained in MCFDfcts()[ 0 ]. */
-
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /** @name Write problem to file
     @{ */
 
-   virtual inline void WriteMCF( ostream &oStrm , int frmt = 0 );
-
-/**< Write the current MCF problem to an ostream. This may be useful e.g. for
+/// write the current MCF problem to an ostream
+/** Write the current MCF problem to an ostream. This may be useful e.g. for
    debugging purposes.
 
    The base MCFClass class provides output in two different formats, depending
@@ -1462,16 +1404,17 @@ class MCFClass {
          nonzero quadratic coefficients are present, they are just ignored.
    */
 
-/*@} -----------------------------------------------------------------------*/
+ virtual void WriteMCF( ostream &oStrm , int frmt = 0 );
+
+/**@} ----------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
 /*--------------------------------------------------------------------------*/
-/** @name Changing the costs
+/** @name Changing the arc costs / capacities
     @{ */
 
-   virtual void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
 
-/**< Change the arc costs. In particular, change the costs that are:
+/// change the arc costs
+/** Change the arc costs. In particular, change the costs that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing
      sense and Inf<Index>()-terminated),
@@ -1488,23 +1431,23 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
+ virtual void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void ChgCost( Index arc , cCNumber NCost ) = 0;
-
-/**< Change the cost of the i-th arc.
+/// change the cost of the i-th arc
+/** Change the cost of the i-th arc.
 
    @note changing the costs of arcs that *do not exist* is *not allowed*;
          only arcs which have not been closed/deleted [see CloseArc() /
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
+ virtual void ChgCost( Index arc , cCNumber NCost ) = 0;
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() )
-
-/**< Change the quadratic coefficients of the arc costs. In particular,
+/// change the quadratic coefficients of the arc costs
+/** Change the quadratic coefficients of the arc costs. In particular,
    change the coefficients that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing
@@ -1526,16 +1469,17 @@ class MCFClass {
          only arcs which have not been closed/deleted [see CloseArc() /
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
-   {
-    if( NQCoef )
-     throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
-    }
+
+ virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() )
+ {
+  if( NQCoef )
+   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
+  }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void ChgQCoef( Index arc , cCNumber NQCoef )
-
-/**< Change the quadratic coefficient of the cost of the i-th arc.
+/// change the quadratic coefficient of the cost of the i-th arc
+/** Change the quadratic coefficient of the cost of the i-th arc.
 
    Note that the method is *not* pure virtual: an implementation is provided
    for "pure linear" MCF solvers that only work with all zero quadratic
@@ -1545,19 +1489,16 @@ class MCFClass {
          only arcs which have not been closed/deleted [see CloseArc() /
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
-   {
-    if( NQCoef )
-     throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
-    }
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Changing the capacities
-    @{ */
+ virtual void ChgQCoef( Index arc , cCNumber NQCoef )
+ {
+  if( NQCoef )
+   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
+  }
 
-   virtual void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
-
-/**< Change the arc capacities. In particular, change the capacities that are:
+/*--------------------------------------------------------------------------*/
+/// change the arc capacities
+/** Change the arc capacities. In particular, change the capacities that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing sense
      and Inf<Index>()-terminated),
@@ -1574,25 +1515,26 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
+ virtual void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void ChgUCap( Index arc , cFNumber NCap ) = 0;
-
-/**< Change the capacity of the i-th arc.
+/// change the capacity of the i-th arc
+/** Change the capacity of the i-th arc.
 
    @note changing the capacities of arcs that *do not exist* is *not allowed*;
          only arcs that have not been closed/deleted [see CloseArc() /
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
-/*@} -----------------------------------------------------------------------*/
-/** @name Changing the deficits
+ virtual void ChgUCap( Index arc , cFNumber NCap ) = 0;
+
+/**@} ----------------------------------------------------------------------*/
+/** @name Changing the node deficits
     @{ */
 
-   virtual void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
-
-/**< Change the node deficits. In particular, change the deficits that are:
+/// change the node deficits
+/** Change the node deficits. In particular, change the deficits that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing sense
      and Inf<Index>()-terminated),
@@ -1613,11 +1555,13 @@ class MCFClass {
          only nodes that have not been deleted [see DelNode() below] can be
 	 touched with these methods. */
 
+ virtual void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
+			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void ChgDfct( Index node , cFNumber NDfct ) = 0;
-
-/**< Change the deficit of the i-th node.
+/// change the deficit of the i-th node
+/** Change the deficit of the i-th node.
 
    Note that the node "name" i go from 0 to n - 1, regardless to the value of
    USENAME0; hence, if USENAME0 == 0 then the first node is "named 1", but its
@@ -1627,13 +1571,14 @@ class MCFClass {
          only nodes that have not been deleted [see DelNode() below] can be
 	 touched with these methods. */
 
-/*@} -----------------------------------------------------------------------*/
+ virtual void ChgDfct( Index node , cFNumber NDfct ) = 0;
+
+/**@} ----------------------------------------------------------------------*/
 /** @name Changing graph topology
     @{ */
 
-   virtual void CloseArc( cIndex name ) = 0;
-
-/**< "Close" the arc `name'. Although all the associated information (name,
+/// "close" one arc
+/** "Close" the arc `name'. Although all the associated information (name,
    cost, capacity, end and start node) is kept, the arc is removed from the
    problem until OpenArc( i ) [see below] is called.
 
@@ -1641,17 +1586,16 @@ class MCFClass {
    arc; for instance, MCFm() does *not* decrease as an effect of a call to
    CloseArc(). How this closure is implemented is solver-specific. */
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual bool IsClosedArc( cIndex name ) = 0;
-
-/**< IsClosedArc() returns true if and only if the arc `name' is closed. */
+ virtual void CloseArc( cIndex name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// returns true if and only if the arc `name' is closed
 
-   virtual void DelNode( cIndex name ) = 0;
+ virtual bool IsClosedArc( cIndex name ) = 0;
 
-/**< Delete the node `name'.
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// delete one node
+/** Delete the node `name'.
 
    For any value of `name', all incident arcs to that node are closed [see
    CloseArc() above] (*not* Deleted, see DelArc() below) and the deficit is
@@ -1661,78 +1605,78 @@ class MCFClass {
    MCFn() is reduced by at least one, until the n-th node is not a deleted
    one. */
 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual void OpenArc( cIndex name ) = 0;
-
-/**< Restore the previously closed arc `name'. It is an error to open an arc
-   that has not been previously closed. */
+ virtual void DelNode( cIndex name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// re-opens a closed arc
+/** Restore the previously closed arc `name'. It is an error to open an arc
+    that has not been previously closed. */
 
-   virtual Index AddNode( cFNumber aDfct ) = 0;
-
-/**< Add a new node with deficit aDfct, returning its name. Inf<Index>() is
-   returned if there is no room for a new node. Remember that the node names
-   are either { 0 .. nmax - 1 } or { 1 .. nmax }, depending on the value of
-   USENAME0. */
+ virtual void OpenArc( cIndex name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// adds a ned node
+/** Add a new node with deficit aDfct, returning its name. Inf<Index>() is
+    returned if there is no room for a new node. Remember that the node names
+    are either { 0 .. nmax - 1 } or { 1 .. nmax }, depending on the value of
+    USENAME0. */
 
-   virtual void ChangeArc( cIndex name , cIndex nSN = Inf<Index>() ,
-                           cIndex nEN = Inf<Index>() ) = 0;
-
-/**< Change the starting and/or ending node of arc `name' to nSN and nEN.
-   Each parameter being Inf<Index>() means to leave the previous starting or
-   ending node untouched. When this method is called `name' can be either the
-   name of a "normal" arc or that of a "closed" arc [see CloseArc() above]:
-   in the latter case, at the end of ChangeArc() the arc is *still closed*,
-   and it remains so until OpenArc( name ) [see above] is called. */
+ virtual Index AddNode( cFNumber aDfct ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// change the starting and/or ending node of one arc
+/** Change the starting and/or ending node of arc `name' to nSN and nEN.
+    Each parameter being Inf<Index>() means to leave the previous starting or
+    ending node untouched. When this method is called `name' can be either the
+    name of a "normal" arc or that of a "closed" arc [see CloseArc() above]:
+    in the latter case, at the end of ChangeArc() the arc is *still closed*,
+    and it remains so until OpenArc( name ) [see above] is called. */
 
-   virtual void DelArc( cIndex name ) = 0;
-
-/**< Delete the arc `name'. Unlike "closed" arcs, all the information
-   associated with a deleted arc is lost and `name' is made available as a
-   name for new arcs to be created with AddArc() [see below].
-
-   Il furthermore `name' is the last arc, the number of arcs as reported by
-   MCFm() is reduced by at least one, until the m-th arc is not a deleted
-   one. Otherwise, the flow on the arc is always ensured to be 0. */
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   virtual bool IsDeletedArc( cIndex name ) = 0;
-
-/**< Return true if and only if the arc `name' is deleted. It should only
-   be called with name < MCFm(), as every other arc is deleted by
-   definition. */
+ virtual void ChangeArc( cIndex name , cIndex nSN = Inf<Index>() ,
+			 cIndex nEN = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// deletes one arc
+/** Delete the arc `name'. Unlike "closed" arcs, all the information
+    associated with a deleted arc is lost and `name' is made available as a
+    name for new arcs to be created with AddArc() [see below].
 
-   virtual Index AddArc( cIndex Start , cIndex End , cFNumber aU ,
-                         cCNumber aC ) = 0; 
+    Il furthermore `name' is the last arc, the number of arcs as reported by
+    MCFm() is reduced by at least one, until the m-th arc is not a deleted
+    one. Otherwise, the flow on the arc is always ensured to be 0. */
 
-/**< Add the new arc ( Start , End ) with cost aC and capacity aU,
-   returning its name. Inf<Index>() is returned if there is no room for a new
-   arc. Remember that arc names go from 0 to mmax - 1. */
+ virtual void DelArc( cIndex name ) = 0;
 
-/*@} -----------------------------------------------------------------------*/
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// return true if and only if the arc is deleted
+/** Return true if and only if the arc `name' is deleted. It should only
+    be called with name < MCFm(), as every other arc is deleted by
+    definition. */
+
+ virtual bool IsDeletedArc( cIndex name ) = 0;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/// adds a new arc
+/** Add the new arc ( Start , End ) with cost aC and capacity aU, returning
+    its name. Inf<Index>() is returned if there is no room for a new arc.
+    Remember that arc names go from 0 to mmax - 1. */
+
+ virtual Index AddArc( cIndex Start , cIndex End , cFNumber aU ,
+		       cCNumber aC ) = 0; 
+
+/**@} ----------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Destructor
     @{ */
 
-   virtual ~MCFClass()
-   {
-    delete MCFt;
-    }
+/// destructor of the class
+/** Destructor of the class. The implementation in the base class only
+    deletes the MCFt field. It is virtual, as it should be. */
 
-/**< Destructor of the class. The implementation in the base class only
-   deletes the MCFt field. It is virtual, as it should be. */
+ virtual ~MCFClass() { delete MCFt; }
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*-------------------- PROTECTED PART OF THE CLASS -------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--                                                                      --*/
@@ -1840,7 +1784,7 @@ class MCFClass {
      return( x < y - eps );
     }
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*---------------------- PROTECTED DATA STRUCTURES -------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -1870,7 +1814,7 @@ class MCFClass {
 
   };   // end( class MCFClass )
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -2354,9 +2298,7 @@ inline void MCFClass::WriteMCF( ostream &oStrm , int frmt )
 
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
  }  // end( namespace MCFClass_di_unipi_it )
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

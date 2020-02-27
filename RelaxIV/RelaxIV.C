@@ -10,9 +10,9 @@
  *
  * Conforms to the standard (MCF) interface defined in MCFClass.h.
  *
- * \version 1.83
+ * \version 1.84
  *
- * \date 14 - 04 - 2019
+ * \date 27 - 02 - 2020
  *
  * \author <b>(original FORTRAN code)</b> \n
  *         Dimitri P. Bertsekas \n
@@ -35,9 +35,8 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2019 by Antonio Frangioni
+ * Copyright &copy 1996 - 2020 by Antonio Frangioni
  */
-
 /*--------------------------------------------------------------------------*/
 /*--------------------------- IMPLEMENTATION -------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -52,9 +51,7 @@
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 using namespace MCFClass_di_unipi_it;
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*----------------------------- CONSTANTS ----------------------------------*/

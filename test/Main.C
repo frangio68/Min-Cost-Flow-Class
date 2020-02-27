@@ -11,9 +11,9 @@
  * from file and solved. In addition, the same problem can be written on a
  * file in MPS format. 
  *
- * \version 4.00
+ * \version 4.01
  *
- * \date 30 - 12 - 2009
+ * \date 27 - 02 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -24,8 +24,9 @@
  *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
+ *
+ * Copyright &copy 2006 - 2020 by Alessandro Bertolini, Antonio Frangioni
  */
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -33,14 +34,12 @@
 #include <fstream>
 #include <sstream>
 
-
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 // just change the two lines below and any MCFClass solver can be used
 // (with all-default parameters, which is not necessarily the best way)
 
-#include "MCFCplex.h"
-#define MCFSOLVER MCFCplex
-
+#include "MCFSimplex.h"
+#define MCFSOLVER MCFSimplex
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------- MACROS -----------------------------------*/
@@ -63,9 +62,7 @@
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
- using namespace MCFClass_di_unipi_it;
-#endif
+using namespace MCFClass_di_unipi_it;
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------- FUNCTIONS --------------------------------*/

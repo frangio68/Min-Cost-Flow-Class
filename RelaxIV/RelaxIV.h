@@ -54,9 +54,9 @@
  *          least half of its feasible values, or SIndex has to be a "bigger"
  *          data type than Index. The default value for SIndex is int.
  *
- * \version 1.84
+ * \version 1.85
  *
- * \date 16 - 09 - 2019
+ * \date 27 - 02 - 2020
  *
  * \author <b>(original FORTRAN code)</b> \n
  *         Dimitri P. Bertsekas \n
@@ -79,9 +79,8 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2019 by Antonio Frangioni
+ * Copyright &copy 1996 - 2020 by Antonio Frangioni
  */
-
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -163,14 +162,12 @@
 /**< If RELAXIV_STATISTICS > 0, then statistic information about the behaviour
    of the Relaxation algorithm is computed. */
 
-/*@} -----------------------------------------------------------------------*/
+/**@} ----------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------- CLASS RelaxIV --------------------------------*/
@@ -834,7 +831,7 @@ class RelaxIV : public MCFClass {
 
  };  // end( class RelaxIV )
 
-/* @} end( group( RELAXIV_CLASSES ) ) */
+/** @} end( group( RELAXIV_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -981,9 +978,7 @@ inline int RelaxIV::MCFaug( void )
 
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
- };  // end( namespace MCFClass_di_unipi_it )
-#endif
+};  // end( namespace MCFClass_di_unipi_it )
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
