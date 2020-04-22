@@ -11,9 +11,9 @@
  * results don't match, then at least one of the two solvers is incorrect. If
  * the results match, chances are the two solvers are correct.
  *
- * \version 2.02
+ * \version 2.10
  *
- * \date 27 - 02 - 2020
+ * \date 22 - 04 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Operations Research Group \n
@@ -31,16 +31,16 @@
 /*------------------------------ DEFINES -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#define HAVE_CSCL2 1
+#define HAVE_CSCL2 0
 // > 0 if the CS2 class is available
 
-#define HAVE_CPLEX 1
+#define HAVE_CPLEX 0
 // > 0 if the MCFCplex class is available
 
 #define HAVE_MFSMX 1
 // > 0 if the MCFSimplex class is available
 
-#define HAVE_MFZIB 1
+#define HAVE_MFZIB 0
 // > 0 if the MCFZIP class is available
 
 #define HAVE_RELAX 1
@@ -61,6 +61,7 @@
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
+#include <cmath>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -209,9 +210,32 @@ static inline void SolveMCF( MCFClass *mcf1 , MCFClass *mcf2 )
 {
  try {
   mcf1->SolveMCF();
-  cout << "MCF1 = ";
-  PrintResult( mcf1 );
   mcf2->SolveMCF();
+  auto v1 = mcf1->MCFGetFO();
+  auto v2 = mcf2->MCFGetFO();
+   if( mcf1->MCFGetStatus() == mcf2->MCFGetStatus() ) {
+    switch( mcf1->MCFGetStatus() ) {
+    case( MCFClass::kOK ):
+     if( std::abs( v1 - v2 ) <=
+	 std::max( v1 , MCFClass::FONumber( 1 ) ) * 1e-10 )
+      cout << "OK (" << v1 << ")" << endl;
+     else
+      cout << "ERROR! MCF1 = " << v1 << ", MCF2 = " << v2 << endl;
+     break;
+    case( MCFClass::kUnfeasible ):
+     cout << "OK (unfeas)" << endl;
+     break;
+    case( MCFClass::kUnbounded ):
+     cout << "OK[?] (unbound)" << endl;
+     break;
+    default:
+     cout << "OK[??] (error)" << endl;
+    }
+   return;
+   }
+
+  cout << "ERROR! MCF1 = ";
+  PrintResult( mcf1 );
   cout << ", MCF2 = ";
   PrintResult( mcf2 );
   cout << endl;
@@ -358,8 +382,10 @@ int main( int argc , char **argv )
  // compute min/max cost & max deficit- - - - - - - - - - - - - - - - - - - -
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
- MCFClass::CNumber c_max = Inf<MCFClass::CNumber>();  // max cost
- MCFClass::CNumber c_min = - c_max;                   // min cost
+ MCFClass::CNumber c_max = -Inf<MCFClass::CNumber>();    // max cost
+ MCFClass::CNumber c_min = Inf<MCFClass::CNumber>();     // min cost
+ MCFClass::FNumber cap_max = 0;                          // max capacity
+ MCFClass::CNumber cap_min = Inf<MCFClass::FNumber>();   // min capacity
 
  for( MCFClass::Index i = 0 ; i < m ; i++ )
   #if( DYNMC_MCF )
@@ -372,6 +398,13 @@ int main( int argc , char **argv )
 
     if( ci > c_max )
      c_max = ci;
+
+    MCFClass::cFNumber capi = mcf1->MCFUCap( i );
+    if( capi < cap_min )
+     cap_min = capi;
+
+    if( capi > cap_max )
+     cap_max = capi;
     }
 
  bool nzdfct = false;
@@ -382,6 +415,18 @@ int main( int argc , char **argv )
    break;
    }
 
+ // set tolerances- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+ mcf1->SetPar( MCFClass::kEpsFlw ,
+	       std::max( cap_max , MCFClass::FNumber( 1 ) ) * 1e-10 );
+ mcf2->SetPar( MCFClass::kEpsFlw ,
+	       std::max( cap_max , MCFClass::FNumber( 1 ) ) * 1e-10 );
+ mcf1->SetPar( MCFClass::kEpsCst ,
+	       std::max( c_max , MCFClass::CNumber( 1 ) ) * 1e-10 );
+ mcf2->SetPar( MCFClass::kEpsCst ,
+	       std::max( c_max , MCFClass::CNumber( 1 ) ) * 1e-10 );
+ 
  // first solver call - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -459,14 +504,8 @@ int main( int argc , char **argv )
   // compute new capacities - - - - - - - - - - - - - - - - - - - - - - - - -
 
   for( i = 0 ; i < n_change ; i++ ) {
-   newcaps[ i ] = 1;
-
-   /*!! This would appear to be more fair, but it very seldom changes
-        anything in the solution:
-
-   newcaps[ i ] = cap_min + FNumber( drand48() * ( cap_max - cap_min ) );
-   !!*/
-
+   newcaps[ i ] = cap_min +
+                      MCFClass::FNumber( drand48() * ( cap_max - cap_min ) );
    #if( NMS_IS_USED )
     if( i )
      nms[ i ] = nms[ i - 1 ] +

@@ -13,9 +13,9 @@
  * Additionally, a function is provided for safely reading numbers out of a
  * istream.
  *
- * \version 3.10
+ * \version 3.20
  *
- * \date 27 - 02 - 2020
+ * \date 22 - 04 - 2020
  *
  * \author Antonio Frangioni \n
  *         Operations Research Group \n
@@ -356,26 +356,22 @@ class OPTrand {
 /*--------------------------------------------------------------------------*/
 /*--------------------------- Inf() and Eps() ------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** Very small class to simplify extracting the "+ infinity" value for a
-    basic type; just use Inf<type>(). */
+ /// Inf<T>() = infinity value for T
 
  template <typename T>
-  class Inf {
-   public:
-  Inf() {}
-  operator T() { return( std::numeric_limits<T>::max() ); }
-  };
+ static constexpr T Inf( void ) noexcept {
+  return( std::numeric_limits<T>::has_infinity ?
+	  std::numeric_limits<T>::infinity() :
+	  std::numeric_limits<T>::max() );
+  }
 
 /*--------------------------------------------------------------------------*/
-/** Very small class to simplify extracting the "machine epsilon" for a
-    basic type; just use Eps<type>(). */
+ /// Eps<T>() = "machine epsilon" for T
 
  template <typename T>
-  class Eps {
-   public:
-  Eps() {}
-  operator T() { return( std::numeric_limits<T>::epsilon() ); }
-  };
+ static constexpr T Eps( void ) noexcept {
+  return( std::numeric_limits<T>::epsilon() );
+  }
 
 /** @} end( group( OPTUtils_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
