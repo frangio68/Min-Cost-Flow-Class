@@ -32,7 +32,7 @@ NAME = $(libMCFClDIR)lib/libMCFCl.a
 # debug switches
 SW = -g -std=c++14
 # production switches
-#SW = -O3 -DNDEBUG -std=c++11
+#SW = -O3 -DNDEBUG -std=c++14
 
 # compiler
 CC = clang++

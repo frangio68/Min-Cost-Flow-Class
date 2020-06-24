@@ -6,9 +6,9 @@
  * dual) simplex algorithm. Conforms to the standard MCF interface defined in
  * MCFClass.h.
  *
- * \Version 1.00
+ * \Version 1.21
  *
- * \date 29 - 08 - 2011
+ * \date 27 - 02 - 2020
  *
  * \author Alessandro Bertolini \n
  *         Antonio Frangioni \n
@@ -16,12 +16,10 @@
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2008 - 2011 by Alessandro Bertolini, Antonio Frangioni
+ * Copyright &copy 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #ifndef __MCFSimplex
@@ -32,16 +30,16 @@
 /*--------------------------------------------------------------------------*/
 
 #include "MCFClass.h"
-//Johannes Sommer
 
-/*@} -----------------------------------------------------------------------*/
+#include <iostream>
+#include <fstream>
+
+/**@} ----------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 namespace MCFClass_di_unipi_it
 {
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------- MACROS ----------------------------------*/
@@ -74,7 +72,7 @@ namespace MCFClass_di_unipi_it
    Thus, with QUADRATICCOST == 0 the solver cannot solve problems with
    quadratic costs, but it does solve problems with linear costs faster. */
 
-/*@}  end( group( MCFCLASS_MACROS ) ) */ 
+/**@}  end( group( MCFCLASS_MACROS ) ) */ 
 
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CLASSES -------------------------------------*/
@@ -132,6 +130,13 @@ class MCFSimplex: public MCFClass
   kCandidateListPivot  ///< Candidate List Pivot Rule
   };
 
+ struct MCFStatePtr
+ {
+  int		*enterArcs;
+  FNumber   *flowEnterArcs;
+  Index		*UArcs;
+ };
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------- PUBLIC METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -149,12 +154,12 @@ class MCFSimplex: public MCFClass
  void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
 	       cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
 	       cFRow pDfct = NULL , cIndex_Set pSn = NULL ,
-	       cIndex_Set pEn = NULL );
+	       cIndex_Set pEn = NULL ) override;
 
 /**< Inputs a new network, as in MCFClass::LoadNet(). */
 
 /*--------------------------------------------------------------------------*/
-
+ 
  void SetAlg( bool UsPrml , char WhchPrc );
 
 /**< Selects which algorithm (Primal vs Dual Network Simplex), and which
@@ -179,58 +184,88 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
- void SetPar( int par , int val );
+ virtual void SetPar( int par , int val ) override;
 
 /**< Set general integer parameters.
 
    @param par   is the parameter to set; since this method accepts an int
                 value, the enum SimplexParam can be used in addition to the
                 enum MCFParam to specify the integer parameters (every enum
-		is an int).
+		        is an int).
 
    @param value is the value to assign to the parameter. */
 
 /*-------------------------------------------------------------------------*/
 
- void SetPar( int par , double val );
+ virtual void SetPar( int par , double val ) override;
 
 /**< Set general float parameters.
 
    @param par   is the parameter to set; since this method accepts an int
                 value, the enum SimplexParam can be used in addition to the
                 enum MCFParam to specify the float parameters (every enum
-		is an int).
+		        is an int).
 
    @param value is the value to assign to the parameter. */
+
+/*--------------------------------------------------------------------------*/
+
+ virtual inline void GetPar( int par , int &val ) const override
+ {
+  switch( par ) {
+   case( kAlgPrimal ):         val = usePrimalSimplex ? kYes : kNo; break;
+   case( kAlgPricing ):        val = pricingRule; break;
+   case( kNumCandList ):       val = numCandidateList; break;
+   case( kHotListSize ):       val = hotListSize; break;
+   case( kRecomputeFOLimits ): val = recomputeFOLimits; break;
+   default: MCFClass::GetPar( par , val );
+   }
+  }
+
+/*--------------------------------------------------------------------------*/
+
+ virtual inline void GetPar( int par , double &val ) const override
+ {
+  if( par == kEpsOpt )
+   val = double( EpsOpt );
+  else
+   MCFClass::GetPar( par , val );
+  }
 
 /*--------------------------------------------------------------------------*/
 /*-------------------- METHODS FOR SOLVING THE PROBLEM ---------------------*/
 /*--------------------------------------------------------------------------*/
 
- void SolveMCF( void );
+ void SolveMCF( void ) override;
 
 /*--------------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
+ using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
+
  void MCFGetX( FRow F , Index_Set nms = NULL ,
-	       cIndex strt = 0 , Index stp = Inf<Index>() );
+	       cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
 /*--------------------------------------------------------------------------*/
+
+ using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
  void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) ;
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- CNumber MCFGetRC( cIndex i );
+ CNumber MCFGetRC( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
+
+ using MCFClass::MCFGetPi;  // the ( void ) method, which is otherwise hidden
 
  void MCFGetPi( CRow P , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
 /*--------------------------------------------------------------------------*/
 
- FONumber MCFGetFO( void );
+ FONumber MCFGetFO( void ) override;
 
 /*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
@@ -238,39 +273,39 @@ class MCFSimplex: public MCFClass
 
  virtual void MCFArcs( Index_Set Startv , Index_Set Endv ,
 		       cIndex_Set nms = NULL , cIndex strt = 0 ,
-		       Index stp = Inf<Index>() );
+		       Index stp = Inf<Index>() ) override;
 
- inline Index MCFSNde( cIndex i );
+ inline Index MCFSNde( cIndex i ) override;
 
- inline Index MCFENde( cIndex i );
+ inline Index MCFENde( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
   
  void MCFCosts( CRow Costv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- inline CNumber MCFCost( cIndex i );
+ inline CNumber MCFCost( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFQCoef( CRow Qv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- inline CNumber MCFQCoef( cIndex i );
+ inline CNumber MCFQCoef( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- inline FNumber MCFUCap( cIndex i );
+ inline FNumber MCFUCap( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- inline FNumber MCFDfct( cIndex i );
+ inline FNumber MCFDfct( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
@@ -279,53 +314,58 @@ class MCFSimplex: public MCFClass
 /*--------------------------------------------------------------------------*/
 
  void ChgCosts( cCRow NCost , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- void ChgCost( Index arc , cCNumber NCost );
+ void ChgCost( Index arc , cCNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgQCoef( cCRow NQCoef = NULL , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- void ChgQCoef( Index arc , cCNumber NQCoef );
+ void ChgQCoef( Index arc , cCNumber NQCoef ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgDfcts( cFRow NDfct , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- void ChgDfct( Index nod , cFNumber NDfct );
+ void ChgDfct( Index nod , cFNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgUCaps( cFRow NCap , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() );
+		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
- void ChgUCap( Index arc , cFNumber NCap );
+ void ChgUCap( Index arc , cFNumber NCap ) override;
+
+ /*--------------------------------------------------------------------------*/
+
+ void UsePastInformation();
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
- void CloseArc( cIndex name );
+ void CloseArc( cIndex name ) override;
 
- void DelNode( cIndex name );
+ void DelNode( cIndex name ) override;
 
- bool IsClosedArc( cIndex name );
+ bool IsClosedArc( cIndex name ) override;
 
- void OpenArc( cIndex name ) ;
+ void OpenArc( cIndex name ) override;
 
- Index AddNode( cFNumber aDfct );
+ Index AddNode( cFNumber aDfct ) override;
 
  void ChangeArc( cIndex name , cIndex nSS = Inf<Index>() ,
-		 cIndex nEN = Inf<Index>() );
+		 cIndex nEN = Inf<Index>() ) override;
 
- void DelArc( cIndex name );
+ void DelArc( cIndex name ) override;
 
- Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC );
+ Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
+  override;
 
- bool IsDeletedArc( cIndex name );
+ bool IsDeletedArc( cIndex name ) override;
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
@@ -364,7 +404,7 @@ class MCFSimplex: public MCFClass
 /*-- different data structures in the quadratic case.                     --*/
 /*--                                                                      --*/
 /*--------------------------------------------------------------------------*/
-
+	 
  struct arcPType;   // pre-declaration of the arc structure (pointers to arcs
                     // are contained in the node structure) for Primal Simplex
 
@@ -437,6 +477,7 @@ class MCFSimplex: public MCFClass
   nodePType *head;        // head node
   FNumber flow;           // arc flow
   CNumber cost;           // arc linear cost
+  //string id;
 
   #if( QUADRATICCOST )
    CNumber quadraticCost; // arc quadratic cost
@@ -578,8 +619,13 @@ class MCFSimplex: public MCFClass
  FONumber EpsOpt;               // the precision of the objective function value
                                 // for the quadratic case of the Primal Simplex
 
- int recomputeFOLimits;         // after how many iterations the quadratic Primal
-                                // Simplex computes "manually" the o.f. value
+ int recomputeFOLimits;         /* after how many iterations the quadratic
+				 * Primal Simplex computes "manually" the
+				 * o.f. value */
+
+ nodePType *prevN;
+
+ bool recomputeInitialBase;
 
  #if( QUADRATICCOST )
   FONumber foValue;             // the temporary objective function value
@@ -657,9 +703,14 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
+#if ! QUADRATICCOST
+
   void DualSimplex( void );
 
-/**< Main method to implement the Dual Simplex algorithm. */
+/**< Main method to implement the Dual Simplex algorithm. Only works (and,
+   therefore, is defined) in the linear case. */
+
+#endif
 
 /*--------------------------------------------------------------------------*/
 
@@ -838,6 +889,13 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
+  void PostPVisit( nodePType *node, int level );
+
+/**< Method to calculate the flow on the basic arcs with the Primal Simplex's
+   data structure. */
+
+/*--------------------------------------------------------------------------*/
+
   void BalanceFlow( nodePType *r );
 
 /**< This method works after the method PostPVisit (in a Primal context). It
@@ -975,13 +1033,12 @@ class MCFSimplex: public MCFClass
 /**< Method to show the actual complete situation. */
 
 /*--------------------------------------------------------------------------*/
+
+  string Int2String( int num, int cifreMinime );
     
   };  // end( class MCFSimplex )
 
-/* @} end( group( MCFSimplex_CLASSES ) ) */
-
-#endif  /* MCFSimplex.h included */
-
+/** @} end( group( MCFSimplex_CLASSES ) ) */
 /*-------------------------------------------------------------------------*/
 /*-------------------inline methods implementation-------------------------*/
 /*-------------------------------------------------------------------------*/
@@ -1075,12 +1132,12 @@ inline MCFSimplex::CNumber MCFSimplex::ReductCost( A *a )
 
 /*-------------------------------------------------------------------------*/
  
-#if( OPT_USE_NAMESPACES )
 };  // end( namespace MCFClass_di_unipi_it )
-#endif
 
 /*-------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------*/
+
+#endif  /* MCFSimplex.h included */
 
 /*-------------------------------------------------------------------------*/
 /*---------------------- End File MCFSimplex.h ----------------------------*/

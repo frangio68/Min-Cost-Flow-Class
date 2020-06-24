@@ -6,8 +6,8 @@
 /*-- (primal and dual) simplex algorithm. Conforms to the standard MCF    --*/
 /*-- interface defined in MCFClass.h.                                     --*/
 /*--                                                                      --*/
-/*--                            VERSION 1.00                              --*/
-/*--                           29 - 08 - 2011                             --*/
+/*--                            VERSION 1.13                              --*/
+/*--                           27 - 02 - 2020                             --*/
 /*--                                                                      --*/
 /*--                           Implementation:                            --*/
 /*--                                                                      --*/
@@ -18,12 +18,10 @@
 /*--                      Dipartimento di Informatica                     --*/
 /*--                         Universita' di Pisa                          --*/
 /*--                                                                      --*/
-/*-- Copyright (C) 2008 - 2011 by Alessandro Bertolini, Antonio Frangioni --*/
+/*-- Copyright (C) 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni --*/
 /*--                                                                      --*/
 /*--------------------------------------------------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------- IMPLEMENTATION -------------------------------*/
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 /*--------------------------------------------------------------------------*/
@@ -33,6 +31,7 @@
 #include "MCFSimplex.h"
 #include <algorithm>
 #include <iostream>
+#include <vector>
 
 #include <cstdlib>
 #include <ctime>
@@ -41,9 +40,7 @@
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-#if( OPT_USE_NAMESPACES )
 using namespace MCFClass_di_unipi_it;
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------------- MACROS ----------------------------------*/
@@ -184,21 +181,15 @@ MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
 
   if( numeric_limits<CNumber>::is_integer )
    throw( MCFException( "CNumber must be float if QUADRATICCOST == 1" ) );
- #endif
 
- newSession = true;
- if( nmax && mmax )
-  MemAlloc();
- else
-  nmax = mmax = 0;
-
- #if( QUADRATICCOST )
   recomputeFOLimits = 100;
   // recomputeFOLimits represents the limit of the iteration in which 
   // quadratic Primal Simplex computes "manually" the f.o. value
   EpsOpt = 1e-13;
   // EpsOpt is the fixed precision of the quadratic Primal Simplex
  #endif
+
+ newSession = true;
 
  pricingRule = kCandidateListPivot;
  forcedNumCandidateList = 0;
@@ -211,10 +202,19 @@ MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
  candP = NULL;
  candD = NULL;
 
+ modifiedBalance = NULL;
+
  if( numeric_limits<CNumber>::is_integer )
   MAX_ART_COST = CNumber( 1e7 );
  else
-  MAX_ART_COST = CNumber( 1e10 );
+  MAX_ART_COST = CNumber( 1e7 );
+
+ if( nmax && mmax )
+  MemAlloc();
+ else
+  nmax = mmax = 0;
+
+ recomputeInitialBase = true;
 
  }  // end( MCFSimplex )
 
@@ -232,8 +232,8 @@ void MCFSimplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
   // if the size of the allocated memory changes
 
   if( nmax && mmax )  {  // if the memory was already allocated
-   MemDeAlloc(true);         // deallocate the Primal 
-   MemDeAlloc(false);        // and the Dual data structures
+   MemDeAlloc( true );   // deallocate the Primal 
+   MemDeAlloc( false );  // and the Dual data structures
    nmax = mmax = 0;
    }
 
@@ -244,56 +244,71 @@ void MCFSimplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
    }
   }
 
- if( ( ! nmax ) || ( ! mmax ) )
-  // if one of the two dimension of the memory isn't correct
-  nmax = mmax = 0;
+ if( ( ! nmax ) || ( ! mmax ) )  // one of the two dimension of the memory
+  nmax = mmax = 0;               // isn't correct
 
- if( nmax ) {  // if the new dimensions of the memory are correct
+ if( nmax ) {  // the new dimensions of the memory are correct
   n = pn;
   m = pm;
+
+  if( ( ! pSn ) || ( ! pEn ) )
+   throw( MCFException( "LoadNet: pSn and pEn must be non-NULL" ) );
 
   if( usePrimalSimplex ) {
    stopNodesP = nodesP + n;
    dummyRootP = nodesP + nmax;
-   for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
-    node->balance = pDfct[ node - nodesP ];  // initialize nodes
+   // initialize nodes
+   if( pDfct )
+    for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
+     node->balance = pDfct[ node - nodesP ];
+   else
+    for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
+     node->balance = 0;
 
    stopArcsP = arcsP + m;
    dummyArcsP = arcsP + mmax;
    stopDummyP = dummyArcsP + n;
+   // initialize real arcs
    for( arcPType *arc = arcsP ; arc != stopArcsP ; arc++ ) {
-    // initialize real arcs
-    arc->cost = pC[ arc - arcsP ];
+    arc->cost = pC ? pC[ arc - arcsP ] : CNumber( 0 );
     #if( QUADRATICCOST )
      arc->quadraticCost = 0; 
     #endif
-    arc->upper = pU[ arc - arcsP ];
-    arc->tail = nodesP + pSn[ arc - arcsP ] - 1;
-    arc->head = nodesP + pEn[ arc - arcsP ] - 1;
+    arc->upper = pU ? pU[ arc - arcsP ] : Inf<FNumber>();
+    arc->tail = nodesP + pSn[ arc - arcsP ] - 1 + USENAME0;
+    arc->head = nodesP + pEn[ arc - arcsP ] - 1 + USENAME0;
+    arc->flow = 0;
+    arc->ident = AT_LOWER;
     }
    }
-  else {
-   stopNodesD = nodesD + n;
-   dummyRootD = nodesD + nmax;
-   for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
-    node->balance = pDfct[ node - nodesD ];  // initialize nodes
+  #if( ! QUADRATICCOST )
+   else {
+    // initialize nodes
+    stopNodesD = nodesD + n;
+    dummyRootD = nodesD + nmax;
+    if( pDfct )
+     for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
+      node->balance = pDfct[ node - nodesD ];
+    else
+     for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
+      node->balance = 0;
 
-   stopArcsD = arcsD + m;
-   dummyArcsD = arcsD + mmax;
-   stopDummyD = dummyArcsD + n;
-   for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
+    stopArcsD = arcsD + m;
+    dummyArcsD = arcsD + mmax;
+    stopDummyD = dummyArcsD + n;
     // initialize real arcs
-    arc->cost = pC[ arc - arcsD ];
-    #if( QUADRATICCOST )
-     arc->quadraticCost = 0; 
-    #endif
-    arc->upper = pU[ arc - arcsD ];
-    arc->tail = nodesD + pSn[ arc - arcsD ] - 1;
-    arc->head = nodesD + pEn[ arc - arcsD ] - 1;
-    }
+    for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
+     arc->cost = pC ? pC[ arc - arcsD ] : CNumber( 0 );
+     arc->upper = pU ? pU[ arc - arcsD ] : Inf<FNumber>();
+     arc->tail = nodesD + pSn[ arc - arcsD ] - 1 + USENAME0;
+     arc->head = nodesD + pEn[ arc - arcsD ] - 1 + USENAME0;
+     arc->flow = 0;
+     arc->ident = AT_LOWER;
+     }
 
-   CreateAdditionalDualStructures();
-   }
+    CreateAdditionalDualStructures();
+    }
+  #endif
 
   if( pricingRule == kCandidateListPivot )
    MemAllocCandidateList();
@@ -499,11 +514,12 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
    //#endif
    }
 #endif
- if( newPricingRule == kFirstEligibleArc )
+ if( newPricingRule == kFirstEligibleArc ) {
   if( newUsePrimalSimplex )
    arcToStartP = arcsP;
   else
    arcToStartD = arcsD;
+  }
 
  if( ( nmax && mmax ) && ( newPricingRule == kCandidateListPivot ) )
   MemAllocCandidateList();
@@ -517,10 +533,10 @@ void MCFSimplex::SetPar( int par, int val )
  switch( par ) {
  case kAlgPrimal:
   if( val == kYes )
-   SetAlg( true , pricingRule);
+   SetAlg( true , pricingRule );
 
   if( val == kNo )
-   SetAlg( false, pricingRule );
+   SetAlg( false , pricingRule );
 
   break;
 
@@ -558,7 +574,7 @@ void MCFSimplex::SetPar( int par, int val )
  default:
 
   MCFClass::SetPar(par, val);
- }
+  }
  }  // end( SetPar( int ) )
 
 /*-------------------------------------------------------------------------*/
@@ -573,7 +589,7 @@ void MCFSimplex::SetPar( int par , double val )
 
  default:
   MCFClass::SetPar( par , val );
- }
+  }
  }  // end( SetPar( double )
 
 /*-------------------------------------------------------------------------*/
@@ -585,17 +601,30 @@ void MCFSimplex::SolveMCF( void )
  if( MCFt )
   MCFt->Start();
 
- if( status == kUnSolved )
-  if(usePrimalSimplex )
+ #if QUADRATICCOST
+  if( recomputeInitialBase )
    CreateInitialPrimalBase();
-  else
-   CreateInitialDualBase();
-
+ #else
+  if( recomputeInitialBase ) {
+   if( usePrimalSimplex )
+    CreateInitialPrimalBase();
+   else
+    CreateInitialDualBase();
+   }
+ #endif
+  
+ status = kUnSolved;
  newSession = false;
- if( usePrimalSimplex )
+ recomputeInitialBase = true;
+
+ #if QUADRATICCOST
   PrimalSimplex();
- else
-  DualSimplex();
+ #else
+  if( usePrimalSimplex )
+   PrimalSimplex();
+  else
+   DualSimplex();
+ #endif
 
  if( MCFt )
   MCFt->Stop();
@@ -611,8 +640,8 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
  if( stp > m )
   stp = m;
 
- if( nms ) {
-  if( usePrimalSimplex )
+ #if QUADRATICCOST
+  if( nms ) {
    for( Index i = strt ; i < stp ; i++ ) {
     FNumber tXi = ( arcsP + i )->flow;
     if( GTZ( tXi , EpsFlw ) ) {
@@ -620,24 +649,41 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
      *(nms++) = i;
      }
     }
-  else
-   for( Index i = strt ; i < stp ; i++ ) {
-    FNumber tXi = ( arcsD + i )->flow;
-    if( GTZ( tXi , EpsFlw ) ) {
-     *(F++) = tXi;
-     *(nms++) = i;
-     }
-    }
 
-  *nms = Inf<Index>();
-  }        
- else
-  if( usePrimalSimplex )
+   *nms = Inf<Index>();
+   }        
+  else
    for( Index i = strt; i < stp; i++ )
     *(F++) = ( arcsP + i )->flow;
+ #else
+  if( nms ) {
+   if( usePrimalSimplex )
+    for( Index i = strt ; i < stp ; i++ ) {
+     FNumber tXi = ( arcsP + i )->flow;
+     if( GTZ( tXi , EpsFlw ) ) {
+      *(F++) = tXi;
+      *(nms++) = i;
+      }
+     }
+   else
+    for( Index i = strt ; i < stp ; i++ ) {
+     FNumber tXi = ( arcsD + i )->flow;
+     if( GTZ( tXi , EpsFlw ) ) {
+      *(F++) = tXi;
+      *(nms++) = i;
+      }
+     }
+
+   *nms = Inf<Index>();
+   }        
   else
-   for( Index i = strt; i < stp; i++ )
-    *(F++) = ( arcsD + i )->flow;
+   if( usePrimalSimplex )
+    for( Index i = strt; i < stp; i++ )
+     *(F++) = ( arcsP + i )->flow;
+   else
+    for( Index i = strt; i < stp; i++ )
+     *(F++) = ( arcsD + i )->flow;
+ #endif
 
  }  // end( MCFSimplex::MCFGetX( some ) )
 
@@ -649,23 +695,33 @@ void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
   while( *nms < strt )
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; )
-   *(CR++) = CNumber( ReductCost( arcsP + h ) );
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(CR++) = ReductCost( arcsD + h );
+    *(CR++) = CNumber( ReductCost( arcsP + h ) );
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(CR++) = CNumber( ReductCost( arcsP + h ) );
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(CR++) = ReductCost( arcsD + h );
+  #endif
   }
  else {
   if( stp > m )
    stp = m;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( arcPType* arc = arcsP + strt ; arc < arcsP + stp ; arc++ )
     *(CR++) = CNumber( ReductCost( arc ) );
-  else
-   for( arcDType* arc = arcsD + strt ; arc < arcsD + stp ; arc++ )
-    *(CR++) = ReductCost( arc );
+  #else
+   if( usePrimalSimplex )
+    for( arcPType* arc = arcsP + strt ; arc < arcsP + stp ; arc++ )
+     *(CR++) = CNumber( ReductCost( arc ) );
+   else
+    for( arcDType* arc = arcsD + strt ; arc < arcsD + stp ; arc++ )
+     *(CR++) = ReductCost( arc );
+  #endif
   }
  }  // end( MCFSimplex::MCFGetRC( some ) )
 
@@ -673,10 +729,14 @@ void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
 
 MCFSimplex::CNumber MCFSimplex::MCFGetRC( cIndex i )
 {
- if( usePrimalSimplex )
-  return CNumber( ReductCost( arcsP + i ) );
- else
-  return( ReductCost( arcsD + i ) );
+ #if QUADRATICCOST
+  return( CNumber( ReductCost( arcsP + i ) ) );
+ #else
+  if( usePrimalSimplex )
+   return( CNumber( ReductCost( arcsP + i ) ) );
+  else
+   return( ReductCost( arcsD + i ) );
+ #endif
 
  }  // end( MCFSimplex::MCFGetRC( i ) )
 
@@ -691,20 +751,30 @@ void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
   while( *nms < strt )
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; )
     *(P++) = CNumber( (nodesP + h)->potential );
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(P++) = (nodesD + h )->potential;
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(P++) = CNumber( (nodesP + h)->potential );
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(P++) = (nodesD + h )->potential;
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( nodePType *node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
     *(P++) = CNumber( node->potential );
-  else
-   for( nodeDType *node = nodesD + strt ; node++ < ( nodesD + stp ) ; node++ )
-    *(P++) = node->potential;
+  #else
+   if( usePrimalSimplex )
+    for( nodePType *node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
+     *(P++) = CNumber( node->potential );
+   else
+    for( nodeDType *node = nodesD + strt ; node < ( nodesD + stp ) ; node++ )
+     *(P++) = node->potential;
+  #endif
 
  }  // end(  MCFSimplex::MCFGetPi( some ) )
 
@@ -736,36 +806,54 @@ void MCFSimplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
   while( *nms < strt )
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; ) {
     if( Startv )
-     *(Startv++) = Index( (arcsP + h)->tail - nodesP) - USENAME0;
+     *(Startv++) = Index( (arcsP + h)->tail - nodesP) + 1 - USENAME0;
     if( Endv )
-     *(Endv++) = Index( (arcsP + h)->head - nodesP ) - USENAME0;
+     *(Endv++) = Index( (arcsP + h)->head - nodesP ) + 1 - USENAME0;
     }
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; ) {
-    if( Startv )
-     *(Startv++) = Index( (arcsD + h)->tail - nodesD) - USENAME0;
-    if( Endv )
-     *(Endv++) = Index( (arcsD + h)->head - nodesD ) - USENAME0;
-    }
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; ) {
+     if( Startv )
+      *(Startv++) = Index( (arcsP + h)->tail - nodesP) + 1 - USENAME0;
+     if( Endv )
+      *(Endv++) = Index( (arcsP + h)->head - nodesP ) + 1 - USENAME0;
+     }
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; ) {
+     if( Startv )
+      *(Startv++) = Index( (arcsD + h)->tail - nodesD) + 1 - USENAME0;
+     if( Endv )
+      *(Endv++) = Index( (arcsD + h)->head - nodesD ) + 1 - USENAME0;
+     }
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( arcPType* arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
     if( Startv )
-     *(Startv++) = Index( arc->tail - nodesP ) - USENAME0;
+     *(Startv++) = Index( arc->tail - nodesP ) + 1 - USENAME0;
     if( Endv )
-     *(Endv++) = Index( arc->head - nodesP ) - USENAME0;
+     *(Endv++) = Index( arc->head - nodesP ) + 1 - USENAME0;
     }
-  else
-   for( arcDType* arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ ) {
-    if( Startv )
-     *(Startv++) = Index( arc->tail - nodesD ) - USENAME0;
-    if( Endv )
-     *(Endv++) = Index( arc->head - nodesD ) - USENAME0;
-    }
+  #else
+   if( usePrimalSimplex )
+    for( arcPType* arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
+     if( Startv )
+      *(Startv++) = Index( arc->tail - nodesP ) + 1 - USENAME0;
+     if( Endv )
+      *(Endv++) = Index( arc->head - nodesP ) + 1 - USENAME0;
+     }
+   else
+    for( arcDType* arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ ) {
+     if( Startv )
+      *(Startv++) = Index( arc->tail - nodesD ) + 1 - USENAME0;
+     if( Endv )
+      *(Endv++) = Index( arc->head - nodesD ) + 1 - USENAME0;
+     }
+  #endif
 
  }  // end( MCFSimplex::MCFArcs )
 
@@ -781,20 +869,30 @@ void MCFSimplex::MCFCosts( CRow Costv , cIndex_Set nms ,
   while( *nms < strt )
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; )
     *(Costv++) = (arcsP + h)->cost;
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(Costv++) = (arcsD + h)->cost;
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(Costv++) = (arcsP + h)->cost;
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(Costv++) = (arcsD + h)->cost;
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( arcPType* arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ )
     *(Costv++) = arc->cost;           
-  else
-   for( arcDType* arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ )
-    *(Costv++) = arc->cost;           
+  #else
+   if( usePrimalSimplex )
+    for( arcPType* arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ )
+     *(Costv++) = arc->cost;           
+   else
+    for( arcDType* arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ )
+     *(Costv++) = arc->cost;           
+  #endif
 
  }  // end( MCFSimplex::MCFCosts ( some ) )
 
@@ -811,25 +909,17 @@ void MCFSimplex::MCFQCoef( CRow Qv , cIndex_Set nms  ,
    nms++;
 
   #if( QUADRATICCOST )
-   if( usePrimalSimplex )
-    for( Index h ; ( h = *(nms++) ) < stp ; )
-     *(Qv++) = (arcsP + h)->quadraticCost;
-   else
-    for( Index h ; ( h = *(nms++) ) < stp ; )
-     *(Qv++) = (arcsD + h)->quadraticCost;
+   for( Index h ; ( h = *(nms++) ) < stp ; )
+    *(Qv++) = (arcsP + h)->quadraticCost;
   #else
-    for( Index h ; ( h = *(nms++) ) < stp ; )
-     *(Qv++) = 0;
+   for( Index h ; ( h = *(nms++) ) < stp ; )
+    *(Qv++) = 0;
   #endif
   }
  else
   #if( QUADRATICCOST )
-   if( usePrimalSimplex )
-    for( arcPType* arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-     *(Qv++) = arc->quadraticCost;
-   else
-    for( arcDType* arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
-     *(Qv++) = arc->quadraticCost;
+   for( arcPType* arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
+    *(Qv++) = arc->quadraticCost;
   #else
    for( Index h = strt ; h++ < stp ; )
     *(Qv++) = 0;           
@@ -849,20 +939,30 @@ void MCFSimplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
   while( *nms < strt )
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; )
     *(UCapv++) = (arcsP + h)->upper;
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(UCapv++) = (arcsD + h)->upper;
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(UCapv++) = (arcsP + h)->upper;
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(UCapv++) = (arcsD + h)->upper;
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( arcPType* arc = arcsP + strt ; arc <  (arcsP + stp ) ; arc++ )
     *(UCapv++) = arc->upper;
-  else
-   for( arcDType* arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
-    *(UCapv++) = arc->upper;
+  #else
+   if( usePrimalSimplex )
+    for( arcPType* arc = arcsP + strt ; arc <  (arcsP + stp ) ; arc++ )
+     *(UCapv++) = arc->upper;
+   else
+    for( arcDType* arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
+     *(UCapv++) = arc->upper;
+  #endif
 
  }  // end( MCFSimplex::MCFUCaps ( some ) )
  
@@ -875,23 +975,33 @@ void MCFSimplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
   stp = n;
 
  if( nms ) {
-  while( *nms < strt )
+  while( *nms < strt ) 
    nms++;
 
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(nms++) ) < stp ; )
     *(Dfctv++) = ( nodesP + h )->balance;
-  else
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(Dfctv++) = (nodesD + h )->balance;
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(Dfctv++) = ( nodesP + h )->balance;
+   else
+    for( Index h ; ( h = *(nms++) ) < stp ; )
+     *(Dfctv++) = (nodesD + h )->balance;
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( nodePType* node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
     *(Dfctv++) = node->balance;
-  else
-   for( nodeDType* node = nodesD + strt ; node < ( nodesD + stp ) ; node++ )
-    *(Dfctv++) = node->balance;
+  #else
+   if( usePrimalSimplex )
+    for( nodePType* node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
+     *(Dfctv++) = node->balance;
+   else
+    for( nodeDType* node = nodesD + strt ; node < ( nodesD + stp ) ; node++ )
+     *(Dfctv++) = node->balance;
+  #endif
 
  }  // end( MCFSimplex::MCFDfcts )
 
@@ -912,43 +1022,81 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
    }
 
   cIndex_Set tnms = nms;  // nms may be needed below
-  if( usePrimalSimplex )
-   for( Index h ; ( h = *(tnms++) ) < stp ; )
-    arcsP[ h ].cost = *(NCost++);
-  else
-   for( Index h ; ( h = *(tnms++) ) < stp ; )
-    arcsD[ h ].cost = *(NCost++);
+  #if QUADRATICCOST
+   for( Index h ; ( h = *(tnms++) ) < stp ; ) {
+    if( arcsP[ h ].cost < Inf<CNumber>() ) 
+     arcsP[ h ].cost = *(NCost++);
+    else
+     NCost++;
+    }
+  #else
+   if( usePrimalSimplex ) 
+    for( Index h ; ( h = *(tnms++) ) < stp ; ) {
+     if( arcsP[ h ].cost < Inf<CNumber>() ) 
+      arcsP[ h ].cost = *(NCost++);
+     else
+      NCost++;
+     }
+   else { 
+    for( Index h ; ( h = *(tnms++) ) < stp ; )
+     if( arcsD[ h ].cost < Inf<CNumber>() )
+      arcsD[ h ].cost = *(NCost++);
+     else
+      NCost++;
+    }
+  #endif
   }
  else
-  if( usePrimalSimplex )
-   for( arcPType *arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ )
-    arc->cost = *(NCost++); 
-  else
-   for( arcDType *arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ )
-    arc->cost = *(NCost++); 
+  #if QUADRATICCOST
+   for( arcPType *arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
+    if( arc->cost < Inf<CNumber>() )
+     arc->cost = *(NCost++); 
+    else
+     NCost++;
+    }
+  #else
+   if( usePrimalSimplex )
+    for( arcPType *arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
+     if( arc->cost < Inf<CNumber>() )
+      arc->cost = *(NCost++); 
+     else
+      NCost++;
+     }
+   else
+    for( arcDType *arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ ) {
+     if( arc->cost < Inf<CNumber>() )
+      arc->cost = *(NCost++); 
+     else
+      NCost++;
+    }
+  #endif
 
- if( Senstv && ( status != kUnSolved ) )
-  if( usePrimalSimplex )
-   ComputePotential( dummyRootP );
-  else {
-   #if( QUADRATICCOST == 0 )
-    for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ )
-     if( arc->ident > BASIC )
-      if( GTZ( ReductCost( arc ) , EpsCst ) ) {
-       arc->flow = 0;
-       arc->ident = AT_LOWER;
-       }
-      else {
-       arc->flow = arc->upper; 
-       arc->ident = AT_UPPER;
+  if( Senstv && ( status != kUnSolved ) ) {
+   #if QUADRATICCOST
+    ComputePotential( dummyRootP );
+   #else
+    if( usePrimalSimplex )
+     ComputePotential( dummyRootP );
+    else {
+     for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ )
+      if( arc->ident > BASIC ) {
+       if( GTZ( ReductCost( arc ) , EpsCst ) ) {
+	arc->flow = 0;
+	arc->ident = AT_LOWER;
+        }
+       else {
+	arc->flow = arc->upper; 
+	arc->ident = AT_UPPER;
+        }
        }
 
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit( dummyRootD );
+     CreateInitialDModifiedBalanceVector();
+     PostDVisit( dummyRootD );
+     }
    #endif
    }
- else
-  status = kUnSolved;
+  else
+   status = kUnSolved;
 
  }  // end( MCFSimplex::ChgCosts )
 
@@ -959,28 +1107,49 @@ void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
  if( arc >= m )
   return;
 
- if( usePrimalSimplex )
+ #if QUADRATICCOST
+  if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+   return;
+
   ( arcsP + arc )->cost = NCost;
- else
-  ( arcsD + arc )->cost = NCost;
+ #else
+  if( usePrimalSimplex ) {
+   if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+    return;
+
+   ( arcsP + arc )->cost = NCost;
+   }
+  else {
+   if( ( arcsD + arc )->cost == Inf<CNumber>() )
+    return;
+
+   ( arcsD + arc )->cost = NCost;
+   }
+ #endif
 
  if( Senstv && ( status != kUnSolved ) ) {
-  if( usePrimalSimplex ) {
+  #if QUADRATICCOST
    nodePType *node = ( arcsP + arc )->tail;
    if( ( ( arcsP + arc )->head)->subTreeLevel < node->subTreeLevel )
     node = ( arcsP + arc )->head;
 
    ComputePotential( dummyRootP );
-   }
-  else {
-   #if( QUADRATICCOST == 0 )
+  #else
+   if( usePrimalSimplex ) {
+    nodePType *node = ( arcsP + arc )->tail;
+    if( ( ( arcsP + arc )->head)->subTreeLevel < node->subTreeLevel )
+     node = ( arcsP + arc )->head;
+
+    ComputePotential( dummyRootP );
+    }
+   else {
     nodeDType *node = ( arcsD + arc )->tail;
     if( ( ( arcsD + arc )->head )->subTreeLevel < node->subTreeLevel )
      node = ( arcsD + arc )->head;
 
     ComputePotential( dummyRootD );
     for( arcDType *a = arcsD ; a != stopArcsD ; a++)
-     if( a->ident > BASIC )
+     if( a->ident > BASIC ) {
       if( GTZ( ReductCost( a ) , EpsCst ) ) {
        a->flow = 0;
        a->ident = AT_LOWER;
@@ -989,11 +1158,12 @@ void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
        a->flow = a->upper; 
        a->ident = AT_UPPER;
        }
+      }
 
     CreateInitialDModifiedBalanceVector();
     PostDVisit( dummyRootD );
-   #endif
-   }
+    }
+  #endif
   }
  else
   status = kUnSolved;
@@ -1016,20 +1186,18 @@ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
     }
 
    cIndex_Set tnms = nms;  // nms may be needed below
-   if( usePrimalSimplex )
-    for( Index h ; ( h = *(tnms++) ) < stp ; )
+   for( Index h ; ( h = *(tnms++) ) < stp ; )
+    if( arcsP[ h ].quadraticCost == Inf<CNumber>() )
+     NQCoef++;
+    else
      arcsP[ h ].quadraticCost = *(NQCoef++);
-   else
-    for( Index h ; ( h = *(tnms++) ) < stp ; )
-     arcsD[ h ].quadraticCost = *(NQCoef++);
    }
   else
-   if( usePrimalSimplex )
-    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-     arc->quadraticCost = *(NQCoef++); 
-   else
-    for( arcDType *arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
-     arc->quadraticCost = *(NQCoef++); 
+   for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
+    if( arc->quadraticCost == Inf<CNumber>() )
+     NQCoef++;
+    else
+     arc->quadraticCost = *(NQCoef++);
 
   if( Senstv && (status != kUnSolved ) )
    ComputePotential( dummyRootP );
@@ -1039,7 +1207,8 @@ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
   if( NQCoef )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
  #endif
-}  // end( MCFSimplex::ChgQCoef )
+
+ }  // end( MCFSimplex::ChgQCoef )
 
 /*-------------------------------------------------------------------------*/
 
@@ -1049,10 +1218,10 @@ void MCFSimplex::ChgQCoef( Index arc , cCNumber NQCoef )
   if( arc >= m )
    return;
 
-  if( usePrimalSimplex )
-   ( arcsP + arc )->quadraticCost = NQCoef;
-  else
-   ( arcsD + arc )->quadraticCost = NQCoef;
+  if( ( arcsP + arc )->quadraticCost == Inf<CNumber>() ) 
+   return;
+
+  ( arcsP + arc )->quadraticCost = NQCoef;
 
   if( Senstv && ( status != kUnSolved ) ) {
    nodePType *node = ( arcsP + arc )->tail;
@@ -1067,6 +1236,7 @@ void MCFSimplex::ChgQCoef( Index arc , cCNumber NQCoef )
   if( NQCoef )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
  #endif
+
  }  // end( MCFSimplex::ChgQCoef )
 
 /*-------------------------------------------------------------------------*/
@@ -1084,32 +1254,51 @@ void MCFSimplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
    }
 
   cIndex_Set tnms = nms;  // nms may be needed below
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(tnms++) ) < stp ; )
     nodesP[ h ].balance = *(NDfct++);
-  else
-   for( Index h ; ( h = *(tnms++) ) < stp ; )
-    nodesD[ h ].balance = *(NDfct++);
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(tnms++) ) < stp ; )
+     nodesP[ h ].balance = *(NDfct++);
+   else
+    for( Index h ; ( h = *(tnms++) ) < stp ; )
+     nodesD[ h ].balance = *(NDfct++);
+  #endif
   }
  else
+ #if QUADRATICCOST
+  for( nodePType *node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
+   node->balance = *(NDfct++);
+ #else
   if( usePrimalSimplex )
    for( nodePType *node = nodesP + strt ; node < ( nodesP + stp ) ; node++ )
     node->balance = *(NDfct++);
   else
    for( nodeDType *node = nodesD + strt ; node < ( nodesD + stp ) ; node++ )
     node->balance = *(NDfct++);
+ #endif
 
  if( Senstv && (status != kUnSolved ) )
-  if( usePrimalSimplex ) {
+  #if QUADRATICCOST
+  {
    CreateInitialPModifiedBalanceVector();
    PostPVisit( dummyRootP );
    BalanceFlow( dummyRootP );
    ComputePotential( dummyRootP );
    }
-  else {
-   CreateInitialDModifiedBalanceVector();
-   PostDVisit( dummyRootD );
-   }
+  #else
+   if( usePrimalSimplex ) {
+    CreateInitialPModifiedBalanceVector();
+    PostPVisit( dummyRootP );
+    BalanceFlow( dummyRootP );
+    ComputePotential( dummyRootP );
+    }
+   else {
+    CreateInitialDModifiedBalanceVector();
+    PostDVisit( dummyRootD );
+    }
+  #endif
  else
   status = kUnSolved;
 
@@ -1122,22 +1311,35 @@ void MCFSimplex::ChgDfct( Index nod , cFNumber NDfct )
  if( nod > n )
   return;
 
- if( usePrimalSimplex )
-  ( nodesP + nod - 1 )->balance = NDfct;
- else
-  ( nodesD + nod - 1 )->balance = NDfct;
+ #if QUADRATICCOST
+  ( nodesP + nod )->balance = NDfct;
+ #else
+  if( usePrimalSimplex )
+   ( nodesP + nod )->balance = NDfct;
+  else
+   ( nodesD + nod )->balance = NDfct;
+ #endif
 
- if( Senstv && (status != kUnSolved ) )
-  if( usePrimalSimplex ) {
+ if( Senstv && ( status != kUnSolved ) )
+  #if QUADRATICCOST
+  {
    CreateInitialPModifiedBalanceVector();
    PostPVisit( dummyRootP );
    BalanceFlow( dummyRootP );
    ComputePotential( dummyRootP );
    }
-  else {
-   CreateInitialDModifiedBalanceVector();
-   PostDVisit( dummyRootD );
-   }
+  #else
+   if( usePrimalSimplex ) {
+    CreateInitialPModifiedBalanceVector();
+    PostPVisit( dummyRootP );
+    BalanceFlow( dummyRootP );
+    ComputePotential( dummyRootP );
+    }
+   else {
+    CreateInitialDModifiedBalanceVector();
+    PostDVisit( dummyRootD );
+    }
+  #endif
  else
   status = kUnSolved;
 
@@ -1148,6 +1350,7 @@ void MCFSimplex::ChgDfct( Index nod , cFNumber NDfct )
 void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
 			   cIndex strt , Index stp )
 {
+ FNumber fn;
  if( stp > m )
   stp = m;
 
@@ -1158,53 +1361,91 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
    }
 
   cIndex_Set tnms = nms;  // nms may be needed below
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( Index h ; ( h = *(tnms++) ) < stp ; )
-    arcsP[ h ].upper = *(NCap++);
-  else
-   for( Index h ; ( h = *(tnms++) ) < stp ; )
-    arcsD[ h ].upper = *(NCap++);
+    if ( arcsP[ h ].cost < Inf<CNumber>() )
+     arcsP[ h ].upper = *(NCap++);
+    else
+     NCap++;
+  #else
+   if( usePrimalSimplex )
+    for( Index h ; ( h = *(tnms++) ) < stp ; )
+     if ( arcsP[ h ].cost < Inf<CNumber>() )
+      arcsP[ h ].upper = *(NCap++);
+     else
+      NCap++;
+   else
+    for( Index h ; ( h = *(tnms++) ) < stp ; )
+     if ( arcsD[ h ].cost < Inf<CNumber>() )
+      arcsD[ h ].upper = *(NCap++);
+     else
+      NCap++;
+  #endif
   }
  else
-  if( usePrimalSimplex )
+  #if QUADRATICCOST
    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-    arc->upper = *(NCap++);
-  else
-   for( arcDType *arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
-    arc->upper = *(NCap++); 
+    if ( arc->cost < Inf<CNumber>() )
+     arc->upper = *(NCap++);
+    else
+     NCap++;
+  #else
+   if( usePrimalSimplex )
+    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
+     if ( arc->cost < Inf<CNumber>() )
+      arc->upper = *(NCap++);
+     else
+      NCap++;
+   else
+    for( arcDType *arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
+     if ( arc->cost < Inf<CNumber>() )
+      arc->upper = *(NCap++);
+     else
+      NCap++;
+  #endif
 
  if( Senstv && (status != kUnSolved ) ) {
-  if( usePrimalSimplex ) {
-   for( arcPType *arc = arcsP ; arc != stopArcsP ; arc++)
-    #if( QUADRATICCOST )
-     if( GT( arc->flow , arc->upper , EpsFlw ) ) 
-      arc->flow = arc->upper;
-    #else
-     if( GT(arc->flow , arc->upper , EpsFlw ) || 
-	 ( ( arc->ident == AT_UPPER ) &&
-	   ( ! ETZ( arc->flow - arc->upper , EpsFlw ) ) ) )
-      arc->flow = arc->upper;
-    #endif
+  #if QUADRATICCOST
+   for( arcPType *arc = arcsP ; arc != stopArcsP ; arc++ ) {
+    fn = arc->flow - arc->upper;
+    if( GT( arc->flow , arc->upper , EpsFlw ) ) 
+     arc->flow = arc->upper;
+    }
 
    CreateInitialPModifiedBalanceVector();
    PostPVisit( dummyRootP );
    BalanceFlow( dummyRootP );
    ComputePotential( dummyRootP );
    }
-  else {
-   #if( QUADRATICCOST == 0 )
-    for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ )
-     if( ( GT( arc->flow , arc->upper , EpsFlw ) && ( arc->ident != BASIC ) ) ||
-	 ( ( arc->ident == AT_UPPER ) &&
-	   ( ! ETZ( arc->flow - arc->upper , EpsFlw ) ) ) )
+  #else
+   if( usePrimalSimplex ) {
+    for( arcPType *arc = arcsP ; arc != stopArcsP ; arc++) {
+     fn = arc->flow - arc->upper;
+     if( GT(arc->flow , arc->upper , EpsFlw ) || 
+	 ( ( arc->ident == AT_UPPER ) && ( ! ETZ( fn , EpsFlw ) ) ) )
       arc->flow = arc->upper;
+     }
+
+    CreateInitialPModifiedBalanceVector();
+    PostPVisit( dummyRootP );
+    BalanceFlow( dummyRootP );
+    ComputePotential( dummyRootP );
+    }
+   else {
+    for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
+     fn = arc->flow - arc->upper;
+     if( ( GT( arc->flow , arc->upper , EpsFlw ) &&
+	   ( arc->ident != BASIC ) ) ||
+	 ( ( arc->ident == AT_UPPER ) && ( ! ETZ( fn , EpsFlw ) ) ) )
+      arc->flow = arc->upper;
+      }
 
     CreateInitialDModifiedBalanceVector();
     PostDVisit( dummyRootD );
     ComputePotential( dummyRootD );
-   #endif
-   }
+    }
   }
+  #endif
  else
   status = kUnSolved;
 
@@ -1214,37 +1455,58 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
 
 void MCFSimplex::ChgUCap( Index arc , cFNumber NCap )
 {
+ FNumber fn;
  if( arc >= m )
   return;
 
- if( usePrimalSimplex )
+ #if QUADRATICCOST
+  if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+   return;
+  
   ( arcsP + arc )->upper = NCap;
- else
-  ( arcsD + arc )->upper = NCap;
+ #else
+  if( usePrimalSimplex ) {
+   if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+    return;
+  
+   ( arcsP + arc )->upper = NCap;
+   }
+  else {
+   if( ( arcsD + arc )->cost == Inf<CNumber>() )
+    return;
+
+   ( arcsD + arc )->upper = NCap;
+   }
+ #endif
 
  if( Senstv && (status != kUnSolved ) ) {
-  if( usePrimalSimplex ) {
-   #if( QUADRATICCOST )
-    if( GT( ( arcsP + arc )->flow , ( arcsP + arc )->upper , EpsFlw ) ) 
-     ( arcsP + arc )->flow = ( arcsP + arc )->upper;
-   #else
-    if( GT( ( arcsP + arc )->flow , ( arcsP + arc )->upper , EpsFlw ) ||
-	( ( ( arcsP + arc )->ident == AT_UPPER ) &&
-	  ( ! ETZ( ( arcsP + arc )->flow - ( arcsP + arc )->upper , EpsFlw ) ) ) )
-     ( arcsP + arc )->flow = ( arcsP + arc )->upper;
-   #endif
+  #if QUADRATICCOST
+  if( GT( ( arcsP + arc )->flow , ( arcsP + arc )->upper , EpsFlw ) ) 
+   ( arcsP + arc )->flow = ( arcsP + arc )->upper;
 
    CreateInitialPModifiedBalanceVector();
    PostPVisit( dummyRootP );
    BalanceFlow( dummyRootP );
    ComputePotential( dummyRootP );
-   }
-  else {
-   #if( QUADRATICCOST == 0 )
+  #else
+   if( usePrimalSimplex ) {
+    fn = ( arcsP + arc )->flow - ( arcsP + arc )->upper;
+    if( GT( ( arcsP + arc )->flow , ( arcsP + arc )->upper , EpsFlw ) ||
+	( ( ( arcsP + arc )->ident == AT_UPPER ) &&
+	  ( ! ETZ( fn , EpsFlw ) ) ) )
+     ( arcsP + arc )->flow = ( arcsP + arc )->upper;
+
+    CreateInitialPModifiedBalanceVector();
+    PostPVisit( dummyRootP );
+    BalanceFlow( dummyRootP );
+    ComputePotential( dummyRootP );
+    }
+   else {
+    fn = ( arcsD + arc )->flow - ( arcsD + arc )->upper;
     if( ( GT( ( arcsD + arc )->flow , ( arcsD + arc )->upper , EpsFlw ) &&
 	  ( ( ( arcsD + arc )->ident != BASIC ) ) ) || 
 	( ( ( arcsD + arc )->ident == AT_UPPER ) &&
-	  ( ! ETZ( ( arcsD + arc )->flow - ( arcsD + arc )->upper , EpsFlw ) ) ) ) {
+	  ( ! ETZ( fn , EpsFlw ) ) ) ) {
      ( arcsD + arc )->flow = ( arcsD + arc )->upper;
      ( arcsD + arc )->ident = AT_UPPER;
      }
@@ -1252,8 +1514,8 @@ void MCFSimplex::ChgUCap( Index arc , cFNumber NCap )
     CreateInitialDModifiedBalanceVector();
     PostDVisit( dummyRootD );
     ComputePotential( dummyRootD );
-   #endif
-   }
+    }
+  #endif
   }
  else
   status = kUnSolved;
@@ -1271,9 +1533,9 @@ bool MCFSimplex::IsClosedArc( cIndex name )
   return( ( arcsP + name )->cost == Inf<CNumber>() );
  #else
   if( usePrimalSimplex )
-   return( ( ( arcsP + name )->ident < BASIC) );
+   return( ( ( arcsP + name )->ident < BASIC ) );
   else
-   return( ( ( arcsD + name )->ident < BASIC) );
+   return( ( ( arcsD + name )->ident < BASIC ) );
  #endif
  }
 
@@ -1289,8 +1551,6 @@ void MCFSimplex::CloseArc( cIndex name )
   #if( QUADRATICCOST )
    if( arc->cost == Inf<CNumber>() )
     return;
-
-   arc->cost = Inf<CNumber>();
   #else
    if( arc->ident < BASIC )
     return;
@@ -1298,6 +1558,7 @@ void MCFSimplex::CloseArc( cIndex name )
    arc->ident = CLOSED;
   #endif
 
+  arc->cost = Inf<CNumber>();
   arc->flow = 0;
 
   if( Senstv && ( status != kUnSolved ) ) {
@@ -1348,7 +1609,7 @@ void MCFSimplex::CloseArc( cIndex name )
      ComputePotential( dummyRootD );
 
      for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
-      if( a->ident > BASIC )
+      if( a->ident > BASIC ) {
        if( GTZ( ReductCost( a ) , EpsCst ) ) {
 	a->flow = 0;
 	a->ident = AT_LOWER;
@@ -1357,6 +1618,7 @@ void MCFSimplex::CloseArc( cIndex name )
 	a->flow = a->upper; 
 	a->ident = AT_UPPER;
         }
+       }
      }
 
     CreateInitialDModifiedBalanceVector();
@@ -1464,12 +1726,13 @@ void MCFSimplex::OpenArc( cIndex name )
 
  if( usePrimalSimplex ) {
   /* Quadratic case is not implemented for a theory bug.
-     Infact a closed arc in the quadratic case has its cost fixed to infinity, and
-     it's impossible to restore the old value. */
+     Infact a closed arc in the quadratic case has its cost fixed to
+     infinity, and it's impossible to restore the old value. */
 
   #if( QUADRATICCOST == 0 )
    arcPType *arc = arcsP + name;
    if( arc->ident == CLOSED ) {
+    arc->cost = 0;
     arc->ident = AT_LOWER;
     arc->flow = 0; 
     }
@@ -1479,6 +1742,7 @@ void MCFSimplex::OpenArc( cIndex name )
   #if( QUADRATICCOST == 0 )
    arcDType *arc = arcsD + name;
    if( arc->ident == CLOSED ) {
+    arc->cost = 0;
     if( GTZ( ReductCost( arc ) , EpsCst ) )
      arc->ident = AT_LOWER;
     else {
@@ -1566,18 +1830,25 @@ void MCFSimplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
 
  CloseArc( name );
 
- if( usePrimalSimplex ) {
+ #if QUADRATICCOST
   if( nSN <= n )
-   (arcsP + name)->tail = (nodesP + nSN + USENAME0 - 1);
+   (arcsP + name)->tail = (nodesP + nSN + USENAME0 - 1 );
   if( nEN <= n )
-   (arcsP + name)->head = (nodesP + nEN + USENAME0 - 1);
-  }
- else {
-  if( nSN <= n )
-   (arcsD + name)->tail = (nodesD + nSN + USENAME0 - 1);
-  if( nEN <= n )
-   (arcsD + name)->head = (nodesD + nEN + USENAME0 - 1);
-  }
+   (arcsP + name)->head = (nodesP + nEN + USENAME0 - 1 );
+ #else
+  if( usePrimalSimplex ) {
+   if( nSN <= n )
+    (arcsP + name)->tail = (nodesP + nSN + USENAME0 - 1 );
+   if( nEN <= n )
+    (arcsP + name)->head = (nodesP + nEN + USENAME0 - 1 );
+   }
+  else {
+   if( nSN <= n )
+    (arcsD + name)->tail = (nodesD + nSN + USENAME0 - 1 );
+   if( nEN <= n )
+    (arcsD + name)->head = (nodesD + nEN + USENAME0 - 1 );
+   }
+ #endif
 
  OpenArc( name );
 
@@ -1590,39 +1861,56 @@ void MCFSimplex::DelArc( cIndex name )
  if( name >= m )
   return;
 
- if( usePrimalSimplex ) {
+ #if QUADRATICCOST
   arcPType *arc = arcsP + name;
-  #if( QUADRATICCOST )
-   if( arc->upper == -Inf<FNumber>() )
+  if( arc->upper == -Inf<FNumber>() )
+   return;
+
+  if( arc->cost < Inf<CNumber>() )
+   CloseArc( name );
+
+  arc->upper = -Inf<FNumber>();
+
+  while( ( stopArcsP - 1 )->upper == -Inf<FNumber>() ) {
+   --stopArcsP;
+   if( ! --m )
+    break;
+   }
+ #else
+  if( usePrimalSimplex ) {
+   arcPType *arc = arcsP + name;
+   if( arc->ident == DELETED )
     return;
 
-   if( arc->cost < Inf<CNumber>() )
-  #else
-   if( arc->cost == DELETED )
-    return;
-
-   if( arc->cost >= BASIC )
-  #endif
+   if( arc->ident >= BASIC )
     CloseArc( name );
 
-  #if( QUADRATICCOST )
-   arc->upper = -Inf<FNumber>();
-  #else
    arc->ident = DELETED;
-  #endif
-  }
- else {
-  #if( QUADRATICCOST == 0 )
+
+   while( ( stopArcsP - 1 )->ident == DELETED ) {
+    --stopArcsP;
+    if( ! --m )
+     break;
+    }
+   }
+  else {
    arcDType *arc = arcsD + name;
    if( arc->cost == DELETED )
     return;
 
-   if( arc->cost >= BASIC )
+   if( arc->ident >= BASIC )
     CloseArc( name );
 
    arc->ident = DELETED;
-  #endif
-  }
+
+   while( ( stopArcsD - 1 )->ident == DELETED ) {
+    --stopArcsD;
+    if( ! --m )
+     break;
+    }
+   }
+ #endif
+
  }  // end( MCFSimplex::DelArc )
 
 /*--------------------------------------------------------------------------*/
@@ -1633,9 +1921,9 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP;
   #if( QUADRATICCOST )
-   while( ( arc->upper != -Inf<FNumber>() ) && ( arc != stopArcsP ) )
+   while( ( arc != stopArcsP ) && ( arc->upper != -Inf<FNumber>() ) )
   #else
-   while( ( arc->ident > DELETED ) && ( arc != stopArcsP ) )
+   while( ( arc != stopArcsP ) && ( arc->ident > DELETED ) )
   #endif
     arc++;
 
@@ -1647,7 +1935,7 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
    stopArcsP++;
    }
 
-  Index pos = ( arc - arcsP ) + 1;
+  Index pos = arc - arcsP;
   arc->tail = nodesP + Start + USENAME0 - 1;
   arc->head = nodesP + End + USENAME0 - 1;
   arc->upper = aU;
@@ -1675,7 +1963,7 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
     stopArcsD++;
     }
 
-   Index pos = ( arc - arcsD ) + 1;
+   Index pos = arc - arcsD;
    arc->tail = nodesD + Start + USENAME0 - 1;
    arc->head = nodesD + End + USENAME0 - 1;
    arc->upper = aU;
@@ -1727,14 +2015,175 @@ bool MCFSimplex::IsDeletedArc( cIndex name )
  }
 
 /*--------------------------------------------------------------------------*/
+
+void MCFSimplex::UsePastInformation()
+{
+ recomputeInitialBase = false;
+ ComputePotential( dummyRootP );
+ }
+
+/*--------------------------------------------------------------------------*/
+
+/*void MCFSimplex::LoadState( int *enterArcs, FNumber *flowEnterArcs,
+                              Index *UArcs, bool lasciaStare )
+{
+	state->enterArcs = enterArcs;
+	state->flowEnterArcs = flowEnterArcs;
+	state->UArcs = UArcs;
+	MCFPutState( *state );
+}*/
+
+/*--------------------------------------------------------------------------*/
+
+/*void MCFSimplex::MCFPutState( MCFStatePtr S )
+{
+nodePType *node;
+arcPType *arc;
+
+// Per ora è solo contemplato la versione non quadratica del Primale,
+// nel senso che vi è solo una mera copia dello stato senza controllo 
+// d'ammissibilità della soluzione data
+
+// Metti a MAX_ART_COST il costo e a 0 il flusso gli archi dummy
+	
+int c;
+#if( QUADRATICCOST )
+
+#else
+dummyRootP->balance = 0;
+dummyRootP->prevInT = NULL;
+dummyRootP->enteringTArc = NULL;
+dummyRootP->potential = MAX_ART_COST;
+dummyRootP->subTreeLevel = 0;
+
+for( arc = arcsP ; arc != stopArcsP ; arc++ ) 
+{
+if ( arc->ident >= BASIC )
+{
+arc->ident = AT_LOWER;
+}
+arc->flow = 0;
+} 
+
+for( arc = dummyArcsP ; arc != stopDummyP ; arc++ ) 
+{
+node = nodesP + ( arc - dummyArcsP );
+if( node->balance > 0 ) 
+{  // sink nodes 
+arc->tail = dummyRootP;
+arc->head = node;
+//arc->flow = node->balance;
+}
+else 
+{  // source nodes or transit node
+arc->tail = node;
+arc->head = dummyRootP;
+//arc->flow = -node->balance;
+}
+arc->flow = 0;
+arc->upper = Inf<FNumber>();
+arc->ident = AT_LOWER;
+arc->cost = MAX_ART_COST;
+}
+c = 0;
+for( node = nodesP ; node != stopNodesP ; node++ ) 
+{
+if ( S.enterArcs[c] == -1 )
+{
+node->enteringTArc = dummyArcsP + ( node - nodesP );
+if( node->balance > 0 ) 
+{  // sink nodes 
+node->enteringTArc->flow = node->balance;
+}
+else 
+{  // source nodes or transit node
+node->enteringTArc->flow = -node->balance;
+}
+}
+else
+{
+node->enteringTArc = arcsP + ( Index )( S.enterArcs[c] );
+node->enteringTArc->flow = S.flowEnterArcs[c];
+}
+node->enteringTArc->ident = BASIC;
+node->nextInT = NULL;
+c++;
+}
+if ( S.UArcs != NULL )
+{
+c = 0;
+Index inf = Inf<Index>();
+while ( S.UArcs[c] != inf )
+{
+( arcsP + ( Index )( S.enterArcs[c] ) )->ident = AT_UPPER;
+( arcsP + ( Index )( S.enterArcs[c] ) )->flow = ( arcsP + ( Index )( S.enterArcs[c] ) )->upper;
+c++;
+}
+}
+	
+prevN = NULL;
+PostPVisit( dummyRootP, 0 );
+
+ComputePotential( dummyRootP );
+
+// Per il debug: poi togliere
+vector< nodePType > nodes;
+vector< arcPType > arcs;
+vector< arcPType > darcs;
+nodes.resize( stopNodesP - nodesP );
+arcs.resize( dummyArcsP - arcsP );
+darcs.resize( stopDummyP - dummyArcsP );
+c = 0;
+for( node = nodesP ; node != stopNodesP ; node++ ) 
+{
+nodes[c] = *node;
+c++;
+}
+c = 0;
+for( arc = arcsP ; arc != stopArcsP ; arc++ ) 
+{
+arcs[c] = *arc;
+if ( arcs[c].flow )
+{
+//cout << arcs[c].id << " = " << arcs[c].flow << endl;
+}
+c++;
+}
+#endif
+recomputeInitialBase = false;
+}*/
+
+/*--------------------------------------------------------------------------*/
+
+void MCFSimplex::PostPVisit( nodePType *node, int level )
+{
+ node->subTreeLevel = level;
+ if ( prevN != NULL ) {
+  node->prevInT = prevN;
+  node->prevInT->nextInT = node;
+  }
+ prevN = node;
+ nodePType *nd;
+ for( nd = nodesP ; nd != stopNodesP ; nd++ ) {
+  nodePType *n = nd->enteringTArc->tail;
+  if ( n == nd ) {
+   n = nd->enteringTArc->head;
+   }
+  if ( n == node ) {
+   PostPVisit( nd, level + 1 );
+   }
+  }
+}
+
+/*--------------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 MCFSimplex::~MCFSimplex()
 {
  MemDeAllocCandidateList();
- MemDeAlloc(true);
- MemDeAlloc(false);
+ MemDeAlloc( true );
+ MemDeAlloc( false );
  }
 
 /*--------------------------------------------------------------------------*/
@@ -1743,24 +2192,37 @@ MCFSimplex::~MCFSimplex()
 
 void MCFSimplex::MemAlloc( void )
 {
- if( usePrimalSimplex )        {
+ #if QUADRATICCOST
   nodesP = new nodePType[ nmax + 1 ];   // array of nodes
   arcsP = new arcPType[ mmax + nmax ];  // array of arcs
   dummyArcsP = arcsP + mmax;            // artificial arcs are in the last
                                         // nmax positions of the array arcs[]
-  }
- else {
-  nodesD = new nodeDType[ nmax + 1 ];   // array of nodes
-  arcsD = new arcDType[ mmax + nmax ];  // array of arcs
-  dummyArcsD = arcsD + mmax;            // artificial arcs are in the last nmax
-                                        // positions of the array arcs[]
-  }
- }
+ #else
+  if( usePrimalSimplex )        {
+   nodesP = new nodePType[ nmax + 1 ];   // array of nodes
+   arcsP = new arcPType[ mmax + nmax ];  // array of arcs
+   dummyArcsP = arcsP + mmax;            // artificial arcs are in the last
+                                         // nmax positions of the array arcs[]
+   }
+  else {
+   nodesD = new nodeDType[ nmax + 1 ];   // array of nodes
+   arcsD = new arcDType[ mmax + nmax ];  // array of arcs
+   dummyArcsD = arcsD + mmax;            // artificial arcs are in the last
+                                         // nmax positions of the array arcs[]
+   }
+ #endif
+
+ modifiedBalance = new FNumber[ nmax + 1 ];  // node modified balance
+
+ }  // end( MemAlloc )
 
 /*--------------------------------------------------------------------------*/
 
 void MCFSimplex::MemDeAlloc( bool whatDeAlloc )
 {
+ delete[] modifiedBalance;
+ modifiedBalance = NULL;
+ 
  if( whatDeAlloc ) {
   delete[] nodesP;
   delete[] arcsP;
@@ -1773,8 +2235,10 @@ void MCFSimplex::MemDeAlloc( bool whatDeAlloc )
   nodesD = NULL;
   arcsD = NULL;
  }
- MemDeAllocCandidateList( );
- }
+
+ MemDeAllocCandidateList();
+
+ }  // end( MemDeAlloc )
 
 /*--------------------------------------------------------------------------*/
 
@@ -1797,8 +2261,9 @@ void MCFSimplex::MemAllocCandidateList( void )
 
   #if( QUADRATICCOST )
    int coef = 1;
-   // If the number of the arcs is more than 10000, numCandidateList and hotListSize 
-   // are increased to improve the performance of the Quadratic Primal Simplex
+   // If the number of the arcs is more than 10000, numCandidateList and
+   // hotListSize are increased to improve the performance of the
+   // Quadratic Primal Simplex
    if( m > 10000 )
     coef = 10;
 
@@ -1851,6 +2316,8 @@ void MCFSimplex::CreateInitialPrimalBase( void )
  arcPType *arc;
  nodePType *node;
  for( arc = arcsP ; arc != stopArcsP ; arc++ ) {  // initialize real arcs
+  if ( arc->cost == Inf<CNumber>() )
+   continue;
   arc->flow = 0;
   #if( QUADRATICCOST == 0 )
    arc->ident = AT_LOWER;
@@ -1928,6 +2395,10 @@ void MCFSimplex::CreateInitialDualBase( void )
   }
 
  for( arc = arcsD ; arc != stopArcsD ; arc++ ) {  // initialize real arcs
+  #if( QUADRATICCOST == 0 )
+   if ( arc->ident < BASIC ) 
+    continue;
+  #endif
   if( GTZ( arc->cost , EpsCst ) ) {
    arc->flow = 0;
    #if( QUADRATICCOST == 0 )
@@ -2009,7 +2480,7 @@ void MCFSimplex::PrimalSimplex( void )
  #if( UNIPI_PRIMAL_INITIAL_SHOW == 0 )
   #if( UNIPI_PRIMAL_ITER_SHOW == 0 )
    #if( UNIPI_PRIMAL_FINAL_SHOW == 0 ) 
-    cout << endl;
+    //cout << endl;
    #endif
   #endif
  #endif
@@ -2033,13 +2504,14 @@ void MCFSimplex::PrimalSimplex( void )
 
  iterator = 0;  // setting the initial arc for the Dantzig or First Elibigle Rule
 
- arcPType *enteringArc;
- arcPType *leavingArc;
+ arcPType *enteringArc = NULL;
+ arcPType *leavingArc = NULL;
  if( pricingRule == kCandidateListPivot )
   InitializePrimalCandidateList();
 
  while( status == kUnSolved ) {
   iterator++;
+
   switch( pricingRule ) {
   case( kDantzig ):
    enteringArc = RuleDantzig();
@@ -2308,12 +2780,11 @@ void MCFSimplex::PrimalSimplex( void )
        k2 = enteringArc->head;
        CNumber delta = ReductCost(enteringArc);
        if( ( enteringArc->tail )->subTreeLevel > ( enteringArc->head )->subTreeLevel ) {
-	delta = -delta;
-	k2 = enteringArc->tail;
+	    delta = -delta;
+	    k2 = enteringArc->tail;
         }
-
        AddPotential( k2 , delta );
-       // In the linear case Primal Simplex only updates the potential of the nodes of
+	   // In the linear case Primal Simplex only updates the potential of the nodes of
        // subtree T2
        }
      #else
@@ -2329,7 +2800,7 @@ void MCFSimplex::PrimalSimplex( void )
        else {
 	h1 = leavingArc->head;
 	h2 = leavingArc->tail;
-        } 
+        }
 
        // Update the basic tree
        UpdateT( leavingArc , enteringArc , h1 , h2 , k1 , k2 );
@@ -2431,7 +2902,6 @@ void MCFSimplex::PrimalSimplex( void )
      }
    #endif
   }
-
  #if( UNIPI_PRIMAL_FINAL_SHOW )
   cout << endl;
   for( int t = 0; t < 3; t++ )
@@ -2444,12 +2914,14 @@ void MCFSimplex::PrimalSimplex( void )
 
 /*--------------------------------------------------------------------------*/
 
+#if ! QUADRATICCOST
+
 void MCFSimplex::DualSimplex( void )
 {
  #if( UNIPI_PRIMAL_INITIAL_SHOW == 0 )
   #if( UNIPI_PRIMAL_ITER_SHOW == 0 )
    #if( UNIPI_PRIMAL_FINAL_SHOW == 0 ) 
-    cout << endl;
+    //cout << endl;
    #endif
   #endif
  #endif
@@ -2465,8 +2937,8 @@ void MCFSimplex::DualSimplex( void )
   arcToStartD = arcsD;
 
  iterator = 0;
- arcDType *enteringArc;
- arcDType *leavingArc;
+ arcDType *enteringArc = NULL;
+ arcDType *leavingArc = NULL;
  if( pricingRule == kCandidateListPivot )
   InitializeDualCandidateList();
 
@@ -2550,11 +3022,12 @@ void MCFSimplex::DualSimplex( void )
     while( fine == false ) {
      /* If node is the root of subtree T2, Dual Simplex jumps to the node
 	(if exists) which follows the last node of T2 */
-     if( node == h2 )
+     if( node == h2 ) {
       if( lastNodeOfT2->nextInT )
        node = lastNodeOfT2->nextInT;
       else
        break;
+      }
 
      // Search arc in the Backward Star of nodes of T1
      arcDType *arc = node->firstBs;
@@ -2745,9 +3218,7 @@ void MCFSimplex::DualSimplex( void )
     if( GTZ( leavingArc->flow , EpsFlw ) )
      theta = leavingArc->flow - leavingArc->upper;
     // Initial value of theta is the infeasibility of the leaving arc
-
-    FNumber t;
-    nodeDType *k1;
+	nodeDType *k1;
     nodeDType *k2;
     /* if entering arc is in U, Dual Simplex pushs flow in the cycle 
        determinated by T and entering arc for decreases flow in the entering arc:
@@ -2887,6 +3358,8 @@ void MCFSimplex::DualSimplex( void )
  #endif
 
  }  // end( DualSimplex )
+
+#endif
 
 /*--------------------------------------------------------------------------*/
 
@@ -3288,7 +3761,6 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
   for( i = 2 ; i <= minimeValue ; i++ ) {
    arcPType *arc = candP[i].arc;
    CNumber red_cost = ReductCost( arc );
-
    if( ( LTZ( red_cost , EpsCst ) && ( arc->ident == AT_LOWER ) ) ||
        ( GTZ( red_cost , EpsCst ) && ( arc->ident == AT_UPPER ) ) ) {
     next++;
@@ -3406,8 +3878,8 @@ MCFSimplex::arcDType* MCFSimplex::RuleDualCandidateListPivot( void )
  Index oldGroupPos = groupPos;
  // Search other arcs to fill the list
  do {
-  nodeDType *node = nodesD + groupPos;
-  for( node ; node < stopNodesD ; node += numGroup ) {
+  nodeDType *node;
+  for( node = nodesD + groupPos ; node < stopNodesD ; node += numGroup ) {
    arcDType *arc = node->enteringTArc;
    cFNumber flow = arc->flow;
    if( LTZ( flow , EpsFlw ) ) {
@@ -3524,13 +3996,12 @@ inline void MCFSimplex::ComputePotential( N *r )
 void MCFSimplex::CreateInitialPModifiedBalanceVector( void )
 {
  int i = 0;
- delete[] modifiedBalance;
- modifiedBalance = new FNumber[ n ];
- // Initialited every node's modifiedBalance to his balance
- for ( nodePType *node = nodesP ; node != stopNodesP ; node++ ) {
-  modifiedBalance[i] = node->balance;
-  i++;
-  }
+ // initialize every node's modifiedBalance to its balance
+ for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
+  modifiedBalance[ i++ ] = node->balance;
+
+ // don't forget the root
+ modifiedBalance[ nmax ] = dummyRootP->balance;
 
  // Modify the vector according to the arcs out of base with flow non zero
  // Scan the real arcs
@@ -3584,11 +4055,12 @@ void MCFSimplex::PostPVisit( nodePType *r )
  // The method controls if "r" is a leaf in T
  bool rLeaf = false;
  int i = r - nodesP;
- if( r->nextInT ) 
+ if( r->nextInT ) {
   if( ( r->nextInT )->subTreeLevel <= r->subTreeLevel )
    rLeaf = true;
-  else
-   rLeaf = true;
+  }
+ else
+  rLeaf = true;
 
  if( rLeaf )  // If "r" is a leaf
   if( ( r->enteringTArc)->head == r ) // If enteringTArc of "r" goes in "r"
@@ -3610,11 +4082,12 @@ void MCFSimplex::PostPVisit( nodePType *r )
    desc = desc->nextInT;
    }
 
-  if( r != dummyRootP )
+  if( r != dummyRootP ) {
    if( ( r->enteringTArc )->head == r ) // If enteringTArc of "r" goes in "r"
     ( r->enteringTArc )->flow = modifiedBalance[ i ];
    else // If enteringTArc of "r" goes out "r"
     ( r->enteringTArc )->flow = - modifiedBalance[ i ];
+   }
   }
  }
 
@@ -3627,8 +4100,8 @@ void MCFSimplex::BalanceFlow( nodePType *r )
   nodePType *node = dummyRootP->nextInT;
   while( node ) {
    // call this function recursively for every son of dummy root
-   if( node->subTreeLevel == 1 ) 
-    BalanceFlow( node );
+   if( node->subTreeLevel == 1 )
+	BalanceFlow( node );
 
    node = node->nextInT;
    }
@@ -3636,9 +4109,10 @@ void MCFSimplex::BalanceFlow( nodePType *r )
  else {
   // The method controls if "r" is a leaf in T
   bool rLeaf = false;
-  if( r->nextInT )
+  if( r->nextInT ) {
    if( ( r->nextInT )->subTreeLevel <= r->subTreeLevel )
     rLeaf = true;
+   }
    else
     rLeaf = true;
 
@@ -3666,7 +4140,7 @@ void MCFSimplex::BalanceFlow( nodePType *r )
 void MCFSimplex::AdjustFlow( nodePType *r )
 {
  arcPType *arc = r->enteringTArc;
- if( arc >= dummyArcsP ) // If entering arc of "r" is a dummy arc
+ if( arc >= dummyArcsP ) { // If entering arc of "r" is a dummy arc
   if( LTZ( arc->flow , EpsFlw ) ) {
    // If this dummy arc has flow < 0, the algorithm overturns the arc
    nodePType *temp = arc->tail;
@@ -3674,6 +4148,7 @@ void MCFSimplex::AdjustFlow( nodePType *r )
    arc->head = temp;
    arc->flow = -arc->flow;
    }
+  }
  else {  // If entering arc of "r" is not a dummy arc
   bool orientationDown = ( arc->head == r );
   FNumber delta = 0;
@@ -3742,12 +4217,12 @@ void MCFSimplex::CreateInitialDModifiedBalanceVector( void )
 {
  #if( ! QUADRATICCOST )
   int i = 0;
-  modifiedBalance = new FNumber[ n ];
-  // Initialited every node's modifiedBalance to his balance
-  for( nodeDType *node = nodesD ; node != stopNodesD ; node++ ) {
-   modifiedBalance[ i ] = node->balance;
-   i++;
-   }
+  // initialize every node's modifiedBalance to its balance
+  for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
+   modifiedBalance[ i++ ] = node->balance;
+
+  // don't forget the root
+  modifiedBalance[ nmax ] = dummyRootD->balance;
 
   // Modify the vector according to the arcs out of base with flow non zero
   // Scan the real arcs
@@ -3778,11 +4253,12 @@ void MCFSimplex::PostDVisit( nodeDType *r )
   // The method controls if "r" is a leaf in T
   bool rLeaf = false;
   int i = r - nodesD;
-  if( r->nextInT )
+  if( r->nextInT ) {
    if( ( r->nextInT )->subTreeLevel <= r->subTreeLevel )
     rLeaf = true;
-   else
-    rLeaf = true;
+  }
+  else
+   rLeaf = true;
 
   if( rLeaf ) // If "r" is a leaf
    if( ( r->enteringTArc)->head == r ) // If enteringTArc of "r" goes in "r"
@@ -3805,11 +4281,12 @@ void MCFSimplex::PostDVisit( nodeDType *r )
     desc = desc->nextInT;
     }
 
-   if( r != dummyRootD )
+   if( r != dummyRootD ) {
     if( ( r->enteringTArc )->head == r ) // If enteringTArc of "r" goes in "r"
      ( r->enteringTArc )->flow = modifiedBalance[ i ];
     else // If enteringTArc of "r" goes out "r"
      ( r->enteringTArc )->flow = - modifiedBalance[ i ];
+    }
    }
  #endif
  }
@@ -4177,6 +4654,34 @@ void MCFSimplex::ShowSituation( int tab )
    infoDNode( node , tab );
   }
  }
+
+string MCFSimplex::Int2String( int num, int cifreMinime )
+{
+	char *c = new char[100];
+	sprintf( c, "%d", num );
+	string s = c;
+	if ( cifreMinime > 1 )
+	{
+		int esp = cifreMinime - 1;
+		int x = 10;
+		for ( int i = 2; i <= esp; i++ )
+		{
+			x = x * 10;
+		}
+		while ( num < x )
+		{
+			s = "0" + s;
+			x = x / 10;
+			if ( ( x == 1 ) && ( num == 0 ) )
+			{
+				break;
+			}
+		}
+	}
+	delete[] c;
+	return s;
+} // end( Int2String )
+
 
 /*-------------------------------------------------------------------------*/
 /*---------------------- End File MCFSimplex.C ----------------------------*/
