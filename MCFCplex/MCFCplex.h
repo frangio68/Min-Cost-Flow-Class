@@ -252,6 +252,12 @@ class MCFCplex: public MCFClass {
    Apart from the parameters of the base class, this method handles
    kQPMethod. */
 
+ virtual inline void GetPar( int par, double & val ) const override {
+  MCFClass::GetPar( par, val );
+ }
+
+ /**< This method returns one of the double parameters of the algorithm. */
+
 /*--------------------------------------------------------------------------*/
 
    inline CPXENVptr GetCplexEnv( void ) const { return( env ); }
