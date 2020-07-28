@@ -4,6 +4,19 @@
 #                                                                            #
 #   makefile of libMCFCl as a pre-built library                              #
 #                                                                            #
+#   This makefile is thought to be included by the makefile of some code     #
+#   using the libMCFCl library. However, this makefile treats libMCFCl as    #
+#   a pre-built library, in the sense that it ensures that it is built (by   #
+#   a separate make process) and then returns as $(libMCFClOBJ) the          #
+#   complete libMCFCl library together with macros $(libMCFClINC) and        #
+#   $(libMCFClLIB) for includes and external libreries. It is therefore a    #
+#   way to keep the make process of libMCFCl separate from the make process  #
+#   of the code using it, as opposed to directly including makefile-c that   #
+#   "entirely merges the two make processes°. However, note that if $(CC)    #
+#   and $(SW) are defined by the including makefile, they will be            #
+#   "forwarded" to the makefile of libMCFCl so as to ensure that the         #
+#   compiler/options are consistent between the two make processes.          #
+#                                                                            #
 #   Input:  $(libMCFClDIR) = the directory where the libMCFCl source is      #
 #                                                                            #
 #           optional: $(CC) = the C++ compiler command                       #

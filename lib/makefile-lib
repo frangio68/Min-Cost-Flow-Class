@@ -6,7 +6,7 @@
 #                                                                            #
 #   Input:  optional: $(libMCFClDIR) = the directory where the MCFClass      #
 #                     source is. If the macro is not provided "../" is used, #
-#                     since it is assumed that "make -f makefile-lib"        #
+#                     since it is assumed that the "make -f makefile-lib"    #
 #                     command is issued in the lib/ folder.                  #
 #                                                                            #
 #           optional: $(CC) = the C++ compiler command. If the macro is      #
