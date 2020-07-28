@@ -10,3 +10,5 @@ MCFZIB
 ????-*.patch
 /TAGS
 XCode/
+test/MCFSolve
+test/TestMCF
