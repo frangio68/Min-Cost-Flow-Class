@@ -2,18 +2,19 @@
 ############################## makefile-lib ##################################
 ##############################################################################
 #                                                                            #
-#   makefile of libSMS++ - frontend for building the library                 #
+#   makefile of libMCFCl - frontend for building the library                 #
 #                                                                            #
-#   Input:  $(libMCFClDIR) = the directory where the core SMS++ source is    #
-#           If the variable is not defined, "../" is used since it is        #
-#           assumed that the makefile is ran in the lib/ sub-folder.         #
+#   Input:  optional: $(libMCFClDIR) = the directory where the MCFClass      #
+#                     source is. If the macro is not provided "../" is used, #
+#                     since it is assumed that "make -f makefile-lib"        #
+#                     command is issued in the lib/ folder.                  #
 #                                                                            #
-#           $(CC) = the C++ compiler command. If the variable is not         #
-#           defined, it is defined locally.                                  #
+#           optional: $(CC) = the C++ compiler command. If the macro is      #
+#                     not provided, it is defined locally.                   #
 #                                                                            #
-#           $(SW) = the compiler options (optimization, debug, required      #
-#           C++ standard, ...). If the variable is not defined, it is        #
-#           defined locally.                                                 #
+#           optional: $(SW) = the compiler options (optimization, debug,     #
+#                     required C++ standard, ...). If the macro is not       #
+#                     provided, it is defined locally.                       #
 #                                                                            #
 #   Output: none, just the library being built                               #
 #                                                                            #

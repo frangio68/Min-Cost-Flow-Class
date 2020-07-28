@@ -24,9 +24,9 @@ DIR = ./
 LIB = -lm
 
 # debug switches
-SW = -g -std=c++14
+#SW = -g -std=c++14
 # production switches
-#SW = -O3 -DNDEBUG -std=c++14
+SW = -O3 -DNDEBUG -std=c++14
 
 # compiler
 CC = clang++

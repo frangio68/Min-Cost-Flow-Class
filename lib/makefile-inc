@@ -6,18 +6,29 @@
 #                                                                            #
 #   Input:  $(libMCFClDIR) = the directory where the libMCFCl source is      #
 #                                                                            #
-#   Output: accordingly, there is no in output, since there is no need to    #
-#           check for changes in the .h and rebuild the .o / .a. Also, the   #
-#           *OBJ is just the library                                         #
+#           optional: $(CC) = the C++ compiler command                       #
+#                                                                            #
+#           optional: $(SW) = the compiler options (optimization, debug,     #
+#                     required C++ standard, ...)                            #
+#                                                                            #
+#   Output: there is no $(libMCFClH) output, since the calling makefile has  #
+#           no need to check for changes in the .h and rebuild the .a: this  #
+#           is all done here inside. However, the following macros are       #
+#           provided because the code using libMCFCl need to know where to   #
+#           find the .h files to include, which external libreries and       #
+#            -L<libdirs> need be used in the linking phase, and of course    #
+#           libMCFCl.a need be linked against.                               #
 #           $(libMCFClINC) = the -I$(include directories) for libMCFCl       #
 #           $(libMCFClLIB) = external libreries + -L<libdirs> for libMCFCl   #
-#           $(libMCFClOBJ) = the libMCFCl library itself                     #
+#           $(libMCFClOBJ) = the libMCFCl.a library itself                   #
 #                                                                            #
-#   Indeed, the makefile only calls makefile-c and strips away the *H and    #  
-#   *OBJ macros. This is not even necessary, it is only made for clarity.    #
+#   Internally, the makefile calls makefile-c, strips away the *H macro and  #  
+#   redefines the *OBJ one. It then uses the standard front-end makefile-lib #
+#   to have the library built, "forwarding" it $(CC) and $(SW) if they have  #
+#   been provided by the including makefile.                                 #
 #                                                                            #
-#                                VERSION 1.00                                #
-#                               13 - 11 - 2018                               #
+#                                VERSION 2.00                                #
+#                               28 - 07 - 2020                               #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                          Operations Research Group                         #
@@ -25,6 +36,12 @@
 #                             Universita' di Pisa                            #
 #									     #
 ##############################################################################
+
+# input consistency checks- - - - - - - - - - - - - - - - - - - - - - - - - -
+
+ifndef libMCFClDIR
+echo 'warning: libMCFClDIR not found [MCFClass:makefile-inc]'
+endif
 
 # include the libMCFCl makefile internally defining all external modules - - - -
 
@@ -38,7 +55,22 @@ libMCFClOBJ = $(libMCFClDIR)lib/libMCFCl.a
 # force the make to be always executed
 
 $(libMCFClOBJ): FORCE
+ifndef CC
+ifndef SW
 	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR)
+else
+	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	SW='$(SW)'
+endif
+else
+ifndef SW
+	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	CC=$(CC)
+else
+	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	CC=$(CC) SW='$(SW)'
+endif
+endif
 FORCE:
 
 # clean-up unrequired things- - - - - - - - - - - - - - - - - - - - - - - - -
