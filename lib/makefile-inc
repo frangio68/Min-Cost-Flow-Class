@@ -37,12 +37,6 @@
 #									     #
 ##############################################################################
 
-# input consistency checks- - - - - - - - - - - - - - - - - - - - - - - - - -
-
-ifndef libMCFClDIR
-echo 'warning: libMCFClDIR not found [MCFClass:makefile-inc]'
-endif
-
 # include the libMCFCl makefile internally defining all external modules - - - -
 
 include $(libMCFClDIR)lib/makefile-c
