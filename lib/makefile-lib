@@ -8,10 +8,17 @@
 #           If the variable is not defined, "../" is used since it is        #
 #           assumed that the makefile is ran in the lib/ sub-folder.         #
 #                                                                            #
+#           $(CC) = the C++ compiler command. If the variable is not         #
+#           defined, it is defined locally.                                  #
+#                                                                            #
+#           $(SW) = the compiler options (optimization, debug, required      #
+#           C++ standard, ...). If the variable is not defined, it is        #
+#           defined locally.                                                 #
+#                                                                            #
 #   Output: none, just the library being built                               #
 #                                                                            #
-#                                VERSION 1.00                                #
-#                               12 - 11 - 2018                               #
+#                                VERSION 2.00                                #
+#                               28 - 07 - 2020                               #
 #                                                                            #
 #                              Implementation by:                            #
 #                                                                            #
@@ -26,13 +33,20 @@ ifndef libMCFClDIR
 libMCFClDIR = ../
 endif
 
+ifndef CC
+# compiler
+CC = clang++
+endif
+
+ifndef SW
+# debug compiler options
+#SW = -g3 -glldb -fno-inline -std=c++14 -ferror-limit=1
+# production compiler options
+SW = -O3 -DNDEBUG -std=c++14
+endif
+
 # module name
 NAME = $(libMCFClDIR)lib/libMCFCl.a
-
-# debug switches
-SW = -g -std=c++14
-# production switches
-#SW = -O3 -DNDEBUG -std=c++14
 
 # compiler
 CC = clang++
