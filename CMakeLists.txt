@@ -6,7 +6,7 @@
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
-cmake_minimum_required(VERSION 3.8...3.15)
+cmake_minimum_required(VERSION 3.11)
 # TODO: set proper version
 project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
