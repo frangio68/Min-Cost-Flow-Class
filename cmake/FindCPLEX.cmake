@@ -112,7 +112,9 @@ find_package(Threads)
 
 # ----- Find the CPLEX include directory ------------------------------------ #
 set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
-find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h PATHS ${CPLEX_DIR}/include)
+find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h
+          PATHS ${CPLEX_DIR}/include
+          DOC "CPLEX include directory")
 
 # ----- Find the CPLEX library ---------------------------------------------- #
 # On Windows the version is appended to the library name which cannot be
@@ -161,17 +163,19 @@ endif ()
 
 # ----- Parse the version --------------------------------------------------- #
 if (CPLEX_INCLUDE_DIR)
-    file(STRINGS "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h" _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
+    file(STRINGS
+         "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
+         _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
 
     string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_major "${_cplex_version_lines}")
     string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_minor "${_cplex_version_lines}")
-    string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_release "${_cplex_version_lines}")
+    string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_patch "${_cplex_version_lines}")
 
-    set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_release}")
+    set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_patch}")
     unset(_cplex_version_lines)
     unset(_cplex_version_major)
     unset(_cplex_version_minor)
-    unset(_cplex_version_release)
+    unset(_cplex_version_patch)
 endif ()
 
 # ----- Handle the standard arguments --------------------------------------- #

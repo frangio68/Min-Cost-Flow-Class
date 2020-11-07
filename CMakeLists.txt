@@ -12,9 +12,11 @@ project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
 
 # ----- Requirements -------------------------------------------------------- #
 # This is to use the find modules we provide
-list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(CPLEX)
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 # ----- Library ------------------------------------------------------------- #
 add_library(MCFClass)
@@ -126,4 +128,8 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
 
     # Register package in user's package registry (~/.cmake/registry)
     export(PACKAGE MCFClass)
+endif ()
+
+if (BUILD_TESTING)
+    # Just consuming BUILD_TESTING to avoid warnings
 endif ()
