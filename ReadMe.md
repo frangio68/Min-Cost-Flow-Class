@@ -89,18 +89,25 @@ library, your choice.
 
 ### Using CMake
 
-- Clone the project from the repository and navigate inside its main directory.
+Configure and build the library with:
 
-- If you installed the requirements you should be fine. Configure the project with:
 ```sh
 mkdir build
 cd build
 cmake ..
+make
 ```
 
-- You can now build the library:
+If CPLEX is not installed in a default directory, you can specify its path with:
+
 ```sh
-make
+cmake <source-path> -DCPLEX_STUDIO_DIR=/path/to/CPLEX/Studio
+```
+
+Or can also avoid the search (and disable MCFCplex) with:
+
+```sh
+cmake <source-path> -DMCFClass_USE_CPLEX=OFF
 ```
 
 - Optionally, you can install the library with:
@@ -108,7 +115,7 @@ make
 sudo make install
 ```
 
-- After the library is configured and built, you can use it in your CMake project with:
+- After the library is built, you can use it in your CMake project with:
 ```cmake
 find_package(MCFClass)
 target_link_libraries(<my_target> MCFClass::MCFClass)

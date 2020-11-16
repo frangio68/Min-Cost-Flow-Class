@@ -25,7 +25,6 @@ set(MCFClass_USE_CPLEX @MCFClass_USE_CPLEX@)
 list(APPEND CMAKE_MODULE_PATH ${MCFClass_CMAKE_DIR})
 
 if (MCFClass_USE_CPLEX)
-    message(STATUS "MCFClassConfig.cmake checking for CPLEX")
     find_dependency(CPLEX)
 endif ()
 
