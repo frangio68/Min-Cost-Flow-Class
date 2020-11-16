@@ -17,11 +17,17 @@
 get_filename_component(MCFClass_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(CMakeFindDependencyMacro)
 
+# ----- Settings ------------------------------------------------------------ #
+set(MCFClass_USE_CPLEX @MCFClass_USE_CPLEX@)
+
 # ----- Requirements -------------------------------------------------------- #
 # This is needed to find the custom modules we provide
 list(APPEND CMAKE_MODULE_PATH ${MCFClass_CMAKE_DIR})
 
-find_dependency(CPLEX)
+if (MCFClass_USE_CPLEX)
+    message(STATUS "MCFClassConfig.cmake checking for CPLEX")
+    find_dependency(CPLEX)
+endif ()
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 

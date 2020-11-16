@@ -1,15 +1,28 @@
 # --------------------------------------------------------------------------- #
 #    CMake find module for CPLEX Studio                                       #
 #                                                                             #
-#    Tries to find the CPLEX library.                                         #
+#    This module finds CPLEX include directories and libraries.               #
+#    Use it by invoking find_package() with the form:                         #
 #                                                                             #
-#    Accepts the following HINT:                                              #
+#        find_package(CPLEX [version] [EXACT] [REQUIRED])                     #
 #                                                                             #
-#    - CPLEX_STUDIO_DIR - Custom path to CPLEX Studio                         #
+#    The results are stored in the following variables:                       #
 #                                                                             #
-#    Provides the following imported targets:                                 #
+#        CPLEX_FOUND         - True if headers are found                      #
+#        CPLEX_INCLUDE_DIRS  - Include directories                            #
+#        CPLEX_LIBRARIES     - Libraries to be linked                         #
+#        CPLEX_VERSION       - Version number                                 #
 #                                                                             #
-#    - CPLEX::Cplex - the CPLEX library                                       #
+#    This module reads hints about search locations from variables:           #
+#                                                                             #
+#        CPLEX_STUDIO_DIR    - Custom path to CPLEX Studio                    #
+#                                                                             #
+#    The following IMPORTED target is also defined:                           #
+#                                                                             #
+#        CPLEX::Cplex                                                         #
+#                                                                             #
+#    This find module is provided because CPLEX does not provide              #
+#    a CMake configuration file on its own.                                   #
 #                                                                             #
 #                              Niccolo' Iardella                              #
 #                          Operations Research Group                          #
@@ -91,6 +104,7 @@ endif ()
 
 if (NOT CPLEX_STUDIO_DIR)
     foreach (dir ${CPLEX_ILOG_DIRS})
+        # TODO: Sort by version properly
         file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
         list(SORT CPLEX_STUDIO_DIRS)
         list(REVERSE CPLEX_STUDIO_DIRS)
@@ -112,9 +126,10 @@ find_package(Threads)
 
 # ----- Find the CPLEX include directory ------------------------------------ #
 set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
+# Note that find_path() creates a cache entry
 find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h
           PATHS ${CPLEX_DIR}/include
-          DOC "CPLEX include directory")
+          DOC "CPLEX include directory.")
 
 # ----- Find the CPLEX library ---------------------------------------------- #
 # On Windows the version is appended to the library name which cannot be
@@ -134,10 +149,12 @@ endmacro()
 
 # Find the CPLEX library
 if (UNIX)
+    # Note that find_library() creates a cache entry
     find_library(CPLEX_LIBRARY
                  NAMES cplex
                  PATHS ${CPLEX_DIR}
-                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
+                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
+                 DOC "CPLEX library.")
     set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
 
 elseif (NOT CPLEX_LIBRARY)
@@ -146,16 +163,16 @@ elseif (NOT CPLEX_LIBRARY)
     find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
     message("CPLEX_LIB " ${CPLEX_LIB})
     message("CPLEX_LIBRARY " ${CPLEX_LIBRARY})
-    set(CPLEX_LIBRARY ${CPLEX_LIB} CACHE FILEPATH "Path to the CPLEX library")
+    set(CPLEX_LIBRARY ${CPLEX_LIB} CACHE FILEPATH "CPLEX library.")
     find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
 
     set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB} CACHE
-        FILEPATH "Path to the debug CPLEX library")
+        FILEPATH "Debug CPLEX library.")
     message("CPLEX_LIBRARY " ${CPLEX_LIBRARY})
 
     if (CPLEX_LIBRARY MATCHES ".*/(cplex.*)\\.lib")
         file(GLOB CPLEX_DLL_ "${CPLEX_DIR}/bin/*/${CMAKE_MATCH_1}.dll")
-        set(CPLEX_DLL ${CPLEX_DLL_} CACHE PATH "Path to the CPLEX DLL.")
+        set(CPLEX_DLL ${CPLEX_DLL_} CACHE PATH "CPLEX DLL.")
         message("CPLEX_DLL " ${CPLEX_DLL})
     endif ()
 
@@ -179,8 +196,11 @@ if (CPLEX_INCLUDE_DIR)
 endif ()
 
 # ----- Handle the standard arguments --------------------------------------- #
-# Handle the QUIETLY and REQUIRED arguments and
-# set CPLEX_FOUND to TRUE if all listed variables are TRUE
+# The following macro manages the QUIET, REQUIRED and version-related options
+# passed to find_package(). It also sets <PackageName>_FOUND if REQUIRED_VARS
+# are set. REQUIRED_VARS should be cache entries and not output variables.
+# See:
+# https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
 find_package_handle_standard_args(
         CPLEX
         REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
@@ -208,6 +228,8 @@ if (CPLEX_FOUND AND NOT TARGET CPLEX::Cplex)
                           INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
 endif ()
 
+# Variables marked as advanced are not displayed in CMake GUIs, see:
+# https://cmake.org/cmake/help/latest/command/mark_as_advanced.html
 mark_as_advanced(CPLEX_INCLUDE_DIR
                  CPLEX_LIBRARY
                  CPLEX_LIBRARY_DEBUG
