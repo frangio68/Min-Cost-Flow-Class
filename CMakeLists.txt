@@ -41,9 +41,9 @@ list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 # Update cache variables
 # FIXME: Not sure if this is a best practice
-if(NOT CPLEX_FOUND)
+if (NOT CPLEX_FOUND)
     set(MCFClass_USE_CPLEX OFF)
-endif()
+endif ()
 
 # ----- Configuration header ------------------------------------------------ #
 # This will generate a *Config.h header in the build directory.
@@ -167,11 +167,9 @@ install(FILES
 # Shipping custom find modules should not be encouraged because third
 # party developers should provide them.
 # We ship FindCPLEX because CPLEX does not on its own.
-if (MCFClass_USE_CPLEX)
-    install(FILES
-            ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-            DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
-endif ()
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MCFClass)
 
 
 # ----- Export from the build tree ------------------------------------------ #
@@ -192,11 +190,9 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
            NAMESPACE MCFClass::)
 
     # Export the find modules for the local configuration file to use them.
-    if (MCFClass_USE_CPLEX)
-        configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-                       ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
-                       COPYONLY)
-    endif ()
+    configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
+                   ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
+                   COPYONLY)
 
     # Export the package in user's package registry
     export(PACKAGE MCFClass)
