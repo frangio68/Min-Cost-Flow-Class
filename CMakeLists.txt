@@ -194,6 +194,11 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
                    ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
                    COPYONLY)
 
+    # Add the binary directory to RPATH, so executables that use
+    # dynamic loading will look into it.
+    set(SMSPP_BUILD_RPATH "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
+        PARENT_SCOPE)
+
     # Export the package in user's package registry
     export(PACKAGE MCFClass)
 endif ()
