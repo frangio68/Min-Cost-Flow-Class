@@ -196,8 +196,11 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
 
     # Add the binary directory to RPATH, so executables that use
     # dynamic loading will look into it.
-    set(SMSPP_BUILD_RPATH "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
-        PARENT_SCOPE)
+    get_directory_property(hasParent PARENT_DIRECTORY)
+    if (hasParent)
+        set(SMSPP_BUILD_RPATH "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
+            PARENT_SCOPE)
+    endif ()
 
     # Export the package in user's package registry
     export(PACKAGE MCFClass)
