@@ -133,7 +133,7 @@ endif ()
 # ----- Requirements -------------------------------------------------------- #
 # This sets the variable CMAKE_THREAD_LIBS_INIT, see:
 # https://cmake.org/cmake/help/latest/module/FindThreads.html
-find_package(Threads)
+find_package(Threads QUIET)
 
 # Check if already in cache
 if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)

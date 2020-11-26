@@ -1,5 +1,5 @@
 /** @file
- * Configuration header of the MCFClass library.
+ * Configuration header for @modName@.
  *
  * \author Niccolò Iardella \n
  *         Operations Research Group \n
@@ -9,12 +9,12 @@
  * \copyright &copy; Niccolò Iardella
  */
 
-#ifndef __MCFCLASS_CONFIG_H
-#define __MCFCLASS_CONFIG_H
+#ifndef __@modName@_CONFIG_H
+#define __@modName@_CONFIG_H
 
-#define MCFClass_VERSION       "@MCFClass_VERSION@"
-#define MCFClass_VERSION_MAJOR "@MCFClass_VERSION_MAJOR@"
-#define MCFClass_VERSION_MINOR "@MCFClass_VERSION_MINOR@"
-#define MCFClass_VERSION_PATCH "@MCFClass_VERSION_PATCH@"
+#define @modName@_VERSION       "@PROJECT_VERSION@"
+#define @modName@_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define @modName@_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define @modName@_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
 
 #endif
