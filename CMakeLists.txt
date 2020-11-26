@@ -21,7 +21,11 @@
 # --------------------------------------------------------------------------- #
 cmake_minimum_required(VERSION 3.11)
 # TODO: set proper version
-project(MCFClass VERSION 1.0.0 LANGUAGES CXX)
+project(MCFClass
+        VERSION 1.0.0
+        DESCRIPTION "C++ solvers for MCF problems"
+        HOMEPAGE_URL http://groups.di.unipi.it/optimize/Software/MCF.html
+        LANGUAGES C CXX)
 
 # These variables make the code harder to read but easier to change.
 set(modName ${PROJECT_NAME})
@@ -29,9 +33,17 @@ set(modNamespace "MCFClass")
 set(modHeader "${modName}Config.h")
 set(modTargets "${modName}Targets")
 
+# Find out if it's being called by the umbrella.
+get_directory_property(hasParent PARENT_DIRECTORY)
+
 # ----- Settings ------------------------------------------------------------ #
+# This creates an ENABLE_TESTING option (default: ON) and enables the testing
+# using the ctest executable.
+# See: https://cmake.org/cmake/help/latest/manual/ctest.1.html
+#include(CTest)
+
 # An option is an ON/OFF user-settable cache variable
-option(${modName}_USE_CPLEX "Whether ${modName} will use CPLEX or not" ON)
+option(${modName}_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
 
 # ----- Requirements -------------------------------------------------------- #
 # This adds the cmake directory to the find module search paths,
@@ -84,7 +96,6 @@ target_sources(${modName} PRIVATE
 # installed in the system will look into the INSTALL_INTERFACE path.
 target_include_directories(
         ${modName} PUBLIC
-        $<INSTALL_INTERFACE:include/MCFClass>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFClass>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFClone>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFSimplex>
@@ -115,6 +126,11 @@ endif ()
 # This alias is defined so that executables in this same project can use
 # the library with this notation.
 add_library(${modNamespace}::${modName} ALIAS ${modName})
+
+# ----- Subdirectories ------------------------------------------------------ #
+if (BUILD_TESTING)
+    # Just consuming BUILD_TESTING to avoid warnings
+endif ()
 
 # ----- Install instructions ------------------------------------------------ #
 # The following commands are used when installing the library
@@ -177,11 +193,22 @@ install(FILES
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${modName})
 
 # Shipping custom find modules should not be encouraged because third
-# party developers should provide them.
-# We ship FindCPLEX because CPLEX does not on its own.
-install(FILES
-        ${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
+# party developers should provide for them.
+file(GLOB findMods ${CMAKE_CURRENT_LIST_DIR}/cmake/Find*)
+install(FILES ${findMods}
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${modName})
+
+# Install the README and LICENSE files.
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/ReadMe.md
+        ${CMAKE_CURRENT_LIST_DIR}/License.md
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName})
+
+# Install the README and LICENSE files for RelaxIV.
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/RelaxIV/ReadMe.txt
+        ${CMAKE_CURRENT_LIST_DIR}/RelaxIV/academicl.txt
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName}/RelaxIV)
 
 # ----- Export from the build tree ------------------------------------------ #
 # The following commands are needed so other projects can find the library
@@ -201,15 +228,15 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
            NAMESPACE ${modNamespace}::)
 
     # Export the find modules for the local configuration file to use them.
-    configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake/FindCPLEX.cmake
-                   ${CMAKE_CURRENT_BINARY_DIR}/FindCPLEX.cmake
-                   COPYONLY)
+    foreach (findMod ${findMods})
+        configure_file(${findMod} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
+    endforeach ()
 
     # Add the binary directory to RPATH, so executables that use
     # dynamic loading will look into it.
-    get_directory_property(hasParent PARENT_DIRECTORY)
     if (hasParent)
-        set(SMSPP_BUILD_RPATH "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
+        set(SMSPP_BUILD_RPATH
+            "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
             PARENT_SCOPE)
     endif ()
 
@@ -217,7 +244,4 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
     export(PACKAGE ${modName})
 endif ()
 
-# ----- Subdirectories ------------------------------------------------------ #
-if (BUILD_TESTING)
-    # Just consuming BUILD_TESTING to avoid warnings
-endif ()
+# --------------------------------------------------------------------------- #

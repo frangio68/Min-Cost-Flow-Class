@@ -111,11 +111,13 @@ cmake <source-path> -DMCFClass_USE_CPLEX=OFF
 ```
 
 - Optionally, you can install the library with:
+
 ```sh
 sudo make install
 ```
 
 - After the library is built, you can use it in your CMake project with:
+
 ```cmake
 find_package(MCFClass)
 target_link_libraries(<my_target> MCFClass::MCFClass)
