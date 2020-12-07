@@ -1054,7 +1054,7 @@ class MCFClass {
     the end, respectively, of SolveMCF() and presumably the Chg***() methods,
     that is, at least these methods should be "actively timed". */
 
- void TimeMCF( double &t_us , double &t_ss )
+ void TimeMCF( double &t_us , double &t_ss ) const
  {
   t_us = t_ss = 0;
   if( MCFt )
@@ -1064,7 +1064,7 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// Like TimeMCF(double,double) [see above], but returns the total time
 
- double TimeMCF( void ) { return( MCFt ? MCFt->Read() : 0 ); }
+ double TimeMCF( void ) const { return( MCFt ? MCFt->Read() : 0 ); }
 
 /**@} ----------------------------------------------------------------------*/
 /** @name Check the solutions
