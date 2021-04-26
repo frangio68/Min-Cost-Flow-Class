@@ -232,16 +232,17 @@ if (CMAKE_EXPORT_PACKAGE_REGISTRY)
         configure_file(${findMod} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
     endforeach ()
 
-    # Add the binary directory to RPATH, so executables that use
-    # dynamic loading will look into it.
-    if (hasParent)
-        set(SMSPP_BUILD_RPATH
-            "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
-            PARENT_SCOPE)
-    endif ()
-
     # Export the package in user's package registry
     export(PACKAGE ${modName})
+endif()
+
+# ----- Add the build tree to RPATH------------------------------------------ #
+# Add the binary directory to RPATH, so executables that use
+# dynamic loading will look into it.
+if (hasParent)
+    set(SMSPP_BUILD_RPATH
+        "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
+        PARENT_SCOPE)
 endif ()
 
 # --------------------------------------------------------------------------- #
