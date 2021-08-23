@@ -48,8 +48,8 @@ include $(MCFClDIR)makefile
 #include $(MCFCeDIR)makefile
 
 # MCFCplex
-#MCFCxDIR = $(libMCFClDIR)MCFCplex/
-#include $(MCFCxDIR)makefile
+MCFCxDIR = $(libMCFClDIR)MCFCplex/
+include $(MCFCxDIR)makefile
 
 # MCFSimplex
 MCFSxDIR = $(libMCFClDIR)MCFSimplex/
