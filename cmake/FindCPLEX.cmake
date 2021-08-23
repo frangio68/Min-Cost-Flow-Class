@@ -1,18 +1,28 @@
 # --------------------------------------------------------------------------- #
 #    CMake find module for CPLEX Studio                                       #
 #                                                                             #
-#    Tries to find the CPLEX, Concert, IloCplex and CP Optimizer libraries.   #
+#    This module finds CPLEX include directories and libraries.               #
+#    Use it by invoking find_package() with the form:                         #
 #                                                                             #
-#    Accepts the following HINT:                                              #
+#        find_package(CPLEX [version] [EXACT] [REQUIRED])                     #
 #                                                                             #
-#    - CPLEX_STUDIO_DIR - Custom path to CPLEX Studio                         #
+#    The results are stored in the following variables:                       #
 #                                                                             #
-#    Provides the following imported targets:                                 #
+#        CPLEX_FOUND         - True if headers are found                      #
+#        CPLEX_INCLUDE_DIRS  - Include directories                            #
+#        CPLEX_LIBRARIES     - Libraries to be linked                         #
+#        CPLEX_VERSION       - Version number                                 #
 #                                                                             #
-#    - CPLEX::Cplex - the CPLEX library                                       #
-#    - CPLEX::Concert - the Concert library                                   #
-#    - CPLEX::IloCplex - the IloCplex library                                 #
-#    - CPLEX::CPOptimizer - the CP Optimizer library                          #
+#    This module reads hints about search locations from variables:           #
+#                                                                             #
+#        CPLEX_STUDIO_DIR    - Custom path to CPLEX Studio                    #
+#                                                                             #
+#    The following IMPORTED target is also defined:                           #
+#                                                                             #
+#        CPLEX::Cplex                                                         #
+#                                                                             #
+#    This find module is provided because CPLEX does not provide              #
+#    a CMake configuration file on its own.                                   #
 #                                                                             #
 #                              Niccolo' Iardella                              #
 #                          Operations Research Group                          #
@@ -20,10 +30,13 @@
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
 include(FindPackageHandleStandardArgs)
-# ----- Find the path to CPLEX Studio --------------------------------------- #
-if (UNIX)
-    set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG)
 
+# ----- Find ILOG directories and lib suffixes ------------------------------ #
+# Based on the OS and architecture, generate:
+# - a list of possible ILOG directories
+# - a list of possible lib suffixes to find the library
+
+if (UNIX)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         set(CPLEX_ARCH x86-64)
     else ()
@@ -31,19 +44,21 @@ if (UNIX)
     endif ()
 
     if (APPLE)
-        set(CPLEX_ILOG_DIRS /Applications ${CPLEX_ILOG_DIRS})
-        foreach (suffix "osx" "darwin9_gcc4.0")
-            set(CPLEX_LIB_PATH_SUFFIXES
-                ${CPLEX_LIB_PATH_SUFFIXES}
-                lib/${CPLEX_ARCH}_${suffix}/static_pic)
-        endforeach ()
+        # macOS (usually /Applications)
+        set(CPLEX_ILOG_DIRS /Applications)
+        set(CPLEX_LIB_PATH_SUFFIXES
+            lib/${CPLEX_ARCH}_darwin9_gcc4.0/static_pic
+            lib/${CPLEX_ARCH}_osx/static_pic)
     else ()
+        # Other Unix-based systems (usually /opt/ibm/ILOG)
+        set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG)
         set(CPLEX_LIB_PATH_SUFFIXES
             lib/${CPLEX_ARCH}_sles10_4.1/static_pic
             lib/${CPLEX_ARCH}_linux/static_pic)
     endif ()
 
 else ()
+    # Windows (usually C:/Program Files/IBM/ILOG)
     set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
 
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -91,6 +106,10 @@ else ()
     endif ()
 endif ()
 
+# ----- Find the path to CPLEX Studio --------------------------------------- #
+# This takes the greatest CPLEX_Studio* found in the ILOG directories
+# TODO: Sort properly, now 129 is considered > than 1210
+
 if (NOT CPLEX_STUDIO_DIR)
     foreach (dir ${CPLEX_ILOG_DIRS})
         file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
@@ -106,77 +125,107 @@ if (NOT CPLEX_STUDIO_DIR)
     if (NOT CPLEX_STUDIO_DIR_)
         set(CPLEX_STUDIO_DIR_ CPLEX_STUDIO_DIR-NOTFOUND)
     endif ()
+    # Set the path in the cache
     set(CPLEX_STUDIO_DIR ${CPLEX_STUDIO_DIR_} CACHE PATH
-        "Path to the CPLEX Studio directory")
+        "Path to the CPLEX Studio directory.")
 endif ()
 
-find_package(Threads)
+# ----- Requirements -------------------------------------------------------- #
+# This sets the variable CMAKE_THREAD_LIBS_INIT, see:
+# https://cmake.org/cmake/help/latest/module/FindThreads.html
+find_package(Threads QUIET)
 
-# ----- CPLEX --------------------------------------------------------------- #
-set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
+# Check if already in cache
+if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)
+    set(CPLEX_FOUND TRUE)
+else ()
 
-# Find the CPLEX include directory
-find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h PATHS ${CPLEX_DIR}/include)
+    # ----- Find the CPLEX include directory -------------------------------- #
+    set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
+    # Note that find_path() creates a cache entry
+    find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h
+              PATHS ${CPLEX_DIR}/include
+              DOC "CPLEX include directory.")
 
-macro(find_win_cplex_library var path_suffixes)
-    foreach (s ${path_suffixes})
-        file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
-        if (CPLEX_LIBRARY_CANDIDATES)
-            list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
-            break()
-        endif ()
-    endforeach ()
-    if (NOT ${var})
-        set(${var} NOTFOUND)
-    endif ()
-endmacro()
-
-# Find the CPLEX library
-if (UNIX)
-    find_library(CPLEX_LIBRARY
-                 NAMES cplex
-                 PATHS ${CPLEX_DIR}
-                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
-    set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
-
-elseif (NOT CPLEX_LIBRARY)
-    message("in windows trying " ${${CPLEX_LIB_PATH_SUFFIXES}})
-
+    # ----- Macro: find_win_cplex_library ----------------------------------- #
     # On Windows the version is appended to the library name which cannot be
-    # handled by find_library, so search manually.
-    find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
-    message("CPLEX_LIB " ${CPLEX_LIB})
-    message("CPLEX_LIBRARY " ${CPLEX_LIBRARY})
-    set(CPLEX_LIBRARY ${CPLEX_LIB} CACHE FILEPATH "Path to the CPLEX library")
-    find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
+    # handled by find_library, so here a macro to search manually.
+    macro(find_win_cplex_library var path_suffixes)
+        foreach (s ${path_suffixes})
+            file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
+            if (CPLEX_LIBRARY_CANDIDATES)
+                list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
+                break()
+            endif ()
+        endforeach ()
+        if (NOT ${var})
+            set(${var} NOTFOUND)
+        endif ()
+    endmacro()
 
-    set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB} CACHE
-        FILEPATH "Path to the debug CPLEX library")
-    message("CPLEX_LIBRARY " ${CPLEX_LIBRARY})
+    # ----- Find the CPLEX library ------------------------------------------ #
+    if (UNIX)
+        # Note that find_library() creates a cache entry
+        find_library(CPLEX_LIBRARY
+                     NAMES cplex
+                     PATHS ${CPLEX_DIR}
+                     PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
+                     DOC "CPLEX library.")
+        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY} CACHE FILEPATH "Debug CPLEX library.")
 
-    if (CPLEX_LIBRARY MATCHES ".*/(cplex.*)\\.lib")
-        file(GLOB CPLEX_DLL_ "${CPLEX_DIR}/bin/*/${CMAKE_MATCH_1}.dll")
-        set(CPLEX_DLL ${CPLEX_DLL_} CACHE PATH "Path to the CPLEX DLL.")
-        message("CPLEX_DLL " ${CPLEX_DLL})
+    elseif (NOT CPLEX_LIBRARY)
+        # Library
+        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
+        set(CPLEX_LIBRARY ${CPLEX_LIB} CACHE FILEPATH "CPLEX library.")
+
+        # Debug library
+        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
+        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB} CACHE FILEPATH "Debug CPLEX library.")
+
+        # DLL
+        if (CPLEX_LIBRARY MATCHES ".*/(cplex.*)\\.lib")
+            file(GLOB CPLEX_DLL_ "${CPLEX_DIR}/bin/*/${CMAKE_MATCH_1}.dll")
+            set(CPLEX_DLL ${CPLEX_DLL_} CACHE PATH "CPLEX DLL.")
+        endif ()
+
     endif ()
 
+    # ----- Parse the version ----------------------------------------------- #
+    if (CPLEX_INCLUDE_DIR)
+        file(STRINGS
+             "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
+             _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
+
+        string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_major "${_cplex_version_lines}")
+        string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_minor "${_cplex_version_lines}")
+        string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_patch "${_cplex_version_lines}")
+
+        set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_patch}")
+        unset(_cplex_version_lines)
+        unset(_cplex_version_major)
+        unset(_cplex_version_minor)
+        unset(_cplex_version_patch)
+    endif ()
+
+    # ----- Handle the standard arguments ----------------------------------- #
+    # The following macro manages the QUIET, REQUIRED and version-related
+    # options passed to find_package(). It also sets <PackageName>_FOUND if
+    # REQUIRED_VARS are set.
+    # REQUIRED_VARS should be cache entries and not output variables. See:
+    # https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
+    find_package_handle_standard_args(
+            CPLEX
+            REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
+            VERSION_VAR CPLEX_VERSION)
 endif ()
 
-# Handle the QUIETLY and REQUIRED arguments and
-# set CPLEX_FOUND to TRUE if all listed variables are TRUE
-find_package_handle_standard_args(CPLEX DEFAULT_MSG
-                                  CPLEX_LIBRARY
-                                  CPLEX_LIBRARY_DEBUG
-                                  CPLEX_INCLUDE_DIR)
-
-mark_as_advanced(CPLEX_LIBRARY
-                 CPLEX_LIBRARY_DEBUG
-                 CPLEX_INCLUDE_DIR)
-
-if (CPLEX_FOUND AND NOT TARGET CPLEX::Cplex)
+# ----- Export the target --------------------------------------------------- #
+if (CPLEX_FOUND)
+    set(CPLEX_INCLUDE_DIRS "${CPLEX_INCLUDE_DIR}")
     set(CPLEX_LINK_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-    check_library_exists(m floor "" HAVE_LIBM)
 
+    # See: https://cmake.org/cmake/help/latest/module/CheckLibraryExists.html
+    check_library_exists(m floor "" HAVE_LIBM)
     if (HAVE_LIBM)
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} m)
     endif ()
@@ -186,135 +235,19 @@ if (CPLEX_FOUND AND NOT TARGET CPLEX::Cplex)
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
     endif ()
 
-    add_library(CPLEX::Cplex STATIC IMPORTED GLOBAL)
-    set_target_properties(CPLEX::Cplex PROPERTIES
-                          IMPORTED_LOCATION "${CPLEX_LIBRARY}"
-                          IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
-                          INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIR}"
-                          INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
-endif ()
-
-# ----- Concert ------------------------------------------------------------- #
-
-macro(find_cplex_library var name paths)
-    find_library(${var}
-                 NAMES ${name}
-                 PATHS ${paths}
-                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES})
-    if (UNIX)
-        set(${var}_DEBUG ${${var}})
-    else ()
-        find_library(${var}_DEBUG
-                     NAMES ${name}
-                     PATHS ${paths}
-                     PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES_DEBUG})
+    if (NOT TARGET CPLEX::Cplex)
+        add_library(CPLEX::Cplex STATIC IMPORTED)
+        set_target_properties(CPLEX::Cplex PROPERTIES
+                              IMPORTED_LOCATION "${CPLEX_LIBRARY}"
+                              IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
+                              INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIR}"
+                              INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
     endif ()
-endmacro()
-
-set(CPLEX_CONCERT_DIR ${CPLEX_STUDIO_DIR}/concert)
-
-# Find the Concert include directory
-find_path(CPLEX_CONCERT_INCLUDE_DIR ilconcert/ilosys.h
-          PATHS ${CPLEX_CONCERT_DIR}/include)
-
-# Find the Concert library
-find_cplex_library(CPLEX_CONCERT_LIBRARY concert ${CPLEX_CONCERT_DIR})
-
-# Handle the QUIETLY and REQUIRED arguments and
-# set CPLEX_CONCERT_FOUND to TRUE if all listed variables are TRUE
-find_package_handle_standard_args(CPLEX_CONCERT DEFAULT_MSG
-                                  CPLEX_CONCERT_LIBRARY
-                                  CPLEX_CONCERT_LIBRARY_DEBUG
-                                  CPLEX_CONCERT_INCLUDE_DIR)
-
-mark_as_advanced(CPLEX_CONCERT_LIBRARY
-                 CPLEX_CONCERT_LIBRARY_DEBUG
-                 CPLEX_CONCERT_INCLUDE_DIR)
-
-if (CPLEX_CONCERT_FOUND AND NOT TARGET CPLEX::Concert)
-    add_library(CPLEX::Concert STATIC IMPORTED GLOBAL)
-    set_target_properties(
-            CPLEX::Concert PROPERTIES
-            IMPORTED_LOCATION "${CPLEX_CONCERT_LIBRARY}"
-            IMPORTED_LOCATION_DEBUG "${CPLEX_CONCERT_LIBRARY_DEBUG}"
-            INTERFACE_COMPILE_DEFINITIONS IL_STD # Require standard compliance.
-            INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_CONCERT_INCLUDE_DIR}"
-            INTERFACE_LINK_LIBRARIES "${CMAKE_THREAD_LIBS_INIT}")
 endif ()
 
-# ----- IloCplex - depends on CPLEX and Concert ----------------------------- #
-
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag(-Wno-long-long HAVE_WNO_LONG_LONG_FLAG)
-if (HAVE_WNO_LONG_LONG_FLAG)
-    # Required if -pedantic is used.
-    set(CPLEX_ILOCPLEX_DEFINITIONS -Wno-long-long)
-endif ()
-
-# Find the IloCplex include directory
-# Normally the same as the one for CPLEX,
-# but check if ilocplex.h is there anyway.
-find_path(CPLEX_ILOCPLEX_INCLUDE_DIR ilcplex/ilocplex.h
-          PATHS ${CPLEX_INCLUDE_DIR})
-
-# Find the IloCplex library
-find_cplex_library(CPLEX_ILOCPLEX_LIBRARY ilocplex ${CPLEX_STUDIO_DIR}/cplex)
-
-# Handle the QUIETLY and REQUIRED arguments and
-# set CPLEX_ILOCPLEX_FOUND to TRUE if all listed variables are TRUE
-find_package_handle_standard_args(CPLEX_ILOCPLEX DEFAULT_MSG
-                                  CPLEX_ILOCPLEX_LIBRARY
-                                  CPLEX_ILOCPLEX_LIBRARY_DEBUG
-                                  CPLEX_ILOCPLEX_INCLUDE_DIR
-                                  CPLEX_FOUND
-                                  CPLEX_CONCERT_FOUND)
-
-mark_as_advanced(CPLEX_ILOCPLEX_LIBRARY
-                 CPLEX_ILOCPLEX_LIBRARY_DEBUG
-                 CPLEX_ILOCPLEX_INCLUDE_DIR)
-
-if (CPLEX_ILOCPLEX_FOUND AND NOT TARGET CPLEX::IloCplex)
-    add_library(CPLEX::IloCplex STATIC IMPORTED GLOBAL)
-    set_target_properties(
-            CPLEX::IloCplex PROPERTIES
-            IMPORTED_LOCATION "${CPLEX_ILOCPLEX_LIBRARY}"
-            IMPORTED_LOCATION_DEBUG "${CPLEX_ILOCPLEX_LIBRARY_DEBUG}"
-            INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_ILOCPLEX_INCLUDE_DIR}"
-            INTERFACE_LINK_LIBRARIES "CPLEX::Concert;CPLEX::Cplex")
-endif ()
-
-# ----- CP Optimizer - depends on Concert ----------------------------------- #
-
-set(CPLEX_CP_DIR ${CPLEX_STUDIO_DIR}/cpoptimizer)
-
-# Find the CP Optimizer include directory
-find_path(CPLEX_CP_INCLUDE_DIR ilcp/cp.h PATHS ${CPLEX_CP_DIR}/include)
-
-# Find the CP Optimizer library
-find_cplex_library(CPLEX_CP_LIBRARY cp ${CPLEX_CP_DIR})
-
-if (WIN32)
-    set(CPLEX_CP_EXTRA_LIBRARIES Ws2_32.lib)
-endif ()
-
-# Handle the QUIETLY and REQUIRED arguments and set CPLEX_CP_FOUND to TRUE
-# if all listed variables are TRUE.
-find_package_handle_standard_args(CPLEX_CP DEFAULT_MSG
-                                  CPLEX_CP_LIBRARY
-                                  CPLEX_CP_LIBRARY_DEBUG
-                                  CPLEX_CP_INCLUDE_DIR
-                                  CPLEX_CONCERT_FOUND)
-
-mark_as_advanced(CPLEX_CP_LIBRARY
-                 CPLEX_CP_LIBRARY_DEBUG
-                 CPLEX_CP_INCLUDE_DIR)
-
-if (CPLEX_CP_FOUND AND NOT TARGET CPLEX::CPOptimizer)
-    add_library(CPLEX::CPOptimizer STATIC IMPORTED GLOBAL)
-    set_target_properties(
-            CPLEX::CPOptimizer PROPERTIES
-            IMPORTED_LOCATION "${CPLEX_CP_LIBRARY}"
-            IMPORTED_LOCATION_DEBUG "${CPLEX_CP_LIBRARY_DEBUG}"
-            INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_CP_INCLUDE_DIR}"
-            INTERFACE_LINK_LIBRARIES "CPLEX::Concert;${CPLEX_CP_EXTRA_LIBRARIES}")
-endif ()
+# Variables marked as advanced are not displayed in CMake GUIs, see:
+# https://cmake.org/cmake/help/latest/command/mark_as_advanced.html
+mark_as_advanced(CPLEX_INCLUDE_DIR
+                 CPLEX_LIBRARY
+                 CPLEX_LIBRARY_DEBUG
+                 CPLEX_VERSION)

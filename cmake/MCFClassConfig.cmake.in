@@ -14,20 +14,25 @@
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
-get_filename_component(MCFClass_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+get_filename_component(@modName@_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 include(CMakeFindDependencyMacro)
+
+# ----- Settings ------------------------------------------------------------ #
+set(MCFClass_USE_CPLEX @MCFClass_USE_CPLEX@)
 
 # ----- Requirements -------------------------------------------------------- #
 # This is needed to find the custom modules we provide
-list(APPEND CMAKE_MODULE_PATH ${MCFClass_CMAKE_DIR})
+list(APPEND CMAKE_MODULE_PATH ${@modName@_CMAKE_DIR})
 
-find_dependency(CPLEX)
+if (MCFClass_USE_CPLEX)
+    find_dependency(CPLEX)
+endif ()
 
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 # ----- Import target ------------------------------------------------------- #
-if (NOT TARGET MCFClass::MCFClass)
-    include("${MCFClass_CMAKE_DIR}/MCFClassTargets.cmake")
-endif ()
+if (NOT TARGET @modNamespace@::@modName@)
+    include("${@modName@_CMAKE_DIR}/@modName@Targets.cmake")
+endif()
 
-set(MCFClass_LIBRARIES MCFClass::MCFClass)
+set(@modName@_LIBRARIES @modNamespace@::@modName@)
