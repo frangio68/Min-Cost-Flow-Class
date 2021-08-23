@@ -30,7 +30,7 @@
 libCPLEXEXTLIB = -framework CoreFoundation -framework IOKit
 
 # basic Cplex directory
-libCPLEXBSCDIR = /Users/frangio/Applications/CPLEX_Studio128/cplex/
+libCPLEXBSCDIR = /Users/frangio/Applications/CPLEX_Studio1210/cplex/
 
 # lib Cplex directory
 #libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_sles10_4.1/static_pic/
