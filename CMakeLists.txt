@@ -19,7 +19,8 @@
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.12)
+cmake_policy(VERSION 3.12)
 # TODO: set proper version
 project(MCFClass
         VERSION 1.0.0
@@ -30,11 +31,13 @@ project(MCFClass
 # These variables make the code harder to read but easier to change.
 set(modName ${PROJECT_NAME})
 set(modNamespace "MCFClass")
-set(modHeader "${modName}Config.h")
-set(modTargets "${modName}Targets")
 
 # Find out if it's being called by the umbrella.
 get_directory_property(hasParent PARENT_DIRECTORY)
+
+# This adds the cmake directory to the module search paths,
+# allowing us to use our modules.
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # ----- Settings ------------------------------------------------------------ #
 # This creates an ENABLE_TESTING option (default: ON) and enables the testing
@@ -42,30 +45,25 @@ get_directory_property(hasParent PARENT_DIRECTORY)
 # See: https://cmake.org/cmake/help/latest/manual/ctest.1.html
 #include(CTest)
 
+# Sets the default build type (if none was specified).
+# See: https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html
+include(BuildType)
+
 # An option is an ON/OFF user-settable cache variable
-option(${modName}_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
+option(MCFClass_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
 
 # ----- Requirements -------------------------------------------------------- #
-# This adds the cmake directory to the find module search paths,
-# allowing us to use our find modules.
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-if (${modName}_USE_CPLEX)
-    find_package(CPLEX) # Needed for MCFCplex
-endif ()
-
-# This removes from the search paths the cmake directory we added above.
-list(REMOVE_AT CMAKE_MODULE_PATH -1)
-
-# Update cache variables
-# FIXME: Not sure if this is a best practice
-if (NOT CPLEX_FOUND)
-    set(${modName}_USE_CPLEX OFF)
+if (MCFClass_USE_CPLEX)
+    # Needed for MCFCplex
+    find_package(CPLEX)
+    if (NOT CPLEX_FOUND)
+        set(MCFClass_USE_CPLEX OFF)
+    endif ()
 endif ()
 
 # ----- Configuration header ------------------------------------------------ #
 # This will generate a *Config.h header in the build directory.
-configure_file(cmake/${modHeader}.in ${modHeader})
+configure_file(cmake/${modName}Config.h.in ${modName}Config.h)
 
 # ----- Library ------------------------------------------------------------- #
 # With the BUILD_SHARED_LIBS variable we can specify if the library will
@@ -109,18 +107,14 @@ target_include_directories(
 # PUBLIC means they will be linked also to the targets that depend on this
 # library, INTERFACE means they will be linked only to the targets that depend
 # on this library.
-if (${modName}_USE_CPLEX)
+if (MCFClass_USE_CPLEX)
     message(STATUS "${modName}: CPLEX found, configuring MCFCplex")
 
-    target_sources(${modName} PRIVATE
-                   MCFCplex/MCFCplex.C)
-
+    target_sources(${modName} PRIVATE MCFCplex/MCFCplex.C)
     target_include_directories(
             ${modName} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex>)
-
-    target_link_libraries(${modName} PUBLIC
-                          CPLEX::Cplex)
+    target_link_libraries(${modName} PUBLIC CPLEX::Cplex)
 endif ()
 
 # This alias is defined so that executables in this same project can use
@@ -141,7 +135,7 @@ include(GNUInstallDirs)
 
 # Install the library
 install(TARGETS ${modName}
-        EXPORT ${modTargets}
+        EXPORT ${modName}Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -155,7 +149,7 @@ install(FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/SPTree/SPTree.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${modNamespace})
 
-if (${modName}_USE_CPLEX)
+if (MCFClass_USE_CPLEX)
     install(FILES
             ${CMAKE_CURRENT_SOURCE_DIR}/MCFCplex/MCFCplex.h
             DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${modNamespace})
@@ -167,7 +161,7 @@ install(FILES ${PROJECT_BINARY_DIR}/${modName}Config.h
 
 # (Generate and) install the target import file, that allows other
 # CMake projects to import the target.
-install(EXPORT ${modTargets}
+install(EXPORT ${modName}Targets
         NAMESPACE ${modNamespace}::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${modName})
 
@@ -210,32 +204,6 @@ install(FILES
         ${CMAKE_CURRENT_LIST_DIR}/RelaxIV/academicl.txt
         DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName}/RelaxIV)
 
-# ----- Export from the build tree ------------------------------------------ #
-# The following commands are needed so other projects can find the library
-# in a local build directory. They use CMake's User Package Registry
-# (located in ~/.cmake/registry) to do so.
-# See: https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html
-# They don't affect the installation.
-
-# CMAKE_EXPORT_PACKAGE_REGISTRY is OFF by default.
-# It may be ON if the project is included by the SMS++ umbrella project.
-if (CMAKE_EXPORT_PACKAGE_REGISTRY)
-
-    # Generate the target import file, that allows other
-    # CMake projects to import the target.
-    export(EXPORT ${modTargets}
-           FILE ${CMAKE_CURRENT_BINARY_DIR}/${modTargets}.cmake
-           NAMESPACE ${modNamespace}::)
-
-    # Export the find modules for the local configuration file to use them.
-    foreach (findMod ${findMods})
-        configure_file(${findMod} ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
-    endforeach ()
-
-    # Export the package in user's package registry
-    export(PACKAGE ${modName})
-endif()
-
 # ----- Add the build tree to RPATH------------------------------------------ #
 # Add the binary directory to RPATH, so executables that use
 # dynamic loading will look into it.
@@ -244,5 +212,9 @@ if (hasParent)
         "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
         PARENT_SCOPE)
 endif ()
+
+# --------------------------------------------------------------------------- #
+# Remove from the search paths the cmake directory we added at the beginning.
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
 # --------------------------------------------------------------------------- #

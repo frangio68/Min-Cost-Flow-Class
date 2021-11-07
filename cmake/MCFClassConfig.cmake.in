@@ -19,6 +19,7 @@ include(CMakeFindDependencyMacro)
 
 # ----- Settings ------------------------------------------------------------ #
 set(MCFClass_USE_CPLEX @MCFClass_USE_CPLEX@)
+set(CPLEX_STUDIO_DIR @CPLEX_STUDIO_DIR@)
 
 # ----- Requirements -------------------------------------------------------- #
 # This is needed to find the custom modules we provide
@@ -33,6 +34,8 @@ list(REMOVE_AT CMAKE_MODULE_PATH -1)
 # ----- Import target ------------------------------------------------------- #
 if (NOT TARGET @modNamespace@::@modName@)
     include("${@modName@_CMAKE_DIR}/@modName@Targets.cmake")
-endif()
+endif ()
 
 set(@modName@_LIBRARIES @modNamespace@::@modName@)
+
+# --------------------------------------------------------------------------- #

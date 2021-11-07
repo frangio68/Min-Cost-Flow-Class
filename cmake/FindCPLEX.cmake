@@ -231,17 +231,18 @@ if (CPLEX_FOUND)
     endif ()
 
     if (UNIX)
-        # Required under Linux since 12.8
+        # Required under Unix since 12.8
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
     endif ()
 
     if (NOT TARGET CPLEX::Cplex)
         add_library(CPLEX::Cplex STATIC IMPORTED)
-        set_target_properties(CPLEX::Cplex PROPERTIES
-                              IMPORTED_LOCATION "${CPLEX_LIBRARY}"
-                              IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
-                              INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIR}"
-                              INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
+        set_target_properties(
+                CPLEX::Cplex PROPERTIES
+                IMPORTED_LOCATION "${CPLEX_LIBRARY}"
+                IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
+                INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
     endif ()
 endif ()
 
@@ -251,3 +252,5 @@ mark_as_advanced(CPLEX_INCLUDE_DIR
                  CPLEX_LIBRARY
                  CPLEX_LIBRARY_DEBUG
                  CPLEX_VERSION)
+
+# --------------------------------------------------------------------------- #
