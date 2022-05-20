@@ -411,7 +411,7 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
      MemDeAlloc(false);
      if( Senstv && ( status != kUnSolved ) ) {
       nodePType *node = dummyRootP;
-      for( int i = 0 ; i < n ; i++ )
+      for( Index i = 0 ; i < n ; i++ )
        node = node->nextInT;
 
       node->nextInT = NULL;
@@ -484,7 +484,7 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
     CreateAdditionalDualStructures();
     MemDeAlloc(true);
     nodeDType *node = dummyRootD;
-    for( int i = 0 ; i < n ; i++ )
+    for( Index i = 0 ; i < n ; i++ )
      node = node->nextInT;
 
     node->nextInT = NULL;
@@ -4424,7 +4424,7 @@ void MCFSimplex::PrintDArc( arcDType *arc )
 
 MCFSimplex::nodePType* MCFSimplex::RecoverPNode( Index ind ) 
 {
- if( ( ind < 0 ) || ( ind > n ) )
+ if( ind > n )
   return( NULL );
  if( ind )
   return( nodesP + ind - 1 );
@@ -4456,7 +4456,7 @@ MCFSimplex::arcPType* MCFSimplex::RecoverPArc( nodePType *tail ,
 
 MCFSimplex::nodeDType* MCFSimplex::RecoverDNode( Index ind )
 {
- if( ( ind < 0 ) || ( ind > n ) ) 
+ if( ind > n )
   return( NULL );
 
  if( ind )
