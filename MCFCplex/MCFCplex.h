@@ -6,26 +6,19 @@
  * Callable Libraries. Conforms to the standard MCF interface
  * defined in MCFClass.h
  *
- * \version 1.43
- *
- * \date 27 - 02 - 2020
- *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Antonio Manca \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Matteo Sammartino \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1997 - 2020 by Antonio Frangioni.
+ * Copyright &copy by Antonio Frangioni.
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -152,10 +145,7 @@ class MCFCplex: public MCFClass {
 /*--------------------------------------------------------------------------*/
 /*-------------------------CONSTRUCTOR--------------------------------------*/
 /*--------------------------------------------------------------------------*/
-
-   MCFCplex( cIndex nmx = 0 , cIndex mmx = 0 , CPXENVptr extenv = NULL );
-
-/**< Constructor of the class.
+/** Constructor of the class.
 
    For the meaning of nmx and mmx see MCFClass::MCFClass().
 
@@ -179,16 +169,12 @@ class MCFCplex: public MCFClass {
    Of course, it is then user's responsibility to initialize and free the
    environment. */
 
+   MCFCplex( cIndex nmx = 0 , cIndex mmx = 0 , CPXENVptr extenv = NULL );
+
 /*--------------------------------------------------------------------------*/
 /*---------------------- OTHER INITIALIZATIONS -----------------------------*/
 /*--------------------------------------------------------------------------*/
-
-   void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-		 cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
-		 cFRow pDfct = NULL , cIndex_Set pSn = NULL ,
-		 cIndex_Set pEn = NULL ) override;
-
-/**< Inputs a new network, as in MCFClass::LoadNet().
+/** Inputs a new network, as in MCFClass::LoadNet().
 
    Passing pC[ i ] == C_INF means that the arc `i' does not exist in the
    problem. These arcs are just "closed" and their cost is set to 0: this is
@@ -196,11 +182,13 @@ class MCFCplex: public MCFClass {
    them back with OpenArc(). If the corresponding pU[ i ] is == F_INF then
    the arc is just "deleted". */
 
+   void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
+		 cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
+		 cFRow pDfct = NULL , cIndex_Set pSn = NULL ,
+		 cIndex_Set pEn = NULL ) override;
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void SetPar( int par , int val ) override;
-
-/**< Set integer parameters of the algorithm.
+/** Set integer parameters of the algorithm.
 
    @param par   is the parameter to be set;
 
@@ -216,11 +204,10 @@ class MCFCplex: public MCFClass {
                   away via CPXsetintparam() [see the documentation in the
                   Cplex manual for details. */
 
+   virtual void SetPar( int par , int val ) override;
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void SetPar( int par , double val ) override;
-
-/**< Set float parameters of the algorithm.
+/** Set float parameters of the algorithm.
 
    @param par   is the parameter to be set;
 
@@ -233,17 +220,10 @@ class MCFCplex: public MCFClass {
                   away via CPXsetintparam() [see the documentation in the
                   Cplex manual for details. */
 
+   virtual void SetPar( int par , double val ) override;
+
 /*--------------------------------------------------------------------------*/
-
-   virtual inline void GetPar( int par , int &val ) const override
-   {
-    if( par == kQPMethod )
-     val = (int) QPMthd;
-    else
-     MCFClass::GetPar( par , val );
-    }
-
-/**< This method returns one of the integer parameter of the algorithm.
+/** This method returns one of the integer parameter of the algorithm.
 
    @param par  is the parameter to return [see SetPar( int ) for comments];
 
@@ -252,17 +232,23 @@ class MCFCplex: public MCFClass {
    Apart from the parameters of the base class, this method handles
    kQPMethod. */
 
- virtual inline void GetPar( int par, double & val ) const override {
-  MCFClass::GetPar( par, val );
- }
-
- /**< This method returns one of the double parameters of the algorithm. */
+   virtual void GetPar( int par , int &val ) const override
+   {
+    if( par == kQPMethod )
+     val = (int) QPMthd;
+    else
+     MCFClass::GetPar( par , val );
+    }
 
 /*--------------------------------------------------------------------------*/
+   /// This method returns one of the double parameters of the algorithm.
 
-   inline CPXENVptr GetCplexEnv( void ) const { return( env ); }
+   virtual void GetPar( int par , double & val ) const override {
+    MCFClass::GetPar( par, val );
+    }
 
-/**< Returns a pointer to the internal Cplex environment.
+/*--------------------------------------------------------------------------*/
+/** Returns a pointer to the internal Cplex environment.
 
    This method is provided as an alternative to the two forms of SetPar()
    [see above]; by getting the pointer to the internal Cplex environment with
@@ -276,6 +262,8 @@ class MCFCplex: public MCFClass {
    MCFCplex instances. In the latter case, any change in the environment
    simultaneously affect *all* the existing (and future) MCFCplex instances
    which have not been given a "private" environment. */
+
+   CPXENVptr GetCplexEnv( void ) const { return( env ); }
 
 /*--------------------------------------------------------------------------*/
 /*-------------------- METHODS FOR SOLVING THE PROBLEM ---------------------*/
@@ -296,7 +284,7 @@ class MCFCplex: public MCFClass {
 
   using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
-  void MCFGetRC( CRow CR,  cIndex_Set nms = NULL ,
+  void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
 		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
   CNumber MCFGetRC( cIndex i ) override;
@@ -319,37 +307,37 @@ class MCFCplex: public MCFClass {
   void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = NULL ,
 		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-  inline Index MCFSNde( cIndex i ) override;
+  Index MCFSNde( cIndex i ) override;
      
-  inline Index MCFENde( cIndex i ) override;
+  Index MCFENde( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
  
   void MCFCosts( CRow Costv , cIndex_Set nms = NULL ,
 		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
     
-  inline CNumber MCFCost( cIndex i ) override;
+  CNumber MCFCost( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
   void MCFQCoef( CRow Qv , cIndex_Set nms = NULL ,    
                  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-  inline CNumber MCFQCoef( cIndex i ) override;
+  CNumber MCFQCoef( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
   void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL ,
 		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-  inline FNumber MCFUCap( cIndex i ) override;
+  FNumber MCFUCap( cIndex i ) override;
      
 /*--------------------------------------------------------------------------*/
      
   void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL ,
 		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
 
-  inline FNumber MCFDfct( cIndex i ) override;
+  FNumber MCFDfct( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
@@ -381,14 +369,13 @@ class MCFCplex: public MCFClass {
 
   void ChgUCap( Index arc , cFNumber NCap  ) override;
 
-
 /*--------------------------------------------------------------------------*/
 /*----------------- MODIFYING THE STRUCTURE OF THE GRAPH -------------------*/
 /*--------------------------------------------------------------------------*/ 
 
   void CloseArc( cIndex name ) override;
      
-  inline bool IsClosedArc( cIndex name ) override;
+  bool IsClosedArc( cIndex name ) override;
 
   void DelNode( cIndex name ) override;
 
@@ -402,12 +389,10 @@ class MCFCplex: public MCFClass {
 
   void DelArc( cIndex name ) override;
 
-  inline bool IsDeletedArc( cIndex name ) override;
+  bool IsDeletedArc( cIndex name ) override;
 
   Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
    override; 
-
-  inline void printQ();
 
 /*--------------------------------------------------------------------------*/
 /*---------------------------- DESTRUCTOR ----------------------------------*/

@@ -1,30 +1,27 @@
 /*--------------------------------------------------------------------------*/
 /*------------------------- File MCFCplex.C --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--                                                                      --*/
-/*--  Quadratic Min Cost Flow problems solver, based on calls to the Cplex--*/
-/*--  Callable Libraries. Conforms to the standard (MCF) interface        --*/
-/*--  defined in MCFClass.h.                                              --*/
-/*--                                                                      --*/
-/*--                            VERSION 1.41                              --*/
-/*--                           27 - 02 - 2020                             --*/
-/*--                                                                      --*/
-/*--                  Original Idea and Implementation by:                --*/
-/*--                                                                      --*/
-/*--                          Antonio Frangioni                           --*/
-/*--                            Antonio Manca                             --*/
-/*--                           Matteo Sammartino                          --*/
-/*--                                                                      --*/
-/*--                       Operations Research Group                      --*/
-/*--                      Dipartimento di Informatica                     --*/
-/*--                         Universita' di Pisa                          --*/
-/*--                                                                      --*/
-/*--             Copyright (C) 1997 - 2020 by Antonio Frangioni.          --*/
-/*--                                                                      --*/
+/** @file
+ * Quadratic Min Cost Flow problems solver, based on calls to the Cplex
+ * Callable Libraries. Conforms to the standard MCF interface
+ * defined in MCFClass.h
+ *
+ * \author Antonio Frangioni \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * \author Antonio Manca \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * \author Matteo Sammartino \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * Copyright &copy by Antonio Frangioni.
+ */
 /*--------------------------------------------------------------------------*/
 /*--------------------------- IMPLEMENTATION -------------------------------*/
-/*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -825,6 +822,9 @@ void MCFCplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
  if( stp > m )
   stp = m;
 
+ if( strt >= stp )
+  return;
+
  Index cnt;
  if( nms ) {
   while( *nms < strt ) {
@@ -833,6 +833,8 @@ void MCFCplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
    }
 
   cnt = VectLength( nms , stp );
+  if( ! cnt )
+   return;
   }
  else
   cnt = stp - strt;
@@ -874,6 +876,9 @@ void MCFCplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
 
 void MCFCplex::ChgCost( Index arc , cCNumber NCost )
 {
+ if( arc >= MCFm() )
+  throw( MCFException( "MCFCplex::ChgCost: invalid arc name" ) );
+
  double cost = double( NCost );
  int which = int( arc );
 
@@ -884,12 +889,17 @@ void MCFCplex::ChgCost( Index arc , cCNumber NCost )
 
  }  // end( MCFCplex::ChgCost )
 
-
 /*--------------------------------------------------------------------------*/
 
 void MCFCplex::ChgQCoef( cCRow NQCoef, cIndex_Set nms,
 			 cIndex strt , Index stp ) 
 {
+ if( stp > m )
+  stp = m;
+
+ if( strt >= stp )
+  return;
+
  if( ! qp )   // the problem in not QP:
   TurnToQP(); // turn it into QP
 
@@ -908,9 +918,6 @@ void MCFCplex::ChgQCoef( cCRow NQCoef, cIndex_Set nms,
     }
   }
  else {
-  if( stp > m )
-   stp = m;
- 
   for( Index arc = strt , i = 0 ; arc < stp ; arc++ , i++ )
    #if( DYNMC_MCF_CPX )
     if( ! ArcPos[ arc ] )
@@ -928,6 +935,9 @@ void MCFCplex::ChgQCoef( cCRow NQCoef, cIndex_Set nms,
 
 void MCFCplex::ChgQCoef( Index arc , cCNumber NQCoef ) 
 {
+ if( arc >= MCFm() )
+  throw( MCFException( "MCFCplex::ChgQCoef: invalid arc name" ) );
+
  if( ! qp )
   TurnToQP();
 
@@ -946,6 +956,9 @@ void MCFCplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
  if( stp > n )
   stp = n;
 
+ if( strt >= stp )
+  return;
+
  Index cnt;
  if( nms ) {
   while( *nms < strt ) {
@@ -954,6 +967,8 @@ void MCFCplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
    }
 
   cnt = VectLength( nms , stp );
+  if( ! cnt )
+   return;
   }
  else
   cnt = stp - strt;
@@ -989,6 +1004,9 @@ void MCFCplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
 
 void MCFCplex::ChgDfct( Index node , cFNumber NDfct )
 {
+ if( node >= MCFn() )
+  throw( MCFException( "MCFCplex::ChgDfct: invalid node name" ) );
+
  double dfct = - double( NDfct );
  int which = int( node );
 
@@ -1007,6 +1025,9 @@ void MCFCplex::ChgUCaps( cFRow NCap ,  cIndex_Set nms ,
  if( stp > m )
   stp = m;
 
+ if( strt >= stp )
+  return;
+
  Index cnt;
  if( nms ) {
   while( *nms < strt ) {
@@ -1015,6 +1036,8 @@ void MCFCplex::ChgUCaps( cFRow NCap ,  cIndex_Set nms ,
    }
 
   cnt = VectLength( nms , stp );
+  if( ! cnt )
+   return;
   }
  else
   cnt = stp - strt;
@@ -1056,6 +1079,9 @@ void MCFCplex::ChgUCaps( cFRow NCap ,  cIndex_Set nms ,
 
 void MCFCplex::ChgUCap( Index arc , cFNumber NCap )
 {  
+ if( arc >= MCFm() )
+  throw( MCFException( "MCFCplex::ChgUCap: invalid arc name" ) );
+
  double cap = double( NCap );
  int which = int( arc );
 
@@ -1072,6 +1098,15 @@ void MCFCplex::ChgUCap( Index arc , cFNumber NCap )
 
 void MCFCplex::CloseArc( cIndex name )
 {
+ if( name >= MCFm() )
+  throw( MCFException( "MCFCplex::CloseArc: invalid arc name" ) );
+
+ #if( DYNMC_MCF_CPX )
+  // if the arc is closed already, or there is no arc in that position
+  if( ArcPos[ name ] > 0 )
+   return;  // nothing to do
+ #endif
+
  double ub;
  int temp = int( name );
 
@@ -1124,7 +1159,14 @@ void MCFCplex::DelNode( cIndex name )
 
 void MCFCplex::OpenArc( cIndex name )
 {
+ if( name >= MCFm() )
+  throw( MCFException( "MCFCplex::OpenArc: invalid arc name" ) );
+
  #if( DYNMC_MCF_CPX )
+  // if the arc exists and it is opened already
+  if( ArcPos[ name ] == 0 )
+   return;  // nothing to do
+
   int temp = int( name );
   double ub = double( ArcPos[ name ] );
   ArcPos[ name ] = 0;
@@ -1166,7 +1208,10 @@ MCFCplex::Index MCFCplex::AddNode( cFNumber aDfct )
 
 void MCFCplex::DelArc( cIndex name ) 
 {
- #if( DYNMC_MCF_CPX )
+ if( name >= MCFm() )
+  throw( MCFException( "MCFCplex::DelArc: invalid arc name" ) );
+
+#if( DYNMC_MCF_CPX )
   ArcPos[ name ] = Inf<FNumber>();  // position is available for a new arc
   if( name < FreePos )
    FreePos = name; 
@@ -1279,6 +1324,9 @@ MCFCplex::Index MCFCplex::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 
 void MCFCplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN ) 
 {
+ if( name >= MCFm() )
+  throw( MCFException( "MCFCplex::ChangeArc: invalid arc name" ) );
+
  int temp = int( name );
  int sn , en;
  if( ( nSN == Inf<Index>() ) || ( nEN == Inf<Index>() ) ) {

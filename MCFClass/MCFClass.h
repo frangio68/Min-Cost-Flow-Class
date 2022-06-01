@@ -6,17 +6,11 @@
  * interface for (linear or convex quadratic separable) Min Cost Flow Problem
  * solvers, to be implemented as derived classes.
  *
- * \version 3.07
- *
- * \date 27 - 02 - 2020
- *
  * \author Alessandro Bertolini \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
@@ -24,7 +18,7 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2020 by Antonio Frangioni, Claudio Gentile
+ * Copyright &copy by Antonio Frangioni, Claudio Gentile
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -37,11 +31,11 @@
 /*--------------------------------- MACROS ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @defgroup MCFCLASS_MACROS Compile-time switches in MCFClass.h
-    These macros control some important details of the class interface.
-    Although using macros for activating features of the interface is not
-    very C++, switching off some unused features may allow some
-    implementation to be more efficient in running time or memory.
-    @{ */
+ *  These macros control some important details of the class interface.
+ *  Although using macros for activating features of the interface is not
+ *  very C++, switching off some unused features may allow some
+ *  implementation to be more efficient in running time or memory.
+ *  @{ */
 
 /*-------------------------------- USENAME0 --------------------------------*/
 /** Decides if 0 or 1 is the "name" of the first node.
@@ -53,7 +47,7 @@
 
 #define USENAME0 0
 
-/**@}  end( group( MCFCLASS_MACROS ) ) */ 
+/** @}  end( group( MCFCLASS_MACROS ) ) */ 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -84,7 +78,7 @@ namespace MCFClass_di_unipi_it
 /*-------------------------- CLASS MCFClass --------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @defgroup MCFCLASS_CLASSES Classes in MCFClass.h
-    @{ */
+ *  @{ */
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------- GENERAL NOTES --------------------------------*/
@@ -347,13 +341,13 @@ class MCFClass {
 
  typedef MCFState *MCFStatePtr;  ///< pointer to a MCFState
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*--------------------------- PUBLIC METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Constructors
-    @{ */
+ *  @{ */
 
 /** Constructor of the class.
 
@@ -393,11 +387,11 @@ class MCFClass {
   }
 
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Other initializations
-    @{ */
+ *  @{ */
 
 /// inputs a new network from memory
 /** Inputs a new network from memory
@@ -668,7 +662,7 @@ class MCFClass {
    }
   }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*---------------------- METHODS FOR SOLVING THE PROBLEM -------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Solving the problem
@@ -718,11 +712,11 @@ class MCFClass {
 
  int MCFGetStatus( void ) { return( status ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Reading flow solution
-    @{ */
+ *  @{ */
 
 /// write the optimal flow solution in a vector
 /** Write the optimal flow solution in the vector F[]. If nms == 0, F[]
@@ -770,9 +764,9 @@ class MCFClass {
 
  virtual bool HaveNewX( void ) { return( false ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Reading the dual solution
-    @{ */
+ *  @{ */
 
 /// writes the optimal node potentials in a vector
 /** Writes the optimal node potentials in the vector P[]. If nms == 0,
@@ -866,9 +860,9 @@ class MCFClass {
 
  virtual CNumber MCFGetRC( cIndex i ) = 0;
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Reading the objective function value
-   @{ */
+ *  @{ */
 
 /// return the objective function value of the primal solution
 /** Return the objective function value of the primal solution currently
@@ -909,9 +903,9 @@ class MCFClass {
    }
   }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Getting unfeasibility / unboundedness certificates
-    @{ */
+ *  @{ */
 
 /// return an unfeasibility certificate
 /** Return an unfeasibility certificate. In an unfeasible MCF problem,
@@ -980,9 +974,9 @@ class MCFClass {
   return( Inf<Index>() );
   }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Saving/restoring the state of the solver
-    @{ */
+ *  @{ */
 
  /// save the state of the MCF solver
  /** Save the state of the MCF solver. The MCFClass interface supports the
@@ -1035,9 +1029,9 @@ class MCFClass {
 
  virtual void MCFPutState( MCFStatePtr S ) {}
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Time the code
-    @{ */
+ *  @{ */
 
 /// time the code
 /** Time the code. If called within any of the methods of the class that are
@@ -1066,9 +1060,9 @@ class MCFClass {
 
  double TimeMCF( void ) const { return( MCFt ? MCFt->Read() : 0 ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Check the solutions
-    @{ */
+ *  @{ */
 
 /// checks the primal solution
 /** Check that the primal solution returned by the solver is primal feasible.
@@ -1095,7 +1089,7 @@ class MCFClass {
 
  void CheckDSol( void );
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Reading graph size and topology
