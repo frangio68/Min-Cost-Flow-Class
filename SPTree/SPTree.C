@@ -1,27 +1,21 @@
 /*--------------------------------------------------------------------------*/
 /*----------------------------- File SPTree.C ------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--                                                                      --*/
-/*-- Implementation of several "classic" Shortest Path Tree algorithms to --*/
-/*-- solve uncapacitated single-source Min Cost Flow problems.            --*/
-/*--                                                                      --*/
-/*--                            VERSION 1.97                              --*/
-/*--                           27 - 02 - 2020                             --*/
-/*--                                                                      --*/
-/*--                          Implementation by:                          --*/
-/*--                                                                      --*/
-/*--                          Antonio Frangioni       	                  --*/
-/*--                                                                      --*/
-/*--                       Operations Research Group                      --*/
-/*--                      Dipartimento di Informatica                     --*/
-/*--                         Universita' di Pisa                          --*/
-/*--                                                                      --*/
-/*--              Copyright (C) 1996 - 2020 by Antonio Frangioni.         --*/
-/*--                                                                      --*/
+/** @file
+ * Implementation of SPTree, a class deriving from MCFClass, and therefore
+ * conforming to the standard MCF interface defined therein, and implementing
+ * several "classic" Shortest Path Tree algorithms to solve uncapacitated
+ * single-source Min Cost Flow problems. The actual algorithm can be chosen
+ * at compile time by setting a proper switch.
+ *
+ * \author Antonio Frangioni \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * Copyright &copy by Antonio Frangioni.
+ */
 /*--------------------------------------------------------------------------*/
 /*---------------------------- IMPLEMENTATION ------------------------------*/
-/*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -40,12 +34,6 @@
  // the label is not needed for LQueue and Djkstra algorithms
 #endif
 
-#if( SPT_STRTN )
- #define Stn( i , pos ) Startn[ i ]
-#else
- #define Stn( i , pos ) Startn( pos )
-#endif
-
 /*--------------------------------------------------------------------------*/
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -56,30 +44,8 @@ using namespace MCFClass_di_unipi_it;
 /*------------------------------- CONSTANTS --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-const MCFClass::Index InINF = Inf<MCFClass::Index>();
-const MCFClass::CNumber CINF = Inf<MCFClass::CNumber>();
-
-/*--------------------------------------------------------------------------*/
-/*---------------------------- PROCEDURES ----------------------------------*/
-/*--                                                                      --*/
-/*--  These procedures are not implemented as methods of the class, since --*/
-/*--  they don't use directly the data structures of the class: rather,   --*/
-/*--  the data they need is explicitely passed as parameters.             --*/
-/*--                                                                      --*/
-/*--------------------------------------------------------------------------*/
-
-#if( DYNMC_MCF_SPT )
-
-template<class T>
-static inline void Swap( T &v1 , T &v2 )
-{
- T temp = v1;
-
- v1 = v2;
- v2 = temp;
- }
-
-#endif
+const MCFClass::Index InINF = Inf< MCFClass::Index >();
+const MCFClass::CNumber CINF = Inf< MCFClass::CNumber >();
 
 /*--------------------------------------------------------------------------*/
 /*----------------------- IMPLEMENTATION OF SPTree -------------------------*/
@@ -89,22 +55,14 @@ static inline void Swap( T &v1 , T &v2 )
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-SPTree::SPTree( cIndex nmx , cIndex mmx , bool Drctd )
-	:
-        MCFClass( nmx , mmx )
+SPTree::SPTree( Index nmx , Index mmx , bool Drctd ) : MCFClass( nmx , mmx )
 {
  DirSPT = Drctd;
-
- // allocate memory - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  if( nmax && mmax )
   MemAlloc();
  else
   nmax = mmax = 0;
-
- // other initializations - - - - - - - - - - - - - - - - - - - - - - - - - -
-
- InstCntr++;
 
  }  // end( SPTree )
 
@@ -112,7 +70,7 @@ SPTree::SPTree( cIndex nmx , cIndex mmx , bool Drctd )
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-void SPTree::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
+void SPTree::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
 		      cFRow pU , cCRow pC , cFRow pDfct ,
 		      cIndex_Set pSn , cIndex_Set pEn )
 {
@@ -145,109 +103,131 @@ void SPTree::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
  assert( pDfct );
  assert( pC );
 
- #if( SPT_STRTN )
-  #if( SAME_GRPH_SPT )
-   if( ! *Startn )  // Startn[] has not been initialized yet- - - - - - - - -
-  #endif
-   {
-    Index_Set tSn = Startn + m;
-    for( pSn += m ; tSn > Startn ; )
-     *(--tSn) = *(--pSn);
-    }
+ Index_Set tSn = Startn + m;
+ for( pSn += m ; tSn > Startn ; )
+  *(--tSn) = *(--pSn);
+
+ // compute the cardinality of FS[ i ] ( i = 1 .. n ) into NdePdr[] - - - - -
+
+ Index_Set tNP = NdePrd + n;
+ for( ; tNP > NdePrd ; )
+  *(tNP--) = 0;
+
+ #if( USENAME0 )
+  tNP++;  // if USENAME0 == 1, node names are "translated" of + 1
+          // to make name 0 *not* being used
  #endif
 
- #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-  if( StrtFS[ 1 ] == InINF )  // the FS has not been initialized yet- - - - -
- #endif
-  {
-   // compute the cardinality of FS[ i ] ( i = 1 .. n ) into NdePdr[] - - - -
+ #if( DYNMC_MCF_SPT )
+  // count non-existent arcs (with CINF cost) in the FSs
 
-   Index_Set tNP = NdePrd + n;
-   for( ; tNP > NdePrd ; )
-    *(tNP--) = 0;
+  for( cIndex_Set tSn = pSn + m ; tSn > pSn ; )
+   tNP[ *(--tSn) ]++;
 
-   #if( USENAME0 )
-    tNP++;  // if USENAME0 == 1, node names are "translated" of + 1
-            // to make name 0 *not* being used
-   #endif
+  if( ! DirSPT )
+   for( cIndex_Set tSn = pEn + m ; tSn > pEn ; )
+    tNP[ *(--tSn) ]++;
+ #else
+ {
+  // non-existent arcs are completely removed from the formulation
 
-   #if( SAME_GRPH_SPT || DYNMC_MCF_SPT )
-    // count non-existent arcs (with CINF cost) in the FSs
-
-    for( cIndex_Set tSn = pSn + m ; tSn > pSn ; )
-     tNP[ *(--tSn) ]++;
-
-    if( ! DirSPT )
-     for( cIndex_Set tSn = pEn + m ; tSn > pEn ; )
-      tNP[ *(--tSn) ]++;
-   #else
-   {
-    // non-existent arcs are completely removed from the formulation
-
-    cCRow tC = pC + m;
-    cIndex_Set tSn = pSn + m;
-    if( DirSPT ) {
-     for( ; tSn-- > pSn ; )
-      if( *(--tC) < CINF )
-       tNP[ *tSn ]++;
+  cCRow tC = pC + m;
+  cIndex_Set tSn = pSn + m;
+  if( DirSPT ) {
+   for( ; tSn-- > pSn ; )
+    if( *(--tC) < CINF )
+     tNP[ *tSn ]++;
+   }
+  else
+   for( cIndex_Set tEn = pEn + m ; tSn-- > pSn ; ) {
+    tEn--;
+    if( *(--tC) < CINF ) {
+     tNP[ *tSn ]++;
+     tNP[ *tEn ]++;
      }
-    else
-     for( cIndex_Set tEn = pEn + m ; tSn-- > pSn ; ) {
-      tEn--;
-      if( *(--tC) < CINF ) {
-       tNP[ *tSn ]++;
-       tNP[ *tEn ]++;
-       }
-      }
     }
+  }
+ #endif
+
+ #if( USENAME0 )
+  tNP--;  // keep the invariant that the lenght of the FS() of the first
+          // node is in tNP[ 1 ]
+ #endif
+
+  // compute StrtFS[] and copy it into NodePdr[] - - - - - - - - - - - - - - -
+
+ Index j = 0;
+ Index_Set tSFS = StrtFS;
+ for( Index i = n ; i-- ; ) {
+  cIndex h = *(++tNP);
+  *(++tSFS) = *tNP = j;
+  j += h;
+  }
+
+ *(++tSFS) = j;
+
+ // construct Dict[] and DictM1[]:  - - - - - - - - - - - - - - - - - - - - -
+ // in the first pass, only consider the "existing" arcs- - - - - - - - - - -
+
+ tNP = NdePrd;
+ #if( USENAME0 )
+  tNP++;  // once again, shift the vector to adapt to the naming
+ #endif
+
+ #if( DYNMC_MCF_SPT )
+  cCRow tC = pC;
+ #endif
+
+ if( DirSPT )
+  for( Index i = 0 ; i < m ; i++ ) {
+   #if( DYNMC_MCF_SPT )
+    if( *(tC++) == CINF )
+     continue;
    #endif
 
-   #if( USENAME0 )
-    tNP--;  // keep the invariant that the lenght of the FS() of the first
-            // node is in tNP[ 1 ]
+   j = tNP[ pSn[ i ] ]++;
+   DictM1[ i ] = j;
+   Dict[ j ] = i;
+   }
+ else
+  for( Index i = 0 ; i < m ; i++ ) {
+   #if( DYNMC_MCF_SPT )
+    if( *(tC++) == CINF )
+     continue;
    #endif
 
-   // compute StrtFS[] and copy it into NodePdr[] - - - - - - - - - - - - - -
+   j = tNP[ pSn[ i ] ]++;
+   Index h = 2 * i;
+   DictM1[ h++ ] = j;
+   Dict[ j ] = i;
 
-   Index j = 0;
-   Index_Set tSFS = StrtFS;
-   for( Index i = n ; i-- ; ) {
-    cIndex h = *(++tNP);
-    *(++tSFS) = *tNP = j;
-    j += h;
-    }
+   j = tNP[ pEn[ i ] ]++;
+   DictM1[ h ] = j;
+   Dict[ j ] = i;
+   }
 
-   *(++tSFS) = j;
+ #if( DYNMC_MCF_SPT )
+  // construct LenFS[]- - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-   // construct Dict[] and DictM1[]:  - - - - - - - - - - - - - - - - - - - -
-   // in the first pass, only consider the "existing" arcs- - - - - - - - - -
+  for( Index i = 0 ; i++ < n ; )
+   LenFS[ i ] = NdePrd[ i ] - StrtFS[ i ];
 
-   tNP = NdePrd;
-   #if( USENAME0 )
-    tNP++;  // once again, shift the vector to adapt to the naming
-   #endif
+  // now do a second pass considering only *non*existent arcs - - - - - - - -
+  // hence, all nonexistent arcs in the FS[ i ] are packed after all the
+  // existent ones, and LenFS[ i ] only counts the latter
 
-   #if( ( ! SAME_GRPH_SPT ) || DYNMC_MCF_SPT )
-    cCRow tC = pC;
-   #endif
-   if( DirSPT )
-    for( Index i = 0 ; i < m ; i++ ) {
-     #if( ( ! SAME_GRPH_SPT ) || DYNMC_MCF_SPT )
-      if( *(tC++) == CINF )
-       continue;
-     #endif
-
+  tC = pC;
+  if( DirSPT ) {
+   for( Index i = 0 ; i < m ; i++ )
+    if( *(tC++) == CINF ) {
      j = tNP[ pSn[ i ] ]++;
      DictM1[ i ] = j;
      Dict[ j ] = i;
      }
-   else
-    for( Index i = 0 ; i < m ; i++ ) {
-     #if( ( ! SAME_GRPH_SPT ) || DYNMC_MCF_SPT )
-      if( *(tC++) == CINF )
-       continue;
-     #endif
-
+   }
+  else
+   for( Index i = 0 ; i < m ; i++ )
+    if( *(tC++) == CINF ) {
      j = tNP[ pSn[ i ] ]++;
      Index h = 2 * i;
      DictM1[ h++ ] = j;
@@ -257,65 +237,31 @@ void SPTree::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
      DictM1[ h ] = j;
      Dict[ j ] = i;
      }
+ #else
+  // now do a second pass considering only *non*existent arcs - - - - - - - -
+  // all nonexistent arcs are packed after the "end" of FS[], i.e. from
+  // StrtFS[ n + 1 ] onwards
 
-   #if( DYNMC_MCF_SPT )
-    // construct LenFS[]- - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    for( Index i = 0 ; i++ < n ; )
-     LenFS[ i ] = NdePrd[ i ] - StrtFS[ i ];
-
-    // now do a second pass considering only *non*existent arcs - - - - - - -
-    // hence, all nonexistent arcs in the FS[ i ] are packed after all the
-    // existent ones, and LenFS[ i ] only counts the latter
-
-    tC = pC;
-    if( DirSPT ) {
-     for( Index i = 0 ; i < m ; i++ )
-      if( *(tC++) == CINF ) {
-       j = tNP[ pSn[ i ] ]++;
-       DictM1[ i ] = j;
-       Dict[ j ] = i;
-       }
+  cCRow tC = pC;
+  j = StrtFS[ n + 1 ];
+  if( DirSPT )
+   for( Index i = 0 ; i < m ; i++ ) {
+    if( *(tC++) == CINF ) {
+     DictM1[ i ] = j;
+     Dict[ j++ ] = i;
      }
-    else
-     for( Index i = 0 ; i < m ; i++ )
-      if( *(tC++) == CINF ) {
-       j = tNP[ pSn[ i ] ]++;
-       Index h = 2 * i;
-       DictM1[ h++ ] = j;
-       Dict[ j ] = i;
+    }
+  else
+   for( Index i = 0 ; i < m ; i++ )
+    if( *(tC++) == CINF ) {
+     Index h = 2 * i;
+     DictM1[ h++ ] = j;
+     Dict[ j++ ] = i;
 
-       j = tNP[ pEn[ i ] ]++;
-       DictM1[ h ] = j;
-       Dict[ j ] = i;
-       }
-   #elif( ! SAME_GRPH_SPT )
-    // now do a second pass considering only *non*existent arcs - - - - - - -
-    // all nonexistent arcs are packed after the "end" of FS[], i.e. from
-    // StrtFS[ n + 1 ] onwards
-
-    tC = pC;
-    j = StrtFS[ n + 1 ];
-    if( DirSPT ) {
-     for( Index i = 0 ; i < m ; i++ )
-      if( *(tC++) == CINF ) {
-       DictM1[ i ] = j;
-       Dict[ j++ ] = i;
-       }
+     DictM1[ h ] = j;
+     Dict[ j++ ] = i;
      }
-    else
-     for( Index i = 0 ; i < m ; i++ )
-      if( *(tC++) == CINF ) {
-       Index h = 2 * i;
-       DictM1[ h++ ] = j;
-       Dict[ j++ ] = i;
-
-       DictM1[ h ] = j;
-       Dict[ j++ ] = i;
-       }
-   #endif
-
-   }  // end( if( StrtFS[ 1 ] == InINF ) )
+ #endif
 
  // construct FS[] - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  // note: node names in FS[ . ].Nde are in 1 ... n irrespective of USENAME0
@@ -365,13 +311,12 @@ void SPTree::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
    DstBse[ NDsts++ ] = i;
   else
    if( di < 0 ) {
-    if( Origin < InINF ) {
-     throw ( MCFException( "SPTree::LoadNet: more than one source in pDfct" ) );
-    } else {
+    if( Origin < InINF )
+     throw( MCFException( "SPTree::LoadNet: more than one source in pDfct" ) );
+    else
      Origin = i;
     }
-   }
- }
+  }
 
  if( Origin == InINF )
   throw( MCFException( "SPTree::LoadNet: no sources in pDfct" ) );
@@ -393,7 +338,6 @@ void SPTree::SolveMCF( void )
   MCFt->Start();
 
  #if( LABEL_SETTING )
-  FO = Inf<FONumber>();
   for( Index h = 0 ;; ) {  // main cycle: until there are unreached dests - -
    Dest = DstBse[ h++ ];   // get the next unreached dest
    ShortestPathTree();     // solve the SPT with *that* Dest
@@ -409,9 +353,15 @@ void SPTree::SolveMCF( void )
    else              // FS( Dest ) must be scanned, since Dest has already
     break;           // been removed from Q
    }
+
+  if( status == kOK )
+   FO = SPTree::MCFGetFO( NDsts , DstBse );  
  #else
   ShortestPathTree();  // just solve the SPT- - - - - - - - - - - - - - - - -
  #endif
+
+ if( status == kOK )
+  CalcArcP();  // compute ArcPrd[]
 
  if( MCFt )
   MCFt->Stop();
@@ -422,7 +372,7 @@ void SPTree::SolveMCF( void )
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
+void SPTree::MCFGetX( FRow F , Index_Set nms , Index strt , Index stp ) const
 {
  SPTree::MCFGetX( NDsts , DstBse , F , nms , strt , stp );
 
@@ -430,11 +380,10 @@ void SPTree::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
-{
+void SPTree::MCFGetRC( CRow CR , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( ! DirSPT )
-  throw( MCFException( "SPTree::MCFGetRC() not allowed if DirSPT == false" )
-	 );
+  throw( MCFException( "SPTree::MCFGetRC() not allowed if DirSPT == 0" ) );
 
  if( nms ) {
   while( *nms < strt )
@@ -506,10 +455,10 @@ void SPTree::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::CNumber SPTree::MCFGetRC( cIndex i )
+MCFClass::CNumber SPTree::MCFGetRC( Index i ) const
 {
  if( ! DirSPT )
-  throw( MCFException( "SPTree::MCFGetRC() not allowed if DirSPT == true" ) );
+  throw( MCFException( "SPTree::MCFGetRC() not allowed if DirSPT == 0" ) );
 
  cIndex pos = DictM1[ i ];
  cIndex nde = FS[ pos ].Nde;
@@ -522,7 +471,7 @@ inline MCFClass::CNumber SPTree::MCFGetRC( cIndex i )
   {
    cCNumber Pij = Pi[ nde ];
    if( Pij < CINF ) {
-    cIndex j = Stn( i , pos );
+    cIndex j = Startn[ i ];
     if( Pi[ j ] < CINF )
      return( FS[ pos ].Cst + Pi[ j ] - Pij ); 
     }
@@ -534,8 +483,8 @@ inline MCFClass::CNumber SPTree::MCFGetRC( cIndex i )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
-{
+void SPTree::MCFGetPi( CRow P , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -554,31 +503,11 @@ void SPTree::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
  }  // end( SPTree::MCFGetPi )
 
 /*--------------------------------------------------------------------------*/
-
-MCFClass::cCRow SPTree::MCFGetPi( void )
-{
- return( Pi + 1 );
- }
-
-/*--------------------------------------------------------------------------*/
-
-MCFClass::FONumber SPTree::MCFGetFO( void )
-{
- #if( LABEL_SETTING )
-  if( FO == Inf<FONumber>() )
-   FO = SPTree::MCFGetFO( NDsts , DstBse );
- #endif
-
- return( FO );
-
- }  // end( SPTree::MCFGetFO )
-
-/*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 
 void SPTree::MCFArcs( Index_Set Startv , Index_Set Endv ,
-		      cIndex_Set nms , cIndex strt , Index stp )
+		      cIndex_Set nms , Index strt , Index stp ) const
 {
  assert( DirSPT );
  assert( ! nms );
@@ -605,8 +534,8 @@ void SPTree::MCFArcs( Index_Set Startv , Index_Set Endv ,
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFCosts( CRow Costv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void SPTree::MCFCosts( CRow Costv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -636,8 +565,8 @@ void SPTree::MCFCosts( CRow Costv , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFUCaps( FRow UCapv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void SPTree::MCFUCaps( FRow UCapv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -656,8 +585,8 @@ void SPTree::MCFUCaps( FRow UCapv , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::MCFDfcts( FRow Dfctv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void SPTree::MCFDfcts( FRow Dfctv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -680,7 +609,7 @@ void SPTree::MCFDfcts( FRow Dfctv , cIndex_Set nms , cIndex strt , Index stp )
 /*----- Changing the costs, deficits and upper capacities of the (MCF) -----*/
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgCosts( cCRow NCost , cIndex_Set nms , cIndex strt , Index stp )
+void SPTree::ChgCosts( cCRow NCost , cIndex_Set nms , Index strt , Index stp )
 {
  if( nms ) {
   while( *nms < strt ) {
@@ -721,7 +650,7 @@ void SPTree::ChgCosts( cCRow NCost , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgCost( Index arc , cCNumber NCost )
+void SPTree::ChgCost( Index arc , CNumber NCost )
 {
  if( DirSPT )
   FS[ DictM1[ arc ] ].Cst = NCost;
@@ -737,7 +666,7 @@ void SPTree::ChgCost( Index arc , cCNumber NCost )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgDfcts( cFRow NDfct , cIndex_Set nms , cIndex strt , Index stp )
+void SPTree::ChgDfcts( cFRow NDfct , cIndex_Set nms , Index strt , Index stp )
 {
  throw( MCFException( "SPTree::ChgDfcts() not implemented yet" ) );
 
@@ -745,7 +674,7 @@ void SPTree::ChgDfcts( cFRow NDfct , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgDfct( Index nod , cFNumber NDfct )
+void SPTree::ChgDfct( Index nod , FNumber NDfct )
 {
  throw( MCFException( "SPTree::ChgDfct() not implemented yet" ) );
 
@@ -753,14 +682,14 @@ void SPTree::ChgDfct( Index nod , cFNumber NDfct )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgUCaps( cFRow NCap , cIndex_Set nms , cIndex strt , Index stp )
+void SPTree::ChgUCaps( cFRow NCap , cIndex_Set nms , Index strt , Index stp )
 {
  throw( MCFException( "Cannot change capacities in a SPTree" ) );
  }
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChgUCap( Index arc , cFNumber NCap )
+void SPTree::ChgUCap( Index arc , FNumber NCap )
 {
  throw( MCFException( "Cannot change capacities in a SPTree" ) );
  }
@@ -769,12 +698,11 @@ void SPTree::ChgUCap( Index arc , cFNumber NCap )
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
-void SPTree::CloseArc( cIndex name )
+void SPTree::CloseArc( Index name )
 {
  #if( DYNMC_MCF_SPT )
   if( ! DirSPT )
-   throw( MCFException( "SPTree::CloseArc() not allowed if DirSPT == false" )
-	  );
+   throw( MCFException( "SPTree::CloseArc() not allowed if DirSPT == 0" ) );
 
   cIndex pos = DictM1[ name ];     // current position of arc name
   cIndex nde = Stn( name , pos );  // start node of arc name
@@ -783,38 +711,36 @@ void SPTree::CloseArc( cIndex name )
   if( npos != pos ) {
    cIndex nname = Dict[ npos ];             // name of the arc that is
                                             // currently in position pos
-   Swap( FS[ pos ].Cst , FS[ npos ].Cst );  // now the arc 'name', curently in
-   Swap( FS[ pos ].Nde , FS[ npos ].Nde );  // position 'pos' in FS[], is
-   Dict[ pos ] = nname;                     // swapped with the arc 'nname'
-   Dict[ npos ] = name;                     // currently in position 'npos'
+   std::swap( FS[ pos ].Cst , FS[ npos ].Cst );  // the arc 'name', in
+   std::swap( FS[ pos ].Nde , FS[ npos ].Nde );  // position 'pos' in FS[],
+   Dict[ pos ] = nname;                     // is swapped with the arc
+   Dict[ npos ] = name;                     //  'nname' in position 'npos'
    DictM1[ nname ] = pos;
    DictM1[ name ] = npos;
    }
 
   status = MCFClass::kUnSolved;
  #else
-  throw(
-   MCFException( "SPTree::CloseArc() not implemented if DYNMC_MCF_SPT == 0" )
-	);
+  throw( MCFException(
+	      "SPTree::CloseArc() not implemented if DYNMC_MCF_SPT == 0" ) );
  #endif
 
  }  // end( SPTree::CloseArc )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::DelNode( cIndex name )
+void SPTree::DelNode( Index name )
 {
  throw( MCFException( "SPTree::DelNode() not implemented yet" ) );
  }
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::OpenArc( cIndex name )
+void SPTree::OpenArc( Index name )
 {
  #if( DYNMC_MCF_SPT )
   if( ! DirSPT )
-   throw( MCFException( "SPTree::OpenArc() not allowed if DirSPT == false" )
-	  );
+   throw( MCFException( "SPTree::OpenArc() not allowed if DirSPT == 0" ) );
 
   cIndex pos = DictM1[ name ];     // current position of arc name
   cIndex nde = Stn( name , pos );  // start node of arc name
@@ -823,8 +749,8 @@ void SPTree::OpenArc( cIndex name )
   if( npos != pos ) {
    cIndex nname = Dict[ npos ];             // name of the arc that is
                                             // currently in position pos
-   Swap( FS[ pos ].Cst , FS[ npos ].Cst );  // now the arc 'name', curently
-   Swap( FS[ pos ].Nde , FS[ npos ].Nde );  // in position 'pos' in FS[],
+   std::swap( FS[ pos ].Cst , FS[ npos ].Cst );  // the arc 'name', curently
+   std::swap( FS[ pos ].Nde , FS[ npos ].Nde );  // in position 'pos' in FS[],
    Dict[ pos ] = nname;                     // is swapped with the arc 'nname'
    Dict[ npos ] = name;                     // currently in position 'npos'
    DictM1[ nname ] = pos;
@@ -833,9 +759,8 @@ void SPTree::OpenArc( cIndex name )
 
   status = MCFClass::kUnSolved;
  #else
-  throw(
-   MCFException( "SPTree::CloseArc() not implemented if DYNMC_MCF_SPT == 0" )
-   );
+  throw( MCFException(
+	      "SPTree::CloseArc() not implemented if DYNMC_MCF_SPT == 0" ) );
  #endif
 
  }  // end( SPTree::OpenArc )
@@ -851,7 +776,7 @@ MCFClass::Index SPTree::AddNode( cFNumber aDfct )
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::ChangeArc( cIndex name , cIndex nSS , cIndex nEN )
+void SPTree::ChangeArc( Index name , Index nSS , Index nEN )
 {
  #if( DYNMC_MCF_SPT )
   if( nSS < InINF )
@@ -863,17 +788,16 @@ void SPTree::ChangeArc( cIndex name , cIndex nSS , cIndex nEN )
    status = MCFClass::kUnSolved;
    }
  #else
-  throw(
-   MCFException( "SPTree::ChangeArc() not implemented if DYNMC_MCF_SPT == 0" )
-	);
+  throw( MCFException(
+	     "SPTree::ChangeArc() not implemented if DYNMC_MCF_SPT == 0" ) );
  #endif
 
  }  // end( SPTree::ChangeArc )
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::Index SPTree::AddArc( cIndex Start , cIndex End , cFNumber aU ,
-				cCNumber aC )
+MCFClass::Index SPTree::AddArc( Index Start , Index End , FNumber aU ,
+				CNumber aC )
 {
  #if( DYNMC_MCF_SPT )
   Index nde = Start + USENAME0;
@@ -892,9 +816,8 @@ MCFClass::Index SPTree::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 
   return( pos );
  #else
-  throw(
-   MCFException( "SPTree::AddArc() not implemented if DYNMC_MCF_SPT == 0" )
-   );
+  throw( MCFException(
+		"SPTree::AddArc() not implemented if DYNMC_MCF_SPT == 0" ) );
 
   return( InINF );
  #endif
@@ -903,7 +826,7 @@ MCFClass::Index SPTree::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 
 /*--------------------------------------------------------------------------*/
 
-void SPTree::DelArc( cIndex name )
+void SPTree::DelArc( Index name )
 {
  SPTree::CloseArc( name );  // limited implementation
  }
@@ -991,8 +914,8 @@ void SPTree::ShortestPathTree( void )
 
  #if( LABEL_SETTING )
   if( ! Reached( Dest ) ) {
-   status = MCFClass::kUnfeasible;
-   FO = Inf<FONumber>();
+   status = kUnfeasible;
+   FO = Inf< FONumber >();
    }
  #else
   FO = 0;
@@ -1001,8 +924,8 @@ void SPTree::ShortestPathTree( void )
    if( Pi[ h ] < CINF )
     FO += B[ h ] * Pi[ h ];
    else {
-    status = MCFClass::kUnfeasible;
-    FO = Inf<FONumber>();
+    status = kUnfeasible;
+    FO = Inf< FONumber >();
     break;
     }
  #endif
@@ -1012,7 +935,7 @@ void SPTree::ShortestPathTree( void )
 /*--------------------------------------------------------------------------*/
 
 void SPTree::MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms ,
-		      cIndex strt , Index stp )
+		      Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
@@ -1021,10 +944,6 @@ void SPTree::MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms ,
   assert( ( ! strt ) && ( stp == m ) );
   // restricting to a subinterval is not yet supported for unordered names
  #endif
-
- // if necessary, compute ArcPrd[]- - - - - - - - - - - - - - - - - - - - - -
-
- CalcArcP();
 
  // if necessary, initialize the flow to zero - - - - - - - - - - - - - - - -
 
@@ -1058,6 +977,8 @@ void SPTree::MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms ,
        // Stack is here used as an array pointer implementation of the- - - -
        // list containing the sort- - - - - - - - - - - - - - - - - - - - - -
        // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  Index_Set Stack = new Index[ 2 * n + 1 ];
 
   Index_Set tS = Stack + n;  // Stack[ i ] is the successor of node
   for( ; tS > Stack ; )               // i in the topological sort, and
@@ -1128,6 +1049,9 @@ void SPTree::MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms ,
      hd = i;
      }
     }
+
+  delete[] Stack;
+ 
   }   // end else( many dests ) - - - - - - - - - - - - - - - - - - - - - - -
       //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1152,7 +1076,7 @@ void SPTree::MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms ,
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::FONumber SPTree::MCFGetFO( Index ND , cIndex_Set DB )
+MCFClass::FONumber SPTree::MCFGetFO( Index ND , cIndex_Set DB ) const
 {
  FONumber tFO = 0;
  for( Index i = ND ; i-- ; )
@@ -1175,27 +1099,16 @@ MCFClass::cIndex_Set SPTree::ArcPredecessors( void )
 /*------------------------------ DESTRUCTOR --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-SPTree::~SPTree()
-{
- if( ! --InstCntr ) {  // deallocating static members - - - - - - - - - - - -
-  maxnmax = 0;
-
-  delete[] Stack;
-  Stack = 0;
-  }
-
- MemDeAlloc();  // deallocate all the rest- - - - - - - - - - - - - - - - - -
-
- }  // end( ~SPTree )
+SPTree::~SPTree() { if( mmax && nmax ) MemDeAlloc(); }
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------- PRIVATE METHODS ------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-inline void SPTree::Initialize( void )
+void SPTree::Initialize( void )
 {
- status = MCFClass::kOK;
- FO = Inf<SPTree::FONumber>();
+ status = kOK;
+ FO = Inf< FONumber >();
 
  CRow tPi = Pi + n;
  Index_Set tA = ArcPrd + n;
@@ -1223,17 +1136,12 @@ inline void SPTree::Initialize( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void SPTree::ScanFS( cIndex mi )
+void SPTree::ScanFS( cIndex mi )
 {
  cCNumber pmi = Pi[ mi ];
  FrwdStr FSj = FS + StrtFS[ mi ];
  for( Index h = LenFS( mi ) ; h-- ; FSj++ ) {
   CNumber dist = (*FSj).Cst;
-  #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-   if( dist == CINF )
-    continue;
-  #endif
-
   dist += pmi;
   cIndex tnde = (*FSj).Nde;
   if( GT( Pi[ tnde ] , dist , EpsCst ) ) {  // can decrease Pi[ tnde ]
@@ -1256,7 +1164,7 @@ inline void SPTree::ScanFS( cIndex mi )
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::Index SPTree::ExtractQ( void )
+MCFClass::Index SPTree::ExtractQ( void )
 {
  Index mi;
 
@@ -1359,7 +1267,7 @@ inline MCFClass::Index SPTree::ExtractQ( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void SPTree::InsertQ( cIndex j , cCNumber label )
+void SPTree::InsertQ( cIndex j , cCNumber label )
 {
  #if( ( SPT_ALGRTM == 0 ) || ( SPT_ALGRTM == 3 ) )  //- - - - - - - - - - - -
 
@@ -1409,7 +1317,7 @@ inline void SPTree::InsertQ( cIndex j , cCNumber label )
 
 /*--------------------------------------------------------------------------*/
 
-inline void SPTree::CalcArcP( void )
+void SPTree::CalcArcP( void )
 {
  if( ! ReadyArcP ) {
   for( Index_Set tAP = ArcPrd + n ; tAP > ArcPrd ; tAP-- )
@@ -1421,83 +1329,21 @@ inline void SPTree::CalcArcP( void )
 
 /*--------------------------------------------------------------------------*/
 
-#if( ! SPT_STRTN )
-
-inline MCFClass::Index SPTree::Startn( cIndex What )
-{
- // we search for:
- // - What, if it is in StrtFS[], or
- // - the index of the last entry in StrtFS[] that is < What
-
- assert( false );  // it does not work: if there are several nodes s.t.
-                   // StrtFS[ i ] == What (nodes with empty FS[] except
-                   // for the last), it should return the last one
-                   // rather than just any one
-
- Index Strt = 1;
- for( Index Stop = n + 1 ; Strt < Stop ; ) {
-  // pivot i = ceil( ( Start + Stop ) / 2 )
-  Index i = ( Strt + Stop + 1 ) / 2;
-
-  if( StrtFS[ i ] > What )
-   Stop = i - 1;
-  else {
-   Strt = i;
-
-   if( StrtFS[ i ] == What )
-    break;
-   }
-  }
-
- return( Strt );
-
- }  // end( Startn )
-
-#endif
-
-/*--------------------------------------------------------------------------*/
-
-inline void SPTree::MemAlloc( void )
+void SPTree::MemAlloc( void )
 {
  cFS = DirSPT ? mmax : 2 * mmax;
 
- #if( SPT_STRTN )
-  #if( SAME_GRPH_SPT )
-   if( ! Startn )  // allocating the start node information - - - - - - - - -
-  #endif
-   {
-    Startn = new Index[ mmax ];
-    #if( SAME_GRPH_SPT )
-     *Startn = 0;  // 0 is not a feasible value for a *Startn; this tells
-                   // that Startn has not been initialized yet
-    #endif
-    }
+ Startn = new Index[ mmax ];
+ StrtFS = new Index[ nmax + 1 ]; StrtFS--;
+ #if( DYNMC_MCF_SPT )
+  LenFS = new Index[ nmax ]; LenFS--;
  #endif
 
- #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-  if( ! StrtFS )  // allocating FS-related data structures- - - - - - - - - -
- #endif
-  {
-   StrtFS = new Index[ nmax + 1 ];
-   #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-    *StrtFS = InINF;  // INF is not a feasible value for StrtFS[ 1 ];
-                      // this tells that the FS has not been initialized yet
-   #endif
-   StrtFS--;
-   #if( DYNMC_MCF_SPT )
-    LenFS = new Index[ nmax ];
-    LenFS--;
-   #endif
+ Dict   = new Index[ cFS + 1 ];
+ DictM1 = new Index[ cFS ];
 
-   Dict   = new Index[ cFS + 1 ];
-   DictM1 = new Index[ cFS ];
-
-   Dict[ cFS ] = InINF;  // used in CalcArcP() to set to INF
-                                // the arc predecessor of the Origin
-   }
-
- // allocating the remaining (always "local") memory- - - - - - - - - - - - -
-
+ Dict[ cFS ] = InINF;  // used in CalcArcP() to set to INF
+                       // the arc predecessor of the Origin
  #if( SPT_ALGRTM > 3 )
   H = new Index[ nmax - 1 ];
  #endif
@@ -1505,97 +1351,42 @@ inline void SPTree::MemAlloc( void )
  Q      = new Index[ nmax + 1 ];
  FS     = new FSElmnt[ cFS ];
  Pi     = new CNumber[ nmax + 1 ];
- NdePrd = new Index[ nmax ];
- NdePrd--;
- ArcPrd = new Index[ nmax ];
- ArcPrd--;
+ NdePrd = new Index[ nmax ]; NdePrd--;
+ ArcPrd = new Index[ nmax ]; ArcPrd--;
  DstBse = new Index[ nmax ];
- B      = new FNumber[ nmax ];
- B--;
+ B      = new FNumber[ nmax ]; B--;
 
  *Pi = CINF;
-
- // allocating temporaries- - - - - - - - - - - - - - - - - - - - - - - - - -
-
- if( maxnmax < nmax ) {
-  maxnmax = nmax;  // keep the max n. of nodes updated
-  delete[] Stack;  // the stack has been allocated for a smaller graph:
-  Stack = 0;    // ensure it will be re-allocated
-  }
-
- if( ! Stack )
-  Stack = new Index[ 2 * maxnmax + 1 ];
 
  }  // end( MemAlloc )
 
 /*--------------------------------------------------------------------------*/
 
-inline void SPTree::MemDeAlloc( void )
+void SPTree::MemDeAlloc( void )
 {
- if( mmax && nmax ) {
-  delete[] ++B;
-  delete[] DstBse;
-  delete[] ++ArcPrd;
-  delete[] ++NdePrd;
-  delete[] Pi;
-  delete[] FS;
-  delete[] Q;
+ delete[] ++B;
+ delete[] DstBse;
+ delete[] ++ArcPrd;
+ delete[] ++NdePrd;
+ delete[] Pi;
+ delete[] FS;
+ delete[] Q;
 
-  #if( SPT_ALGRTM > 3 )
-   delete[] H;
-  #endif
-  }
-
- #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-  if( ! InstCntr )
- #else
-  if( mmax && nmax )
+ #if( SPT_ALGRTM > 3 )
+  delete[] H;
  #endif
-  {
-   delete[] DictM1;
-   delete[] Dict;
 
-   #if( DYNMC_MCF_SPT )
-    delete[] ++LenFS;
-   #endif
+ delete[] DictM1;
+ delete[] Dict;
 
-   delete[] ++StrtFS;
-   StrtFS = 0;
-   }
-
- #if( SPT_STRTN )
-  #if( SAME_GRPH_SPT && DYNMC_MCF_SPT )
-   if( ! InstCntr )
-  #else
-   if( mmax && nmax )
-  #endif
-   {
-    delete[] Startn;
-    Startn = 0;
-    }
+ #if( DYNMC_MCF_SPT )
+  delete[] ++LenFS;
  #endif
+
+ delete[] ++StrtFS;
+ delete[] Startn;
 
  }  // end( MemDeAlloc )
-
-/*--------------------------------------------------------------------------*/
-/*--------------------------- STATIC MEMBERS -------------------------------*/
-/*--------------------------------------------------------------------------*/
-
-MCFClass::Index       SPTree::InstCntr = 0;
-MCFClass::Index       SPTree::maxnmax = 0;
-MCFClass::Index_Set   SPTree::Stack = 0;
-
-#if( SPT_STRTN && SAME_GRPH_SPT )
- MCFClass::Index_Set  SPTree::Startn = 0;
-#endif
-
-#if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
- MCFClass::Index_Set  SPTree::StrtFS = 0;
-
- MCFClass::Index_Set  SPTree::Dict = 0;
- MCFClass::Index_Set  SPTree::DictM1 = 0;
- bool                 SPTree::DirSPT = false;
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- End File SPTree.C -----------------------------*/

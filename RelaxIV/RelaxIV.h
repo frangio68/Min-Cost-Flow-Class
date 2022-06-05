@@ -54,10 +54,6 @@
  *          least half of its feasible values, or SIndex has to be a "bigger"
  *          data type than Index. The default value for SIndex is int.
  *
- * \version 1.85
- *
- * \date 27 - 02 - 2020
- *
  * \author <b>(original FORTRAN code)</b> \n
  *         Dimitri P. Bertsekas \n
  *         Lab. for Information and Decision Systems \n
@@ -70,7 +66,6 @@
  *
  * \author <b>(C++ porting and polishing)</b> \n
  *         Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
@@ -79,7 +74,7 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2020 by Antonio Frangioni
+ * Copyright &copy by Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -104,19 +99,6 @@
     more efficient in running time or memory.
     @{ */
 
-/*----------------------------- SAME_GRPH_RIV ------------------------------*/
-
-#define SAME_GRPH_RIV 0
-
-/**< Decides if all MCFClass instances share the same graph.
-   If SAME_GRPH_RIV > 0, then all the instances of the class will work on the
-   same "topological" network, while the costs, capacities and supplies can
-   change from one instance to another. This allows implementations to share
-   some data structures describing the graph, e.g. by declaring them "static",
-   saving memory when multiple instances of the solver are active at the same
-   time. However, this also obviously inhibits some type of changes in the
-   topology of the graph [see DYNMC_MCF_RIV below]. */
-
 /*----------------------------- DYNMC_MCF_RIV ------------------------------*/
 
 #define DYNMC_MCF_RIV 3
@@ -134,11 +116,7 @@
           implemented;
 
    - 3 => the methods that change the start and end node of a (possibly
-          "closed") arc, delete and create new arcs are implemented.
-
-   As long as DYNMC_MCF_RIV < 3, SAME_GRPH_RIV can possibly be > 0; less and
-   less data structures can be shared as DYNMC_MCF_RIV increases.
-   DYNMC_MCF_RIV == 3 implies SAME_GRPH_RIV == 0. */
+          "closed") arc, delete and create new arcs are implemented. */
 
 /*-------------------------------- AUCTION ---------------------------------*/
 
@@ -162,7 +140,7 @@
 /**< If RELAXIV_STATISTICS > 0, then statistic information about the behaviour
    of the Relaxation algorithm is computed. */
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -172,9 +150,6 @@ namespace MCFClass_di_unipi_it
 /*--------------------------------------------------------------------------*/
 /*--------------------------- CLASS RelaxIV --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** @defgroup RELAXIV_CLASSES Classes in RelaxIV.h
-    @{ */
-
 /** The RelaxIV class derives from the abstract base class MCFClass, thus
     sharing its (standard) interface, and implements a Relaxation algorithm
     for solving (Linear) Min Cost Flow problems. */
@@ -197,7 +172,6 @@ class RelaxIV : public MCFClass {
   enum MCFRParam { kAuction = kLastParam     ///< crash initialization
                    };
 
-
 /*--------------------------------------------------------------------------*/
 /** Public enum describing the more file formats in RelaxIV::WriteMCF(). */
 
@@ -215,7 +189,7 @@ class RelaxIV : public MCFClass {
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-   RelaxIV( cIndex nmx = 0 , cIndex mmx = 0 );
+   RelaxIV( Index nmx = 0 , Index mmx = 0 );
 
 /**< Constructor of the class, as in MCFClass::MCFClass(). */
 
@@ -223,33 +197,21 @@ class RelaxIV : public MCFClass {
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-		 cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
-		 cFRow pDfct = NULL , cIndex_Set pSn = NULL ,
-		 cIndex_Set pEn = NULL ) override;
+   void LoadNet( Index nmx = 0 , Index mmx = 0 , Index pn = 0 , Index pm = 0 ,
+		 cFRow pU = 0 , cCRow pC = 0 , cFRow pDfct = 0 ,
+		 cIndex_Set pSn = 0 , cIndex_Set pEn = 0 ) override;
 
 /**< Inputs a new network, as in MCFClass::LoadNet().
 
    Arcs with pC[ i ] == Inf<CNumber>() do not "exist". If DYNMC_MCF_RIV > 0,
    these arcs are "closed".
 
-   If DYNMC_MCF_RIV == 0 but SAME_GRPH_RIV > 0, these arcs are dealt with
-   exactly like as if they had pU[ i ] == 0, i.e., as "normal" arcs with
-   zero capacity. These arcs can be put back into the formulation by simply
-   changing their capacity (and cost). Note that, however, this is less
-   efficient than eliminating them explicitly from the problem.
-
-   If DYNMC_MCF_RIV == 0 and SAME_GRPH_RIV == 0, these arcs are just removed
-   from the formulation. However, they have some sort of a "special status"
-   (after all, if the user wants to remove them completely he/she can just
-   change the data), in that they are still counted into the number of arcs
-   of the graph and they will always have 0 flow and Inf<CNumber>()
-   reduced cost as "closed" or "deleted" arcs.
-
-   If SAME_GRPH_RIV == 1 (==> DYNMC_MCF_RIV < 3), pSn and pEn passed to any
-   instance after the first that is constructed are ignored, thus,
-   pSn == pEn == NULL is allowed in this case. Note that pn and pm are
-   *not* ignored. */
+   If DYNMC_MCF_RIV == 0, these arcs are just removed from the formulation.
+   However, they have some sort of a "special status" (after all, if the user
+   wants to remove them completely he/she can just change the data), in that
+   they are still counted into the number of arcs of the graph and they will
+   always have 0 flow and Inf< CNumber >() reduced cost as "closed" or
+   "deleted" arcs. */
 
 /*--------------------------------------------------------------------------*/
 /// set integer parameters of the algorithm
@@ -267,7 +229,7 @@ class RelaxIV : public MCFClass {
 	       special single-node relaxation iterations is used instead.
 	       Note that this parameter is *ignored* if AUCTION == 0. */
 
-   virtual void SetPar( int par , int val ) override
+   void SetPar( int par , int val ) override
    {
     if( par == kAuction ) {
      #if( AUCTION )
@@ -282,19 +244,27 @@ class RelaxIV : public MCFClass {
   }
 
 /*--------------------------------------------------------------------------*/
-/// set double parameters of the algorithm
-/** Set double parameters of the algorithm. This only calls the base class
- * method. It should not be necessary, but sometimes it is. */
+// set double parameters of the algorithm
+/* Set double parameters of the algorithm. This only calls the base class
+ * method. It should not be necessary, but sometimes it is.
+ *
+ * not necessary: RelaxIV has no double parameters
 
-   virtual void SetPar( int par , double val ) override
-   {
+   void SetPar( int par , double val ) override {
     MCFClass::SetPar( par , val );
     }
 
-/*--------------------------------------------------------------------------*/
+----------------------------------------------------------------------------*/
+/** Returns one of the integer parameters of the algorithm.
 
-   virtual inline void GetPar( int par , int &val ) const override
-   {
+   @param par  is the parameter to return [see SetPar( int ) for comments];
+
+   @param val  upon return, it will contain the value of the parameter.
+
+   Apart from the parameters of the base class, this method handles kAuction.
+   */
+
+   void GetPar( int par , int &val ) const override {
     if( par == kAuction )
      #if( AUCTION )
       val = crash ? kYes : kNo;
@@ -305,27 +275,21 @@ class RelaxIV : public MCFClass {
      MCFClass::GetPar( par , val );
     }
 
-/**< This method returns one of the integer parameter of the algorithm.
-
-   @param par  is the parameter to return [see SetPar( int ) for comments];
-
-   @param val  upon return, it will contain the value of the parameter.
-
-   Apart from the parameters of the base class, this method handles kAuction.
-   */
-
 /*--------------------------------------------------------------------------*/
+/** Returns one of the double parameters of the algorithm
+ *
+ * This should in princible not be necessary, as RelaxIV has no double
+ * parameters to report. However, without this being well-defined, template
+ * classes having RelaxIV as template type may fail to be able to use the
+ * base class method in its stead (no idea why), so this useless method has
+ * to be kept here. */
 
- virtual inline void GetPar( int par , double &val ) const override
- {
+ void GetPar( int par , double &val ) const override {
   MCFClass::GetPar( par , val );
   }
 
- /*--------------------------------------------------------------------------*/
-
-   void PreProcess( void ) override;
-
-/**< If this method is called, a preprocessing phase is performed trying to
+/*--------------------------------------------------------------------------*/
+/** If this method is called, a preprocessing phase is performed trying to
    reduce the arc capacities. This may sometimes help in speeding up the
    solution of the problem, but may also change the capacities returned by
    MCFUCap[s]() [see below].
@@ -339,6 +303,8 @@ class RelaxIV : public MCFClass {
    however, it destroys the provious optimal solution (if any), forcing the
    algorithm to restart from scratch. */
 
+   void PreProcess( void ) override;
+
 /*--------------------------------------------------------------------------*/
 /*-------------------- METHODS FOR SOLVING THE PROBLEM ---------------------*/
 /*--------------------------------------------------------------------------*/
@@ -349,49 +315,38 @@ class RelaxIV : public MCFClass {
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void MCFGetX( FRow F , Index_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void MCFGetX( FRow F , Index_Set nms = 0 ,
+		 Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
-   cFRow MCFGetX( void ) override;
+   cFRow MCFGetX( void ) const override { return( X + 1 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void MCFGetRC( CRow CR , cIndex_Set nms = 0 ,
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
 
-   cCRow MCFGetRC( void ) override;
+   cCRow MCFGetRC( void ) const override { return( RC + 1 ); }
 
-   CNumber MCFGetRC( cIndex i ) override;
+   CNumber MCFGetRC( Index i ) const override { return( RC[ i + 1 ] ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
    void MCFGetPi( CRow P , cIndex_Set nms = NULL ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-/**< Same meaning as MCFClass::MCFGetPi().
-
-   \note if both AUCTION == 0 and DYNMC_MCF_RIV <= 1, no internal memory for
-   the vector of potentials is allocated; hence, even if nms != NULL
-   MCFGetPi( P ) first constructs the full vector of potentials in P and
-   then selects only the components in nms. Therefore, memory can be written
-   even after the | nms |-th element of P. For the same reason, memory can be
-   written even after themore the (stp - strt)-th element of P. */
-
-   cCRow MCFGetPi( void ) override;
-
-/**< Same meaning as MCFClass::MCFGetPi().
-
-   \note if MCFGetPi( void ) returns a pointer, this is a pointer to a static
-   shared data structure that can be corrupted by calls to methods (e.g.
-   MCFGetPi() itself) for other active instances of RelaxIV. */
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   RelaxIV::FONumber MCFGetFO( void ) override;
+   cCRow MCFGetPi( void ) const override { return( Pi + 1 ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   FONumber MCFGetFO( void ) const override { return( FO ); }
 
 /*--------------------------------------------------------------------------*/
 
-   MCFClass::MCFStatePtr MCFGetState( void ) override;
+   MCFStatePtr MCFGetState( void ) const override;
 
 /**< Same meaning as MCFClass::MCFGetState().
 
@@ -406,59 +361,96 @@ class RelaxIV : public MCFClass {
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 
-   void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0 ,
+		 Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
-   inline Index MCFSNde( cIndex i ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   inline Index MCFENde( cIndex i ) override;
+   Index MCFSNde( Index i ) const override {
+    return( Startn[ i + 1 ] - USENAME0 );
+    }
 
-   inline cIndex_Set MCFSNdes( void ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/**< Same meaning as MCFClass::MCFSNdes().
+   Index MCFENde( Index i ) const override {
+    return( Endn[ i + 1 ] - USENAME0 );
+    }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/** Same meaning as MCFClass::MCFSNdes().
 
    \note MCFSNdes() returns a pointers to a (read-only) vector containing
          the arc start nodes *only if USENAME0 == 0*; otherwise, it returns
 	 NULL. */
 
-   inline cIndex_Set MCFENdes( void ) override;
+   cIndex_Set MCFSNdes( void ) const override {
+    #if( USENAME0 )
+     return( 0 );
+    #else
+     return( Startn + 1 );
+    #endif
+    }
 
-/**< Same meaning as MCFClass::MCFENdes().
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+/** Same meaning as MCFClass::MCFENdes().
 
    \note MCFENdes() returns a pointers to a (read-only) vector containing
          the arc end nodes *only if USENAME0 == 0*; otherwise, it returns
 	 NULL. */
 
-/*--------------------------------------------------------------------------*/
-
-   void MCFCosts( CRow Costv , cIndex_Set nms = NULL  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   inline CNumber MCFCost( cIndex i ) override;
-
-   inline cCRow MCFCosts( void ) override;
-
-/*--------------------------------------------------------------------------*/
-
-   void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   inline FNumber MCFUCap( cIndex i ) override;
-
-   inline cFRow MCFUCaps( void ) override;
+   cIndex_Set MCFENdes( void ) const override {
+    #if( USENAME0 )
+     return( 0 );
+    #else
+     return( Endn + 1 );
+    #endif
+    }
 
 /*--------------------------------------------------------------------------*/
 
-   void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void MCFCosts( CRow Costv , cIndex_Set nms = 0  ,
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
 
-   inline FNumber MCFDfct( cIndex i ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   inline cFRow MCFDfcts( void ) override;
+   CNumber MCFCost( Index i ) const override { return( C[ i + 1 ] ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   cCRow MCFCosts( void ) const override { return( C + 1 ); }
 
 /*--------------------------------------------------------------------------*/
 
-   void WriteMCF( ostream &oStrm , int frmt = 0 ) override;
+   void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   FNumber MCFUCap( Index i ) const override { return( Cap[ i + 1 ] ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   cFRow MCFUCaps( void ) const override { return( Cap + 1 ); }
+
+/*--------------------------------------------------------------------------*/
+
+   void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0  ,
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   FNumber MCFDfct( Index i ) const override { return( B[ i + 1 ] ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   cFRow MCFDfcts( void ) const override { return( B + 1 ); }
+
+/*--------------------------------------------------------------------------*/
+
+   void WriteMCF( ostream &oStrm , int frmt = 0 ) const override;
 
 /**< Extends MCFClass::WriteMCF() to support two new formats:
 
@@ -485,72 +477,111 @@ class RelaxIV : public MCFClass {
 /*----- Changing the costs, deficits and upper capacities of the (MCF) -----*/
 /*--------------------------------------------------------------------------*/
 
-   void ChgCosts( cCRow NCost , cIndex_Set nms = NULL ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-   void ChgCost( Index arc , cCNumber NCost ) override;
-
-/*--------------------------------------------------------------------------*/
-
-   void ChgDfcts( cFRow NDfct , cIndex_Set nms = NULL ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   void ChgDfct( Index nod , cFNumber NDfct ) override;
+   void ChgCost( Index arc , CNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
-   void ChgUCaps( cFRow NCap , cIndex_Set nms = NULL ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-   void ChgUCap( Index arc , cFNumber NCap  ) override;
+   void ChgDfct( Index nod , FNumber NDfct ) override;
+
+/*--------------------------------------------------------------------------*/
+
+   void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
+
+   void ChgUCap( Index arc , FNumber NCap  ) override;
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void CloseArc( cIndex name ) override;
+   void CloseArc( Index name ) override;
 
-   inline bool IsClosedArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   void DelNode( cIndex name ) override;
+   bool IsClosedArc( Index name ) const override {
+    #if( DYNMC_MCF_RIV > 2 )
+     return( ( RC[ name + 1 ] == Inf<CNumber>() ) &&
+	     ( Startn[ name + 1 ] < Inf<Index>() ) );
+    #elif( DYNMC_MCF_RIV )
+     return( RC[ name + 1 ] == Inf<CNumber>() );
+    #else
+     return( false );
+    #endif
+    }
 
-   void OpenArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   Index AddNode( cFNumber aDfct ) override;
+   void DelNode( Index name ) override;
 
-   void ChangeArc( cIndex name ,
-		   cIndex nSS = Inf<Index>() , cIndex nEN = Inf<Index>() )
-    override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   void DelArc( cIndex name ) override;
+   void OpenArc( Index name ) override;
 
-   inline bool IsDeletedArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
-    override;
+   Index AddNode( FNumber aDfct ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   void ChangeArc( Index name , Index nSS = Inf< Index >() ,
+		   Index nEN = Inf< Index >() ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   void DelArc( Index name ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   bool IsDeletedArc( Index name ) const override {
+    #if( DYNMC_MCF_RIV > 2 )
+     return( Startn[ name + 1 ] == Inf<Index>() );
+    #else
+     return( false );
+    #endif
+    }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+   Index AddArc( Index Start , Index End , FNumber aU , CNumber aC ) override;
 
 /*--------------------------------------------------------------------------*/
 /*------------------------ SPECIALIZED INTERFACE ---------------------------*/
 /*--------------------------------------------------------------------------*/
+   /// total number of (single-node or multinode) iterations
 
-   inline int MCFiter();
-   ///< Total number of (single-node or multinode) iterations
+   int MCFiter( void ) const { return( iter ); }
 
-   inline int MCFaug();
-   ///< Number of flow augmentations
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+   /// number of flow augmentations
 
- #if( RELAXIV_STATISTICS )
-   inline int MCFmulti();
-   ///< Number of multinode iterations
+   int MCFaug( void ) const { return( num_augm ); }
 
-   inline int MCFascnt();
-   ///< Number of dual ascent steps
+/*--------------------------------------------------------------------------*/
 
-  #if( AUCTION )
-   inline int MCFauct();  
-   ///< Number of iterations in the Auction() initialization
-  #endif
+#if( RELAXIV_STATISTICS )
+   /// number of multinode iterations
+
+   int RelaxIV::MCFmulti( void ) const { return( nmultinode ); }
+ 
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+   /// number of dual ascent steps
+
+   int RelaxIV::MCFascnt( void ) const { return( num_ascnt ); }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+ #if( AUCTION )
+   /// number of iterations in the Auction() initialization
+
+   int RelaxIV::MCFauct( void ) const { return( nsp ); }
  #endif
+#endif
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
@@ -587,7 +618,7 @@ class RelaxIV : public MCFClass {
    class RIVState : public MCFClass::MCFState {
     public:
 
-     RIVState( cIndex m );
+     RIVState( Index m );
      ~RIVState();
 
      FRow Flow;
@@ -600,102 +631,99 @@ class RelaxIV : public MCFClass {
 /*------------------------- called in SolveMCF() ---------------------------*/
 /*--------------------------------------------------------------------------*/
 
- inline void init_tree();
+   void init_tree( void );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void init_standard( void );
+   void init_standard( void );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline FNumber svblncdarcs( cIndex node ,
-			     cIndex_Set tfst1 , cIndex_Set tnxt1 ,
-			     cIndex_Set tfst2 , cIndex_Set tnxt2 );
+   FNumber svblncdarcs( Index node , cIndex_Set tfst1 , cIndex_Set tnxt1 ,
+			             cIndex_Set tfst2 , cIndex_Set tnxt2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline FNumber dascnt( cIndex node , CNumber &delprc , cIndex_Set F1 ,
-		        cIndex_Set Nxt1 , cIndex_Set F2 , cIndex_Set Nxt2 );
+   FNumber dascnt( Index node , CNumber &delprc , cIndex_Set F1 ,
+		   cIndex_Set Nxt1 , cIndex_Set F2 , cIndex_Set Nxt2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void relist( cIndex node );
+   void relist( Index node );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void AugFlow( cIndex augnod , cIndex root , cIndex node_p ,
-		      cIndex node_n , cIndex_Set Term1 , cIndex_Set Term2 );
+   void AugFlow( Index augnod , Index root , Index node_p , Index node_n ,
+		 cIndex_Set Term1 , cIndex_Set Term2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline bool Ascnt( cFNumber sdm , FNumber delx , Index &nlabel ,
-		    bool &Switch , Index &nscan , Index &curnode ,
-		    cIndex_Set Term1 , cIndex_Set Term2 ,  cIndex_Set F1 ,
-		    cIndex_Set Nxt1 , cIndex_Set F2 , cIndex_Set Nxt2 );
+   bool Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
+	       bool &Switch , Index &nscan , Index &curnode ,
+	       cIndex_Set Term1 , cIndex_Set Term2 ,  cIndex_Set F1 ,
+	       cIndex_Set Nxt1 , cIndex_Set F2 , cIndex_Set Nxt2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
  #if( AUCTION )
-  inline void auction( void );
+   void auction( void );
  #endif
 
 /*--------------------------------------------------------------------------*/
 /*----------------------- called in init_standard --------------------------*/
 /*--------------------------------------------------------------------------*/
 
- inline CNumber nxtbrkpt( cIndex_Set t_St1 , cIndex_Set NSt1 ,
-			  cIndex_Set t_St2 , cIndex_Set NSt2 );
+   CNumber nxtbrkpt( cIndex_Set t_St1 , cIndex_Set NSt1 ,
+		     cIndex_Set t_St2 , cIndex_Set NSt2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline CNumber mvflw1( cIndex arc , FRow tDfct , FRow tDDNeg ,
-		        cIndex_Set Term , FRow Flow1 , FRow Flow2 );
+   CNumber mvflw1( Index arc , FRow tDfct , FRow tDDNeg ,
+		   cIndex_Set Term , FRow Flow1 , FRow Flow2 );
 
- inline CNumber mvflw2( cIndex arc , FRow tDfct , FRow tDDPos ,
-		        cIndex_Set Term , FRow Flow1 , FRow Flow2 );
+   CNumber mvflw2( Index arc , FRow tDfct , FRow tDDPos ,
+		   cIndex_Set Term , FRow Flow1 , FRow Flow2 );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void decrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
-		      CNumber &nxtbrk , FRow tDD1 , FRow DD2 ,
-		      cIndex_Set Term );
+   void decrsRC( Index arc , CNumber trc , CNumber delprc , CNumber &nxtbrk ,
+		 FRow tDD1 , FRow DD2 , cIndex_Set Term );
 
- inline void incrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
-		      CNumber& nxtbrk , FRow tDD1 , FRow DD2 ,
-		      cIndex_Set Term );
+   void incrsRC( Index arc , CNumber trc , CNumber delprc , CNumber &nxtbrk ,
+		 FRow tDD1 , FRow DD2 , cIndex_Set Term );
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------- called in Chg**** ----------------------------*/
 /*--------------------------------------------------------------------------*/
 
- inline void chgcsti( cIndex i , CNumber NCost );
+   void chgcsti( Index i , CNumber NCost );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void chgcapi( cIndex i , cFNumber NCap );
+   void chgcapi( Index i , FNumber NCap );
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 #if( DYNMC_MCF_RIV )
 
- inline void delarci( cIndex arc );
+   void delarci( Index arc );
 
  #if( DYNMC_MCF_RIV > 1 )
 
-  inline void addarci( cIndex arc );
+   void addarci( Index arc );
 
  #endif
 #endif
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
- inline void cmptprices( void );
+   void cmptprices( void );
 
 /*--------------------------------------------------------------------------*/
 
- inline void MemAlloc( void );
+   void MemAlloc( void );
 
- inline void MemDeAlloc( void );
+   void MemDeAlloc( void );
 
 /*--------------------------------------------------------------------------*/
 /*----------------------- PRIVATE DATA STRUCTURES  -------------------------*/
@@ -767,218 +795,48 @@ class RelaxIV : public MCFClass {
                           // 8 problem has been detected unfeasible in
                           //   Auction() initialization.
 
- // potentially static members, depending on SAME_GRPH_RIV - - - - - - - - - -
+ CRow Pi;          // node Potentials
 
- #if( SAME_GRPH_RIV )
-  static Index_Set Startn;  // Start ...
-  static Index_Set Endn;    // .. and End node of each edge
- #else
-  Index_Set Startn;
-  Index_Set Endn;
- #endif
+ Bool_Vec mark;    // various temporaries for multinode iterations
+ Index_Set save;
+ Index_Set label;
+ SIndex_Set Prdcsr;
 
- #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-  static Index_Set FOu;     // index of the first edge exiting from node
-  static Index_Set FIn;     // index of the first edge entering into node
-  static Index_Set NxtOu;   // for each edge a, NxtOu[ a ] is the next edge 
-			    // exiting from Startn[ a ]
-  static Index_Set NxtIn;   // analogous for entering arcs
- #else
-  Index_Set FOu;
-  Index_Set FIn;
-  Index_Set NxtOu;
-  Index_Set NxtIn;
- #endif
+ Bool_Vec scan;    // in multinode iteration, scan denote that a
+                   // node belongs to S in the cut
+ Index_Set queue;  // queue of non zero deficit nodes
+ Index lastq;      // index of the last element in the queue
+ Index prvnde;     // index of the element preceding lastqueue
 
- #if( AUCTION || ( DYNMC_MCF_RIV > 1 ) )
-  static RelaxIV *PiOwnr;  // the instance who calculated Pi the last time
-                           // (NULL if they have not been computed)
- #endif
-
- // static members- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
- static CRow Pi;          // node Potentials
-
- static Bool_Vec mark;    // various temporaries for multinode iterations
- static Index_Set save;
- static Index_Set label;
- static SIndex_Set Prdcsr;
-
- static Bool_Vec scan;    // in multinode iteration, scan denote that a
-		          // node belongs to S in the cut
- static Index_Set queue;  // queue of non zero deficit nodes
- static Index lastq;      // index of the last element in the queue
- static Index prvnde;     // index of the element preceding lastqueue
-
- static FRow DDNeg;       // positive directional derivative at nodes
- static FRow DDPos;       // negative directional derivative at nodes
+ FRow DDNeg;       // positive directional derivative at nodes
+ FRow DDPos;       // negative directional derivative at nodes
 
  #if( AUCTION )
-  static CRow SB_level;   // various temporaries used in Auction()
-  static SIndex_Set extend_arc;
-  static SIndex_Set SB_arc;
-  static Index_Set FpushF;
-  static Index_Set NxtpushF;
-  static Index_Set FpushB;
-  static Index_Set NxtpushB;
+  CRow SB_level;   // various temporaries used in Auction()
+  SIndex_Set extend_arc;
+  SIndex_Set SB_arc;
+  Index_Set FpushF;
+  Index_Set NxtpushF;
+  Index_Set FpushB;
+  Index_Set NxtpushB;
  #endif
 
- static Index InstCntr;   // counter of active instances
- static Index maxnmax;    // max value of nmax among all the instances
- static Index maxmmax;    // max value of nmax among all the instances
+ Index_Set Startn;  // Start ...
+ Index_Set Endn;    // .. and End node of each edge
+
+ Index_Set FOu;     // index of the first edge exiting from node
+ Index_Set FIn;     // index of the first edge entering into node
+ Index_Set NxtOu;   // for each edge a, NxtOu[ a ] is the next edge 
+                    // exiting from Startn[ a ]
+ Index_Set NxtIn;   // analogous for entering arcs
 
 /*--------------------------------------------------------------------------*/
 
  };  // end( class RelaxIV )
 
-/** @} end( group( RELAXIV_CLASSES ) ) */
-/*--------------------------------------------------------------------------*/
-/*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::cIndex_Set RelaxIV::MCFSNdes( void )
-{
- #if( USENAME0 )
-  return( NULL );
- #else
-  return( Startn + 1 );
- #endif
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::cIndex_Set RelaxIV::MCFENdes( void )
-{
- #if( USENAME0 )
-  return( NULL );
- #else
-  return( Endn + 1 );
- #endif
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::Index RelaxIV::MCFSNde( cIndex i )
-{
- return( Startn[ i + 1 ] - USENAME0 );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::Index RelaxIV::MCFENde( cIndex i )
-{
- return( Endn[ i + 1 ] - USENAME0 );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::cCRow RelaxIV::MCFCosts( void )
-{
- return( C + 1 );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::CNumber RelaxIV::MCFCost( cIndex i )
-{
- return( C[ i + 1 ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::cFRow RelaxIV::MCFUCaps( void )
-{
- return( Cap + 1 );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::FNumber RelaxIV::MCFUCap( cIndex i )
-{
- return( Cap[ i + 1 ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::cFRow RelaxIV::MCFDfcts( void )
-{
- return( B + 1 );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::FNumber RelaxIV::MCFDfct( cIndex i )
-{
- return( B[ i + 1 ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool RelaxIV::IsClosedArc( cIndex name )
-{
- #if( DYNMC_MCF_RIV > 2 )
-  return( ( RC[ name + 1 ] == Inf<CNumber>() ) &&
-	  ( Startn[ name + 1 ] < Inf<Index>() ) );
- #elif( DYNMC_MCF_RIV )
-  return( RC[ name + 1 ] == Inf<CNumber>() );
- #else
-  return( false );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool RelaxIV::IsDeletedArc( cIndex name )
-{
- #if( DYNMC_MCF_RIV > 2 )
-  return( Startn[ name + 1 ] == Inf<Index>() );
- #else
-  return( false );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline int RelaxIV::MCFiter( void )
-{
- return( iter );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-inline int RelaxIV::MCFaug( void ) 
-{
- return( num_augm );
- }
-
-/*--------------------------------------------------------------------------*/
-
-#if( RELAXIV_STATISTICS )
- inline int RelaxIV::MCFmulti( void )
- {
-  return( nmultinode );
-  }
- 
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
- inline int RelaxIV::MCFascnt( void )
- {
-  return( num_ascnt );
-  }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
- #if( AUCTION )
-  inline int RelaxIV::MCFauct( void )
-  {
-   return( nsp );
-   }
- #endif
-#endif
-
-/*--------------------------------------------------------------------------*/
-
-};  // end( namespace MCFClass_di_unipi_it )
+}  // end( namespace MCFClass_di_unipi_it )
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/

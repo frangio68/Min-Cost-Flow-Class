@@ -11,21 +11,15 @@
  * results don't match, then at least one of the two solvers is incorrect. If
  * the results match, chances are the two solvers are correct.
  *
- * \version 2.10
- *
- * \date 22 - 04 - 2020
- *
  * \author Alessandro Bertolini \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1996 - 2020 by Antonio Frangioni, Claudio Gentile
+ * Copyright &copy by Antonio Frangioni, Claudio Gentile
  */
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DEFINES -----------------------------------*/
@@ -34,7 +28,7 @@
 #define HAVE_CSCL2 0
 // > 0 if the CS2 class is available
 
-#define HAVE_CPLEX 0
+#define HAVE_CPLEX 1
 // > 0 if the MCFCplex class is available
 
 #define HAVE_MFSMX 1
@@ -90,7 +84,6 @@
  #include "SPTree.h"
 #endif
 
-
 /*--------------------------------------------------------------------------*/
 /*-------------------------------- USING -----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -102,14 +95,14 @@ using namespace MCFClass_di_unipi_it;
 /*--------------------------------------------------------------------------*/
 
 template<class T>
-static inline void Str2Sthg( const char* const str , T &sthg )
+static void Str2Sthg( const char* const str , T &sthg )
 {
  istringstream( str ) >> sthg;
  }
 
 /*--------------------------------------------------------------------------*/
 
-static inline MCFClass *CreateProb( int wSlvr , int Optns )
+static MCFClass *CreateProb( int wSlvr , int Optns )
 {
  MCFClass *mcf = NULL;  // unknown solver, or the required solver is not
                         // available due to the macroes settings
@@ -191,7 +184,7 @@ static inline MCFClass *CreateProb( int wSlvr , int Optns )
 
 /*--------------------------------------------------------------------------*/
 
-static inline void PrintResult( MCFClass *mcf )
+static void PrintResult( MCFClass *mcf )
 {
  switch( mcf->MCFGetStatus() ) {
   case( MCFClass::kOK ):         cout << mcf->MCFGetFO();
@@ -206,7 +199,7 @@ static inline void PrintResult( MCFClass *mcf )
 
 /*--------------------------------------------------------------------------*/
 
-static inline void SolveMCF( MCFClass *mcf1 , MCFClass *mcf2 ) 
+static void SolveMCF( MCFClass *mcf1 , MCFClass *mcf2 ) 
 {
  try {
   mcf1->SolveMCF();

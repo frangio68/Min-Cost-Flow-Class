@@ -47,6 +47,23 @@
 using namespace MCFClass_di_unipi_it;
 
 /*--------------------------------------------------------------------------*/
+/*------------------------- TYPES & CONSTEXPRS -----------------------------*/
+/*--------------------------------------------------------------------------*/
+
+using Index = MCFCplex::Index;
+using cIndex = MCFCplex::cIndex;
+using Index_Set = MCFCplex::Index_Set;
+using cIndex_Set = MCFCplex::cIndex_Set;
+
+static constexpr Index IInf = Inf< Index >();
+
+using FNumber = MCFCplex::FNumber;
+static constexpr FNumber FInf = Inf< FNumber >();
+
+using CNumber = MCFCplex::CNumber;
+static constexpr CNumber CInf = Inf< CNumber >();
+
+/*--------------------------------------------------------------------------*/
 /*----------------------------- FUNCTIONS ----------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--                                                                      --*/
@@ -58,8 +75,8 @@ using namespace MCFClass_di_unipi_it;
 #if( ( ! FNUMBER_IS_DOUBLE ) || ( ! CNUMBER_IS_DOUBLE ) )
 
 template<class T>
-static inline Index_Set SparseAssign( T* g1 , const double *g2 ,
-				      Index_Set nms , Index n , Index Bs = 0 )
+static Index_Set SparseAssign( T* g1 , const double *g2 , Index_Set nms ,
+			       Index n , Index Bs = 0 )
 {
  // takes the dense n-vector g2 and assigns its nonzeroes to the sparse vector
  // g1, meanwhile constructiong its set of nonzeroes in nms, with names from
@@ -80,10 +97,9 @@ static inline Index_Set SparseAssign( T* g1 , const double *g2 ,
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
-static inline Index_Set SparseAssign( T* g1 , const double *g2 ,
-				      Index_Set nms , Index n ,
-				      const double eps , Index Bs = 0 )
+template< class T >
+static Index_Set SparseAssign( T* g1 , const double *g2 , Index_Set nms ,
+			       Index n , double eps , Index Bs = 0 )
 {
  // as SparseAssign(), but elements are considered nonzero only if they are
  // >= eps (the idea is that all elements are >= 0)
@@ -103,9 +119,7 @@ static inline Index_Set SparseAssign( T* g1 , const double *g2 ,
 
 /*--------------------------------------------------------------------------*/
 
-static inline MCFCplex::Index VectLength( const MCFCplex::cIndex_Set nms ,
-					  MCFCplex::cIndex stp = 
-					             Inf<MCFCplex::Index>() )
+static Index VectLength( cIndex_Set nms , cIndex stp = IInf )
 {
  // count the number of elements in the vector nms that are < stp; stops
  // as soon as the first element >= stp is found
@@ -119,7 +133,7 @@ static inline MCFCplex::Index VectLength( const MCFCplex::cIndex_Set nms ,
 
 /*--------------------------------------------------------------------------*/
 
-static inline void VectFill( int *nms , int strt ,  MCFCplex::Index n )
+static void VectFill( int *nms , int strt ,  Index n )
 {
  // fills nms with the indices strt, strt + 1, ..., strt + n - 1
 
@@ -129,8 +143,8 @@ static inline void VectFill( int *nms , int strt ,  MCFCplex::Index n )
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
-static inline void VectAssign( T *const g , const T x , MCFCplex::cIndex n )
+template< class T >
+static void VectAssign( T *const g , T x , Index n )
 {
  // g[ i ] = x for each i = 0 .. n - 1
 
@@ -140,9 +154,8 @@ static inline void VectAssign( T *const g , const T x , MCFCplex::cIndex n )
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
-static inline void VectAssign( T *const g1 , const T *const g2 ,
-			       MCFCplex::cIndex n )
+template< class T >
+static void VectAssign( T *const g1 , T *const g2 , Index n )
 {
  // g1[ i ] = g2[ i ] for each i = 0 .. n - 1
 
@@ -153,8 +166,8 @@ static inline void VectAssign( T *const g1 , const T *const g2 ,
 
 /*--------------------------------------------------------------------------*/
 
-template<class T1, class T2>
-static inline void VectMAssign( T1 *g1 , const T2 *g2 , MCFCplex::Index n )
+template< class T1 , class T2 >
+static void VectMAssign( T1 *g1 , T2 *g2 , Index n )
 {
  // g1 := - g2
 
@@ -164,9 +177,8 @@ static inline void VectMAssign( T1 *g1 , const T2 *g2 , MCFCplex::Index n )
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
-static inline MCFCplex::Index_Set Sparsify( T* g , MCFCplex::Index_Set B ,
-				  MCFCplex::Index n , MCFCplex::Index Bs = 0 )
+template< class T >
+static Index_Set Sparsify( T* g , Index_Set B , Index n , Index Bs = 0 )
 {
  // turns g from a "dense" n-vector to a "sparse" one, eliminating all items
  // that are exactly == 0; writes the set of nonzero items in B, with names
@@ -196,10 +208,9 @@ static inline MCFCplex::Index_Set Sparsify( T* g , MCFCplex::Index_Set B ,
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
-static inline MCFCplex::Index_Set SparsifyT( T* g , MCFCplex::Index_Set B ,
-					     MCFCplex::Index n , const T eps ,
-					     MCFCplex::Index Bs = 0 )
+template< class T >
+static Index_Set SparsifyT( T* g , Index_Set B , Index n , T eps ,
+			    Index Bs = 0 )
 {
  // as Sparsify(), but elements are considered nonzero only if they are >=
  // eps (the idea is that all elements are >= 0)
@@ -226,7 +237,7 @@ static inline MCFCplex::Index_Set SparsifyT( T* g , MCFCplex::Index_Set B ,
 /*--------------------------------------------------------------------------*/
 
 template<class T>
-static inline void VectSum( T *const g , const T x , MCFCplex::cIndex n )
+static void VectSum( T *const g , const T x , cIndex n )
 {
  // g[ i ] += x for each i = 0 .. n - 1
 
@@ -249,34 +260,19 @@ static inline void VectSum( T *const g , const T x , MCFCplex::cIndex n )
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFCplex --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*------------------------PUBLIC METHODS------------------------------------*/
+/*-------------------------- PUBLIC METHODS --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/*-------------------------CONSTRUCTOR--------------------------------------*/
+/*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-MCFCplex::MCFCplex( cIndex nmx , cIndex mmx , CPXENVptr extenv )
-          :
-          MCFClass( nmx , mmx )
+MCFCplex::MCFCplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
 {
- // setup environment, if necessary - - - - - - - - - - - - - - - - - - - - -
+ // open the environment- - - - - - - - - - - - - - - - - - - - - - - - - - -
 
- if( extenv )
-  env = extenv;
- else {
-  if( ! EnvICntr++ ) {
-   int ts;
-   #if( CPX_VERSION >= 700 )
-    genv = CPXopenCPLEX( &ts );
-   #else
-    genv = CPXopenCPLEXdevelop( &ts );
-   #endif
-
-   if( ( ! genv ) || ts )
-    throw( MCFException( "Problem opening Cplex environment" ) );
-   }
-
-  env = genv;
-  }
+ int ts;
+ env = CPXopenCPLEX( &ts );
+ if( ( ! env ) || ts )
+  throw( MCFException( "Problem opening Cplex environment" ) );
 
  // allocate memory - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -285,17 +281,13 @@ MCFCplex::MCFCplex( cIndex nmx , cIndex mmx , CPXENVptr extenv )
  else
   nmax = mmax = 0;
 
- // other initializations - - - - - - - - - - - - - - - - - - - - - - - - - -
-
- InstCntr++;
-
  }  // end( MCFCplex )
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
+void MCFCplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
 			cFRow pU , cCRow pC , cFRow pDfct , cIndex_Set pSn ,
 			cIndex_Set pEn )
 {
@@ -325,8 +317,8 @@ void MCFCplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
  // setup data structures for arc creation/deletion- - - - - - - - - - - - -
 
  #if( DYNMC_MCF_CPX )
-  VectAssign( ArcPos , FNumber( 0 ) , FreePos = m );
-  VectAssign( ArcPos + m , FNumber( Inf<FNumber>() ), mmax - m );
+  VectAssign( ArcPos , FNumber( -1 ) , FreePos = m );
+  VectAssign( ArcPos + m , FInf , mmax - m );
  #endif
 
  // create and set up temporary data structures - - - - - - - - - - - - - - -
@@ -355,7 +347,7 @@ void MCFCplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
 
  if( pU )
   for( Index i = m ; i-- ; )
-   if( pU[ i ] == Inf<FNumber>() )
+   if( pU[ i ] == FInf )
     upc[ i ] = CPX_INFBOUND;
    else
     upc[ i ] = double( pU[ i ] );
@@ -366,7 +358,7 @@ void MCFCplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
 
  if( pC )
   for( Index i = m ; i-- ; )
-   if( pC[ i ] == Inf<CNumber>() ) {
+   if( pC[ i ] == CInf ) {
     #if( DYNMC_MCF_CPX )
      ArcPos[ i ] = pU[ i ];
     #endif
@@ -378,7 +370,7 @@ void MCFCplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
   VectAssign( obj , double( 0 ) , m );
 
  #if( DYNMC_MCF_CPX )
-  while( FreePos && ( ArcPos[ FreePos - 1 ] == Inf<FNumber>() ) )
+  while( FreePos && ( ArcPos[ FreePos - 1 ] == FInf ) )
    FreePos--;
  #endif
 
@@ -448,8 +440,8 @@ void MCFCplex::SolveMCF( void )
 /*------------------- METHODS FOR READING RESULTS  -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
-{
+void MCFCplex::MCFGetX( FRow F , Index_Set nms , Index strt , Index stp )
+ const {
  if( stp > m )
   stp = m;
 
@@ -461,36 +453,44 @@ void MCFCplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
    
   if( nms )
    #if( EPS_FLOW )
-    *SparsifyT( F , nms , stp - strt , EpsFlw , strt ) = Inf<Index>();
+    *SparsifyT( F , nms , stp - strt , EpsFlw , strt ) = IInf;
    #else
-    *Sparsify( F , nms , stp - strt , strt ) = Inf<Index>();
+    *Sparsify( F , nms , stp - strt , strt ) = IInf;
    #endif
  #else
+  auto val = new double[ stp - strt ];
   if( net ) 
-   CPXNETgetx( env , net , F , strt , stp - 1 );
+   CPXNETgetx( env , net , val , strt , stp - 1 );
   else
-   CPXgetx( env , qp , F , strt , stp - 1 );
+   CPXgetx( env , qp , val , strt , stp - 1 );
 
   if( nms )
    #if( EPS_FLOW )
-    *SparseAssign( F , val , nms , stp - strt , EpsFlw , strt ) = Inf<Index>();
+    *SparseAssign( F , val , nms , stp - strt , EpsFlw , strt ) = IInf;
    #else
-    *SparseAssign( F , val , nms , stp - strt , strt ) = Inf<Index>();
+    *SparseAssign( F , val , nms , stp - strt , strt ) = IInf;
    #endif
   else
    VectAssign( F , val , stp - strt );
+  delete[] val;
  #endif
 
  }  // end( MCFCplex::MCFGetX( F ) )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
+void MCFCplex::MCFGetRC( CRow CR , cIndex_Set nms ,
+			 Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
 
+ if( strt >= stp )
+  return;
+
  if( nms ) {
+  auto val = new double[ stp - strt ];
+
   if( net )
    CPXNETgetdj( env , net , val , strt , stp - 1 );
   else
@@ -501,6 +501,8 @@ void MCFCplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
 
   for( Index h ; ( h = *(nms++) ) < stp ; )
    *(CR++) = val[ h - strt ];
+
+  delete[] val;
   }
  else {
   #if( CNUMBER_IS_DOUBLE )
@@ -509,19 +511,21 @@ void MCFCplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
    else
     CPXgetdj( env , qp , CR , strt , stp - 1);
   #else
+   auto val = new double[ stp - strt ];
    if( net )
     CPXNETgetdj( env , net , val , strt , stp - 1 );
    else
     CPXgetdj( env , qp , val , strt , stp - 1);
 
    VectAssign( CR , val , stp - strt );
+   delete[] val;
   #endif
   }
  }  // end( MCFCplex::MCFGetRC( CR ) )
 
 /*--------------------------------------------------------------------------*/
 
-MCFCplex::CNumber MCFCplex::MCFGetRC( cIndex i )
+MCFCplex::CNumber MCFCplex::MCFGetRC( Index i ) const
 {
  double temp;
  if( net )
@@ -535,12 +539,15 @@ MCFCplex::CNumber MCFCplex::MCFGetRC( cIndex i )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
+void MCFCplex::MCFGetPi( CRow P , cIndex_Set nms ,
+			 Index strt , Index stp ) const
 {
  if( stp > n )
   stp = n;
 
  if( nms ) {
+  auto val = new double[ stp - strt ];
+
   if( net )
    CPXNETgetpi( env , net , val , strt , stp - 1 ); 
   else
@@ -551,6 +558,8 @@ void MCFCplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
 
   for( Index h ; ( h = *(nms++) ) < stp ; )
    *(P++) = - val[ h - strt ];
+
+  delete[] val;
   }
  else {
   #if( CNUMBER_IS_DOUBLE ) 
@@ -562,19 +571,21 @@ void MCFCplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
    for( Index i = 0 ; i < stp - strt ; i++ )
     P[ i ] = - P[ i ];
   #else
+   auto val = new double[ stp - strt ];
    if( net )	   
     CPXNETgetpi( env , net , val , strt , stp - 1 );
    else
     CPXgetpi( env , qp , val , strt , stp - 1 );
 
    VectMAssign( P , val , stp - strt );
+   delete[] val;
   #endif
   }    
  }  // end( MCFGetPi( P ) )
 
 /*--------------------------------------------------------------------------*/
 
-MCFCplex::FONumber MCFCplex::MCFGetFO( void )
+MCFCplex::FONumber MCFCplex::MCFGetFO( void ) const
 {
  if( status == MCFClass::kOK ) {
   double objval;
@@ -587,9 +598,9 @@ MCFCplex::FONumber MCFCplex::MCFGetFO( void )
   }
  else
   if( status == MCFClass::kUnbounded )
-   return( - Inf<FONumber>() );
+   return( - Inf< FONumber >() );
   else
-   return( Inf<FONumber>() );
+   return( Inf< FONumber >() );
 
  }  // end( MCFCplex::MCFGetFO )
 
@@ -598,8 +609,14 @@ MCFCplex::FONumber MCFCplex::MCFGetFO( void )
 /*--------------------------------------------------------------------------*/
 
 void MCFCplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
-			cIndex_Set nms , cIndex strt , Index stp )
+			cIndex_Set nms , Index strt , Index stp ) const
 {
+ if( stp > m )
+  stp = m;
+
+ if( strt >= stp )
+  return;
+ 
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -620,19 +637,23 @@ void MCFCplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
    }
   }
  else {
-  if( stp > m )
-   stp = m;
-
   if( net ) {
    #if( INDEX_IS_UINT )
-     CPXNETgetarcnodes( env , net , (int *) Startv , (int *) Endv , strt ,
-	                stp - 1 );
+    CPXNETgetarcnodes( env , net , (int *) Startv , (int *) Endv , strt ,
+		       stp - 1 );
    #else
-    if( Startv )
+    auto ind = new int[ stp - strt ];
+    if( Startv ) {
      CPXNETgetarcnodes( env , net , ind , NULL , strt , stp - 1 );
-    
-    if( Endv )
+     VectAssign( Startv , ind , stp - strt );
+     }
+
+    if( Endv ) {
      CPXNETgetarcnodes( env , net , NULL , ind , strt , stp - 1 );
+     VectAssign( Endv , ind , stp - strt );
+     }
+
+    delete[] ind;
    #endif
    }
   else {
@@ -656,8 +677,14 @@ void MCFCplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
 /*-------------------------------------------------------------------------*/
 
 void MCFCplex::MCFCosts( CRow Costv , cIndex_Set nms ,
-			 cIndex strt , Index stp )
+			 Index strt , Index stp ) const
 {
+ if( stp > m )
+  stp = m;
+
+ if( strt >= stp )
+  return;
+
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -673,48 +700,53 @@ void MCFCplex::MCFCosts( CRow Costv , cIndex_Set nms ,
    }
   }
  else {
-  if( stp > m )
-   stp = m;
-
   #if( CNUMBER_IS_DOUBLE )
    if( net )
     CPXNETgetobj( env , net , Costv , strt , stp - 1 );
    else
     CPXgetobj( env , qp , Costv , strt , stp - 1 );
   #else
+   auto val = new double[ stp - strt ];
    if( net )
     CPXNETgetobj( env , net , val , strt , stp - 1 );
    else
     CPXgetobj( env , qp , val , strt , stp - 1 );
 
    VectAssign( Costv , val , stp - strt );
+   delete[] val;
   #endif
   }
  }  // end( MCFCplex::MCFCosts )
 
 /*-------------------------------------------------------------------------*/
 
-void MCFCplex::MCFQCoef( CRow Qv , cIndex_Set nms , cIndex strt , Index stp ) 
+void MCFCplex::MCFQCoef( CRow Qv , cIndex_Set nms ,
+			 Index strt , Index stp ) const
 {
- double qcoef = 0;
- if( nms ) { 
-  for( Index i = 0 , arc ; i < m && ( arc = nms[ i ] ) < stp ; i++ )
-   if( arc >= strt ) {
-    if( qp )
-     CPXgetqpcoef( env , qp , int( arc ) , int( arc ) , &qcoef );
+ if( stp > m )
+  stp = m;
 
-    Qv[ i ] = CNumber( qcoef );
-    }    
+ if( strt >= stp )
+  return;
+
+ double qcoef = 0;
+ if( nms ) {
+  while( *nms < strt )
+   nms++;
+
+  for( Index i ; ( i = *(nms++) ) < stp ; ) {
+   if( qp )
+    CPXgetqpcoef( env , qp , int( i ) , int( i ) , &qcoef );
+
+   *(Qv++) = qcoef;
+   }    
   }
  else {
-  if( stp > m)
-   stp = m;
-
-  for( Index arc = strt , i = 0 ; arc < stp ; arc++ , i++ ) {
+  for( Index i = strt ; i < stp ; i++ ) {
    if( qp )
-    CPXgetqpcoef( env , qp , int( arc ) , int( arc ) , &qcoef );
+    CPXgetqpcoef( env , qp , int( i ) , int( i ) , &qcoef );
 
-   Qv[ i ] = CNumber( qcoef );
+   *(Qv++) = qcoef;
    }
   }
  } // end( MCFCplex::MCFQCoef )
@@ -722,15 +754,21 @@ void MCFCplex::MCFQCoef( CRow Qv , cIndex_Set nms , cIndex strt , Index stp )
 /*-------------------------------------------------------------------------*/
 
 void MCFCplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
-			 cIndex strt , Index stp )
+			 Index strt , Index stp ) const
 {
+ if( stp > m )
+  stp = m;
+
+ if( strt >= stp )
+  return;
+
  if( nms ) {
   while( *nms < strt )
    nms++;
 
   for( Index i ; ( i = *(nms++) ) < stp ; )
    #if( DYNMC_MCF_CPX )
-    if( ArcPos[ i ] && ( ArcPos[ i ] < Inf<FNumber>() ) )
+    if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) )
      *(UCapv++) = ArcPos[ i ];
     else
    #endif
@@ -745,26 +783,25 @@ void MCFCplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
      }
   }
  else {
-  if( stp > m )
-   stp = m;
-
   #if( FNUMBER_IS_DOUBLE )
    if( net )
     CPXNETgetub( env , net , UCapv , strt , stp - 1 );  
    else
     CPXgetub( env , qp , UCapv , strt , stp - 1 );
   #else
+   auto val = new double[ stp - strt ];
    if( net )
     CPXNETgetub( env , net , val , strt , stp - 1 );
    else
     CPXgetub( env , qp , val , strt , stp - 1 );
 
    VectAssign( UCapv , val , stp - strt );
+   delete[] val;
   #endif
 
   #if( DYNMC_MCF_CPX )
    for( Index i = strt ; i < stp ; i++ )
-    if( ArcPos[ i ] && ( ArcPos[ i ] < Inf<FNumber>() ) )
+    if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) )
      UCapv[ i ] = ArcPos[ i ];
   #endif
   }
@@ -773,8 +810,14 @@ void MCFCplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
 /*-------------------------------------------------------------------------*/
 
 void MCFCplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
-			 cIndex strt , Index stp )
+			 Index strt , Index stp ) const
 {
+ if( stp > n )
+  stp = n;
+
+ if( strt >= stp )
+  return;
+
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -790,9 +833,6 @@ void MCFCplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
    }
   }
  else {
-  if( stp > n )
-   stp = n;
-
   #if( FNUMBER_IS_DOUBLE )
    if( net )
     CPXNETgetsupply( env , net , Dfctv , strt , stp - 1 ); 
@@ -802,12 +842,14 @@ void MCFCplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
    for( FRow tDf = Dfctv + stp - strt ; tDf-- > Dfctv ; )
     *tDf = - *tDf;
   #else
+   auto val = new double[ stp - strt ];
    if( net )
     CPXNETgetsupply( env , net , val , strt , stp - 1 );
    else
     CPXgetrhs( env , qp , val , strt , stp - 1 );
 
    VectMAssign( Dfctv , val , stp - strt );
+   delete[] val;
   #endif
   }
  }  // end( MCFCplex::MCFDfcts )
@@ -817,7 +859,7 @@ void MCFCplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
 /*--------------------------------------------------------------------------*/
 
 void MCFCplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
-			 cIndex strt , Index stp )
+			 Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -839,48 +881,63 @@ void MCFCplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
  else
   cnt = stp - strt;
 
- #undef VALUEPASSED
- #undef INDEXPASSED
+ #undef MCFCplex_VALUEPASSED
+ #undef MCFCplex_INDEXPASSED
 
  #if( CNUMBER_IS_DOUBLE )
-  #define VALUEPASSED CRow( NCost )
+  #define MCFCplex_VALUEPASSED CRow( NCost )
  #else
+  auto val = new double[ cnt ];
   VectAssign( val , NCost , cnt );
-  #define VALUEPASSED val
+  #define MCFCplex_VALUEPASSED val
  #endif
 
  if( nms ) {
   #if( INDEX_IS_UINT )
-   #define INDEXPASSED (int *) nms
+   #define MCFCplex_INDEXPASSED (int *) nms
   #else
+   auto ind = new int[ cnt ];
    VectAssign( ind , nms , cnt );
-   #define INDEXPASSED ind
+   #define MCFCplex_INDEXPASSED ind
   #endif
 
   if( net )
-   CPXNETchgobj( env , net , cnt , INDEXPASSED , VALUEPASSED );
+   CPXNETchgobj( env , net , cnt , MCFCplex_INDEXPASSED ,
+		 MCFCplex_VALUEPASSED );
   else
-   CPXchgobj( env , qp , cnt , INDEXPASSED , VALUEPASSED );
+   CPXchgobj( env , qp , cnt , MCFCplex_INDEXPASSED , MCFCplex_VALUEPASSED );
+
+  #if( ! INDEX_IS_UINT )
+   delete[] ind;
+  #endif
   }
  else {
+  auto ind = new int[ cnt ];
   VectFill( ind , strt , cnt );
   
   if( net )
-   CPXNETchgobj( env , net , cnt , ind , VALUEPASSED );
+   CPXNETchgobj( env , net , cnt , ind , MCFCplex_VALUEPASSED );
   else
-   CPXchgobj( env , qp , cnt , ind , VALUEPASSED );
+   CPXchgobj( env , qp , cnt , ind , MCFCplex_VALUEPASSED );
+
+  delete[] ind;
   }
+
+ #if( ! CNUMBER_IS_DOUBLE )
+  delete[] val;
+ #endif
+
  }  // end( MCFCplex::ChgCosts )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::ChgCost( Index arc , cCNumber NCost )
+void MCFCplex::ChgCost( Index arc , CNumber NCost )
 {
  if( arc >= MCFm() )
   throw( MCFException( "MCFCplex::ChgCost: invalid arc name" ) );
 
- double cost = double( NCost );
- int which = int( arc );
+ double cost = NCost;
+ int which = arc;
 
  if( net )
   CPXNETchgobj( env , net , 1 , &which , &cost );
@@ -891,8 +948,8 @@ void MCFCplex::ChgCost( Index arc , cCNumber NCost )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::ChgQCoef( cCRow NQCoef, cIndex_Set nms,
-			 cIndex strt , Index stp ) 
+void MCFCplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
+			 Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -900,58 +957,57 @@ void MCFCplex::ChgQCoef( cCRow NQCoef, cIndex_Set nms,
  if( strt >= stp )
   return;
 
- if( ! qp )   // the problem in not QP:
-  TurnToQP(); // turn it into QP
+ if( nms ) {
+  while( *nms < strt ) {
+   nms++;
+   if( NQCoef )
+    NQCoef++;
+   }
+
+  if( ! VectLength( nms , stp ) )
+   return;
+  }
+
+ if( ( ! qp ) && NQCoef )  // the problem in not QP
+  TurnToQP();              // turn it into QP
 
  double qcoef = 0;
  if( nms ) {
-  for( Index i = 0 , arc ; i < m && ( arc = nms[ i ] ) < stp ; i++ )
-   if( arc >= strt ) 
-   #if( DYNMC_MCF_CPX )
-    if( ! ArcPos[ arc ] )
-   #endif
-   {
-    if( NQCoef )
-     qcoef = double( NQCoef[ i ] );
+  for( Index arc ; ( arc = *(nms++) ) < stp ; ) {
+   if( NQCoef )
+    qcoef = *(NQCoef++);
 
-    CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , qcoef );
-    }
+   CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , qcoef );
+   }
   }
  else {
-  for( Index arc = strt , i = 0 ; arc < stp ; arc++ , i++ )
-   #if( DYNMC_MCF_CPX )
-    if( ! ArcPos[ arc ] )
-   #endif
-   {
-    if( NQCoef )
-     qcoef = double( NQCoef[ i ] );
+  for( Index arc = strt ; arc < stp ; ++arc ) {
+   if( NQCoef )
+    qcoef = *(NQCoef++);
 
-    CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , qcoef );
-    }
+   CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , qcoef );
+   }
   }
  }  // end( MCFCplex::ChgQCoef )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::ChgQCoef( Index arc , cCNumber NQCoef ) 
+void MCFCplex::ChgQCoef( Index arc , CNumber NQCoef ) 
 {
  if( arc >= MCFm() )
   throw( MCFException( "MCFCplex::ChgQCoef: invalid arc name" ) );
 
- if( ! qp )
+ if( ( ! qp ) && NQCoef )
   TurnToQP();
 
- #if( DYNMC_MCF_CPX )
-  if( ! ArcPos[ arc ] )
- #endif
-   CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , NQCoef );
+ CPXchgqpcoef( env , qp , int( arc ) , int( arc ) , NQCoef );
 
-} // end( MCFCplex::ChgQCoef )
+ }  // end( MCFCplex::ChgQCoef )
 
 /*--------------------------------------------------------------------------*/
    
 void MCFCplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
-			 cIndex strt , Index stp ) 
+			 Index strt , Index stp ) 
 {
  if( stp > n )
   stp = n;
@@ -973,42 +1029,54 @@ void MCFCplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
  else
   cnt = stp - strt;
 
- #undef INDEXPASSED
+ #undef MCFCplex_INDEXPASSED
 
+ auto val = new double[ cnt ];
  VectMAssign( val , NDfct , cnt );
 
  if( nms ) {
   #if( INDEX_IS_UINT )
-   #define INDEXPASSED (int *) nms
+   #define MCFCplex_INDEXPASSED (int *) nms
   #else
+   auto ind = new int[ cnt ];
    VectAssign( ind , nms , cnt );
-   #define INDEXPASSED ind
+   #define MCFCplex_INDEXPASSED ind
   #endif
 
   if( net )
-   CPXNETchgsupply( env , net , cnt , INDEXPASSED , val );
+   CPXNETchgsupply( env , net , cnt , MCFCplex_INDEXPASSED , val );
   else
-   CPXchgrhs( env , qp , cnt , INDEXPASSED , val );
+   CPXchgrhs( env , qp , cnt , MCFCplex_INDEXPASSED , val );
+
+  #if( ! INDEX_IS_UINT )
+   delete[] ind;
+  #endif
   }
  else {
+  auto ind = new int[ cnt ];
   VectFill( ind , strt , cnt );
 
   if( net )
    CPXNETchgsupply( env , net , cnt , ind , val );
   else
    CPXchgrhs( env , qp , cnt , ind , val );
+
+  delete[] ind;
   }
+
+ delete[] val;
+ 
  }  // end( MCFCplex::ChgDfcts )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::ChgDfct( Index node , cFNumber NDfct )
+void MCFCplex::ChgDfct( Index node , FNumber NDfct )
 {
  if( node >= MCFn() )
   throw( MCFException( "MCFCplex::ChgDfct: invalid node name" ) );
 
- double dfct = - double( NDfct );
- int which = int( node );
+ double dfct = - NDfct;
+ int which = node;
 
  if( net ) 
   CPXNETchgsupply( env , net , 1 , &which , &dfct );
@@ -1019,8 +1087,8 @@ void MCFCplex::ChgDfct( Index node , cFNumber NDfct )
 
 /*--------------------------------------------------------------------------*/
  
-void MCFCplex::ChgUCaps( cFRow NCap ,  cIndex_Set nms ,
-			 cIndex strt , Index stp )
+void MCFCplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
+			 Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -1042,48 +1110,107 @@ void MCFCplex::ChgUCaps( cFRow NCap ,  cIndex_Set nms ,
  else
   cnt = stp - strt;
 
- #undef VALUEPASSED
- #undef INDEXPASSED
+ auto ChangeUB = new char[ cnt ];
+ VectAssign( ChangeUB , 'U' , cnt );
 
- #if( FNUMBER_IS_DOUBLE )
-  #define VALUEPASSED FRow( NCap )
- #else 
-  VectAssign( val , NCap , cnt );
-  #define VALUEPASSED val
+ #undef MCFCplex_VALUEPASSED
+ #undef MCFCplex_INDEXPASSED
+
+ #if( FNUMBER_IS_DOUBLE && ( ! DYNMC_MCF_CPX ) )
+  #define MCFCplex_VALUEPASSED FRow( NCap )
+ #else
+  auto val = new double[ cnt ];
+  #if( DYNMC_MCF_CPX )
+   // for all arcs that are closed, store the new value in ArcPos[] and
+   // leave the "new" capacity just being set to 0
+   auto tval = val;
+   if( nms ) {
+    auto tnms = nms;
+    for( Index i ; ( i = *(tnms++) ) < stp ; ) {
+     if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) ) {
+      ArcPos[ i ] = *(NCap++);
+      *(tval++) = 0;
+      }
+     else
+      *(tval++) = *(NCap++);
+     }
+    }
+   else
+    for( Index i = strt ; i < stp ; ++i ) {
+     if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) ) {
+      ArcPos[ i ] = *(NCap++);
+      *(tval++) = 0;
+      }
+     else
+      *(tval++) = *(NCap++);
+     }
+  #else
+   VectAssign( val , NCap , cnt );
+  #endif
+  #define MCFCplex_VALUEPASSED val
  #endif
 
  if( nms ) {
   #if( INDEX_IS_UINT )
-   #define INDEXPASSED (int *) nms
+   #define MCFCplex_INDEXPASSED (int *) nms
   #else 
+   auto ind = new int[ cnt ];
    VectAssign( ind , nms , cnt );
-   #define INDEXPASSED ind
+   #define MCFCplex_INDEXPASSED ind
   #endif
 
   if( net )
-   CPXNETchgbds( env , net , cnt , INDEXPASSED , ChangeUB , VALUEPASSED );
+   CPXNETchgbds( env , net , cnt , MCFCplex_INDEXPASSED , ChangeUB ,
+		 MCFCplex_VALUEPASSED );
   else
-   CPXchgbds( env , qp , cnt , INDEXPASSED , ChangeUB , VALUEPASSED );
+   CPXchgbds( env , qp , cnt , MCFCplex_INDEXPASSED , ChangeUB ,
+	      MCFCplex_VALUEPASSED );
+
+  #if( ! INDEX_IS_UINT )
+   delete[] ind;
+  #endif
   }
  else {
+  auto ind = new int[ cnt ];
   VectFill( ind , strt , cnt );
 
   if( net )
-   CPXNETchgbds( env , net , cnt , ind , ChangeUB , VALUEPASSED );
+   CPXNETchgbds( env , net , cnt , ind , ChangeUB , MCFCplex_VALUEPASSED );
   else
-   CPXchgbds( env , qp , cnt , ind , ChangeUB , VALUEPASSED );
+   CPXchgbds( env , qp , cnt , ind , ChangeUB , MCFCplex_VALUEPASSED );
+
+  delete[] ind;
   }
+
+ #if( ( ! FNUMBER_IS_DOUBLE ) || DYNMC_MCF_CPX )
+  delete[] val;
+ #endif
+
+ delete[] ChangeUB;
+ 
  }  // end( MCFCplex::ChgUCaps )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::ChgUCap( Index arc , cFNumber NCap )
-{  
+void MCFCplex::ChgUCap( Index arc , FNumber NCap )
+{
  if( arc >= MCFm() )
   throw( MCFException( "MCFCplex::ChgUCap: invalid arc name" ) );
 
- double cap = double( NCap );
- int which = int( arc );
+ #if( DYNMC_MCF_CPX )
+  if( ArcPos[ arc ] == FInf )  // the arc is deleted
+   return;                   // silently return
+
+  // if the arc is closed, change the capacity stored in ArcPos but leave
+  // it in its closed state
+  if( ArcPos[ arc ] >= 0 ) {
+   ArcPos[ arc ] = NCap;
+   return;
+   }
+ #endif
+
+ double cap = NCap;
+ int which = arc;
 
  if( net )
   CPXNETchgbds( env , net , 1 , &which , "U", &cap );
@@ -1096,19 +1223,19 @@ void MCFCplex::ChgUCap( Index arc , cFNumber NCap )
 /*----------------- MODIFYING THE STRUCTURE OF THE GRAPH -------------------*/
 /*--------------------------------------------------------------------------*/ 
 
-void MCFCplex::CloseArc( cIndex name )
+void MCFCplex::CloseArc( Index name )
 {
  if( name >= MCFm() )
   throw( MCFException( "MCFCplex::CloseArc: invalid arc name" ) );
 
  #if( DYNMC_MCF_CPX )
   // if the arc is closed already, or there is no arc in that position
-  if( ArcPos[ name ] > 0 )
+  if( ArcPos[ name ] >= 0 )
    return;  // nothing to do
  #endif
 
  double ub;
- int temp = int( name );
+ int temp = name;
 
  #if( DYNMC_MCF_CPX )
   if( net )
@@ -1116,7 +1243,7 @@ void MCFCplex::CloseArc( cIndex name )
   else
    CPXgetub( env , qp , &ub , temp , temp );
 
-  ArcPos[ name ] = FNumber( ub );  // save current upper bound
+  ArcPos[ name ] = ub;  // save current upper bound
  #endif
 
  // set upper bound to 0
@@ -1130,46 +1257,48 @@ void MCFCplex::CloseArc( cIndex name )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::DelNode( cIndex name )
+void MCFCplex::DelNode( Index name )
 {
  int index = int( name MINUSONE );
  double newdfct = 0;
- int arccount_p = 0;
 
  if( net ) { 
-  int arcbeg = 0 , surplus = 0;
+  int arcbeg = 0 , surplus = 0 , arccount_p = 0;
   CPXNETchgsupply( env , net , 1 , &index , &newdfct );  // set supply to 0
+
+  auto ind = new int[ m ];
   CPXNETgetnodearcs( env , net , &arccount_p , &arcbeg , ind , m , &surplus ,
-		    index , index );  
+		     index , index );  
+
+  for( int i = 0 ; i < arccount_p ; )
+   CloseArc( Index( ind[ i++ ] ) );  // incident arcs are "closed"
+
+  delete[] ind;
   }
  else {
-  for( Index arc = 0 ; arc < m ; arc++ )     // get incident arcs
-   if( Startn[ arc ] == index || Endn[ arc ] == index ) 
-    ind[ arccount_p++ ] = arc;
+  for( Index arc = 0 ; arc < m ; arc++ )
+   if( ( Startn[ arc ] == index ) || ( Endn[ arc ] == index ) )
+    CloseArc( arc );  // incident arcs are "closed"
     
   CPXchgrhs( env , qp , 1 , &index , &newdfct );  // set rhs to 0
   }
-
- for( int i = 0 ; i < arccount_p ; )
-  CloseArc( Index( ind[ i++ ] ) );  // incident arcs are "closed"
-  
  }  // end( MCFCplex::DelNode )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::OpenArc( cIndex name )
+void MCFCplex::OpenArc( Index name )
 {
  if( name >= MCFm() )
   throw( MCFException( "MCFCplex::OpenArc: invalid arc name" ) );
 
  #if( DYNMC_MCF_CPX )
   // if the arc exists and it is opened already
-  if( ArcPos[ name ] == 0 )
+  if( ArcPos[ name ] < 0 )
    return;  // nothing to do
 
-  int temp = int( name );
-  double ub = double( ArcPos[ name ] );
-  ArcPos[ name ] = 0;
+  int temp = name;
+  double ub = ArcPos[ name ];
+  ArcPos[ name ] = -1;
 
   // restore upper bound
   if( net )
@@ -1178,19 +1307,18 @@ void MCFCplex::OpenArc( cIndex name )
    CPXchgbds( env , qp , 1 , &temp , "U" , &ub ); 
 
  #else
-  throw(
-   MCFException( "MCFCplex::ChangeArc() not implemented if DYNMC_MCF_CPX == 0"
-		 ) );
+  throw( MCFException(
+	   "MCFCplex::ChangeArc() not implemented if DYNMC_MCF_CPX == 0" ) );
  #endif
 
  }  // end( MCFCplex::OpenArc )
  
 /*--------------------------------------------------------------------------*/
 
-MCFCplex::Index MCFCplex::AddNode( cFNumber aDfct )
+MCFCplex::Index MCFCplex::AddNode( FNumber aDfct )
 {
  if( n < nmax ) {
-  double dfct = double( aDfct );
+  double dfct = aDfct;
  
   if( net ) 
    CPXNETaddnodes( env , net , 1 , &dfct , NULL );
@@ -1206,21 +1334,24 @@ MCFCplex::Index MCFCplex::AddNode( cFNumber aDfct )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFCplex::DelArc( cIndex name ) 
+void MCFCplex::DelArc( Index name ) 
 {
  if( name >= MCFm() )
   throw( MCFException( "MCFCplex::DelArc: invalid arc name" ) );
 
-#if( DYNMC_MCF_CPX )
-  ArcPos[ name ] = Inf<FNumber>();  // position is available for a new arc
+ #if( DYNMC_MCF_CPX )
+  if( ArcPos[ name ] == FInf )  // the arc is deleted already
+   return;                      // nothing to do
+ 
+  ArcPos[ name ] = FInf;        // position now is available for a new arc
   if( name < FreePos )
-   FreePos = name; 
+   FreePos = name;
 
-  int which = int( name );
+  int which = name;
 
   if( name == m - 1 ) {  // deleting the last arc(s) - - - - - - - - - - - -
    do {
-    m--;               // decrement number of arcs
+    m--;                 // decrement number of arcs
  
     if( net )
      CPXNETdelarcs( env , net , which , which );
@@ -1228,7 +1359,7 @@ void MCFCplex::DelArc( cIndex name )
      CPXdelcols( env , qp , which , which );  // delete matching column in
                                               // constraint matrix
 
-    } while( ArcPos[ m - 1 ] == Inf<FNumber>() );
+    } while( ArcPos[ m - 1 ] == FInf );
 
    if( FreePos > m ) 
     FreePos = m; 
@@ -1242,33 +1373,33 @@ void MCFCplex::DelArc( cIndex name )
     CPXchgbds( env , qp , 1 , &which , "U" , &cpct );
    }
  #else
-  throw(
-   MCFException( "MCFCplex::DelArc() not implemented if DYNMC_MCF_CPX == 0"
-	 	 ) );
+  throw( MCFException(
+	     "MCFCplex::DelArc() not implemented if DYNMC_MCF_CPX == 0" ) );
  #endif
 
  }  // end( MCFCplex::DelArc )
 
 /*-------------------------------------------------------------------------*/
 
-MCFCplex::Index MCFCplex::AddArc( cIndex Start , cIndex End , cFNumber aU ,
-				  cCNumber aC )
+MCFCplex::Index MCFCplex::AddArc( Index Start , Index End , FNumber aU ,
+				  CNumber aC )
 {
  #if( DYNMC_MCF_CPX )
   if( m >= mmax )
-   return( Inf<Index>() );
+   return( IInf );
 
   int strn = int( Start MINUSONE );
   int endn = int( End MINUSONE );
  
-  double cst = double( aC );
-  double cpct = double( aU );
+  double cst = aC;
+  double cpct = aU;
 
-  if( FreePos >= m ) {  // there is no arc marked as deleted
-   ArcPos[ FreePos ] = 0;
-   FreePos = ++m;     // increase number of arcs
+  ArcPos[ FreePos ] = -1;  // create a new arc in the first free position
 
-   int NewArc = int( m - 1 );
+  if( FreePos >= m ) {  // the first free position is at the end
+   FreePos = ++m;       // increase number of arcs
+
+   int NewArc = m - 1;  // now physically create the new arc
    
    if( net ) 
     CPXNETaddarcs( env , net , 1 , &strn , &endn , NULL , &cpct , &cst ,
@@ -1287,9 +1418,8 @@ MCFCplex::Index MCFCplex::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 
    return( Index( NewArc ) );
    }
-  else {
-   ArcPos[ FreePos ] = 0;
-   int temp = int( FreePos );
+  else {                // the first free position is in the middle
+   int temp = FreePos;  // just fill the hole
 
    if( net ) {
     CPXNETchgarcnodes( env , net , 1 , &temp , &strn , &endn );
@@ -1305,43 +1435,43 @@ MCFCplex::Index MCFCplex::AddArc( cIndex Start , cIndex End , cFNumber aU ,
     Endn[ temp ] = endn;
     }
 
-   while( ( FreePos < mmax ) && ( ArcPos[ FreePos ] < Inf<FNumber>() ) )
+   while( ( FreePos < mmax ) && ( ArcPos[ FreePos ] < FInf ) )
     FreePos++;
 
    return( temp );
    }
  #else
-  throw(
-   MCFException( "MCFCplex::AddArc() not implemented if DYNMC_MCF_CPX == 0"
-		 ) );
+  throw( MCFException(
+	      "MCFCplex::AddArc() not implemented if DYNMC_MCF_CPX == 0" ) );
 
-  return( Inf<Index>() );
+  return( IInf );
  #endif
 
  }  // end( MCFCplex::AddArc )
 
 /*-------------------------------------------------------------------------*/
 
-void MCFCplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN ) 
+void MCFCplex::ChangeArc( Index name , Index nSN , Index nEN ) 
 {
  if( name >= MCFm() )
   throw( MCFException( "MCFCplex::ChangeArc: invalid arc name" ) );
 
  int temp = int( name );
  int sn , en;
- if( ( nSN == Inf<Index>() ) || ( nEN == Inf<Index>() ) ) {
+ if( ( nSN == IInf ) || ( nEN == IInf ) ) {
   if( net ) {
    CPXNETgetarcnodes( env, net, &sn, &en, temp, temp );
-  } else {
+   }
+  else {
    sn = Startn[ name ];
    en = Endn[ name ];
+   }
   }
- }
 
- if( nSN < Inf<Index>() )
+ if( nSN < IInf )
   sn = int( nSN MINUSONE );
 
- if( nEN < Inf<Index>() )
+ if( nEN < IInf )
   en = int( nEN MINUSONE );
 
  if( net ) 
@@ -1360,18 +1490,7 @@ MCFCplex::~MCFCplex()
  if( mmax && nmax )
   MemDeAlloc();
 
- if( ! --InstCntr ) {
-  delete[] ChangeUB;
-  delete[] val;
-  delete[] ind;
-  nmaxarc = 0;
-  }
-
- if( env == genv )
-  if( ! --EnvICntr ) {
-   CPXcloseCPLEX( &genv );
-   genv = NULL;
-   }
+ CPXcloseCPLEX( &env );
 
  }  // end( MCFCplex::~MCFCplex )
 
@@ -1394,21 +1513,6 @@ void MCFCplex::MemAlloc( void )
   ArcPos = new FNumber[ mmax ];
  #endif
 
- // if necessary, resize static members - - - - - - - - - - - - - - - - - - -
- 
- if( mmax > nmaxarc ) {
-  if( nmaxarc ) {
-   delete[] ChangeUB;
-   delete[] val;
-   delete[] ind;
-   }
-
-  ind = new int[ nmaxarc = mmax ];
-  val = new double[ nmaxarc ]; 
-  ChangeUB = new char[ nmaxarc ];
-
-  VectAssign( ChangeUB , 'U' , nmaxarc );
-  }
  }  // end( MemAlloc )
 
 /*--------------------------------------------------------------------------*/
@@ -1440,7 +1544,7 @@ void MCFCplex::TurnToQP( void )
  Startn = new int[ mmax ];
  Endn   = new int[ mmax ];
 
- CPXNETgetarcnodes( env , net , Startn , Endn , 0 , m - 1);
+ CPXNETgetarcnodes( env , net , Startn , Endn , 0 , m - 1 );
 
  status_p = CPXcopynettolp( env , qp , net );
  if( ( ! qp ) || status_p )
@@ -1475,20 +1579,6 @@ void MCFCplex::QPchgarcnode( int name , int sn , int en )
  Startn[ name ] = sn; 
  Endn[ name ]   = en;
  }
-
-/*-------------------------------------------------------------------------*/
-/*------------------initialize static members------------------------------*/
-/*-------------------------------------------------------------------------*/
-
-CPXENVptr MCFCplex::genv = 0;
-
-int* MCFCplex::ind = NULL;
-double* MCFCplex::val = NULL;
-char* MCFCplex::ChangeUB = NULL;
-
-MCFCplex::Index MCFCplex::InstCntr = 0;
-MCFCplex::Index MCFCplex::EnvICntr = 0;
-MCFCplex::Index MCFCplex::nmaxarc = 0;
 
 /*--------------------------------------------------------------------------*/
 /*-------------------- End File MCFCplex.C ---------------------------------*/

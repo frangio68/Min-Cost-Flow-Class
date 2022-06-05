@@ -10,10 +10,6 @@
  *
  * Conforms to the standard (MCF) interface defined in MCFClass.h.
  *
- * \version 1.84
- *
- * \date 27 - 02 - 2020
- *
  * \author <b>(original FORTRAN code)</b> \n
  *         Dimitri P. Bertsekas \n
  *         Lab. for Information and Decision Systems \n
@@ -26,7 +22,6 @@
  *
  * \author <b>(C++ porting and polishing)</b> \n
  *         Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
@@ -35,12 +30,10 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy 1996 - 2020 by Antonio Frangioni
+ * Copyright &copy by Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*--------------------------- IMPLEMENTATION -------------------------------*/
-/*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -97,14 +90,12 @@ static MCFClass::cIndex maxdns = 10;
       mincost are, respectively, the maximum and the mininum reduced cost
       at the beginning of auction function. */
 
- static cCNumber C_LARGE = Inf<CNumber>() / 4;
+ static cCNumber C_LARGE = numeric_limits< CNumber >() >::max / 4;
 #endif
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- "PRIVATE" MACROS ------------------------------*/
 /*--------------------------------------------------------------------------*/
-
-#define P_ALLOC ( AUCTION || ( DYNMC_MCF_RIV > 1 ) )
 
 #if( RELAXIV_STATISTICS )
  #define pp( x ) x++
@@ -116,7 +107,7 @@ static MCFClass::cIndex maxdns = 10;
 /*--------------------- IMPLEMENTATION OF RIVState -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-RelaxIV::RIVState::RIVState( MCFClass::cIndex m )
+RelaxIV::RIVState::RIVState( MCFClass::Index m )
 {
  Flow    = new RelaxIV::FNumber[ m ];
  RedCost = new CNumber[ m ];
@@ -136,9 +127,7 @@ RelaxIV::RIVState::~RIVState()
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-RelaxIV::RelaxIV( cIndex nmx , cIndex mmx )
-         :
-         MCFClass( nmx , mmx )
+RelaxIV::RelaxIV( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
 {
  // allocate memory - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -147,18 +136,14 @@ RelaxIV::RelaxIV( cIndex nmx , cIndex mmx )
  else
   nmax = mmax = 0;
 
- // other initializations - - - - - - - - - - - - - - - - - - - - - - - - - -
-
- InstCntr++;
-
  }  // end( RelaxIV )
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
-                       cFRow pU , cCRow pC , cFRow pDfct , cIndex_Set pSn ,
+void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
+		       cFRow pU , cCRow pC , cFRow pDfct , cIndex_Set pSn ,
                        cIndex_Set pEn )
 {
  // allocating and deallocating memory- - - - - - - - - - - - - - - - - - - -
@@ -218,26 +203,13 @@ void RelaxIV::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
  if( pC ) {  // copy the costs- - - - - - - - - - - - - - - - - - - - - - - -
   CRow tC = C + m;
   CRow tRC = RC + m;
-  #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-   FRow tCap = Cap + m;
-   for( pC += m ; tC > C ; tCap-- ) {
-    CNumber ttC = *(--pC);
-    if( ttC == Inf<CNumber>() ) {
-     *tCap = 0;
-     ttC = 0;
-     }
-
-    *(tC--) = *(tRC--) = ttC;
-    }
-  #else
-   for( pC += m ; tC > C ; ) {
-    cCNumber ttC = *(--pC);
-    if( ( *(tRC--) = ttC ) < Inf<CNumber>() )
-     *(tC--) = ttC;
-    else
-     *(tC--) = 0;
-    }
-  #endif
+  for( pC += m ; tC > C ; ) {
+   cCNumber ttC = *(--pC);
+   if( ( *(tRC--) = ttC ) < Inf<CNumber>() )
+    *(tC--) = ttC;
+   else
+    *(tC--) = 0;
+   }
   }
  else {  // costs are all-0 - - - - - - - - - - - - - - - - - - - - - - - - -
   CRow tRC = RC + m;
@@ -267,50 +239,32 @@ void RelaxIV::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
     *tCap = maxcap;
   }
 
- #if( SAME_GRPH_RIV )
-  if( ! Startn[ 1 ] )  // Startn[] and Endn[] have not been initialized yet -
- #endif
-  {
-   Index_Set tEn = Endn + m;
-   Index_Set tSn = Startn + m;
-   for( pSn += m , pEn += m ; tSn > Startn ; ) {
-    *(tSn--) = *(--pSn) + USENAME0;
-    *(tEn--) = *(--pEn) + USENAME0;
-    }
+ Index_Set tEn = Endn + m;
+ Index_Set tSn = Startn + m;
+ for( pSn += m , pEn += m ; tSn > Startn ; ) {
+  *(tSn--) = *(--pSn) + USENAME0;
+  *(tEn--) = *(--pEn) + USENAME0;
+  }
+
+ // clean up the FS and BS information- - - - - - - - - - - - - - - - - - - -
+
+ Index_Set tOu = FOu + n;
+ for( Index_Set tIn = FIn + n ; tIn > FIn ; )
+  *(tIn--) = *(tOu--) = 0;
+
+ // now construct the FS and BS structures- - - - - - - - - - - - - - - - - -
+
+ for( Index j = 0 ; j++ < m ; )
+  if( RC[ j ] == Inf< CNumber >() )
+   X[ j ] = 0;
+  else {
+   Index i = Startn[ j ];
+   NxtOu[ j ] = FOu[ i ];
+   FOu[ i ] = j;
+   NxtIn[ j ] = FIn[ i = Endn[ j ] ];
+   FIn[ i ] = j;
    }
 
- #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-  if( FIn[ 1 ] == Inf<Index>() )  // FS and BS have not been initialized yet-
- #endif
-  {
-   // clean up the FS and BS information- - - - - - - - - - - - - - - - - - -
-
-   Index_Set tOu = FOu + n;
-   for( Index_Set tIn = FIn + n ; tIn > FIn ; )
-    *(tIn--) = *(tOu--) = 0;
-
-   // now construct the FS and BS structures- - - - - - - - - - - - - - - - -
-
-   for( Index j = 0 ; j++ < m ; )
-    #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-     if( RC[ j ] == Inf<CNumber>() )
-      X[ j ] = 0;
-     else
-    #endif
-     {
-      Index i = Startn[ j ];
-
-      NxtOu[ j ] = FOu[ i ];
-      FOu[ i ] = j;
-
-      NxtIn[ j ] = FIn[ i = Endn[ j ] ];
-      FIn[ i ] = j;
-      }
-   }
-
- #if( P_ALLOC )
-  PiOwnr = NULL;
- #endif
  #if( AUCTION )
   crash = false;
  #endif
@@ -394,11 +348,7 @@ void RelaxIV::SolveMCF( void )
  if( MCFt )
   MCFt->Start();
 
- #if( P_ALLOC )
-  PiOwnr = NULL;
- #endif
-
- FO = Inf<FONumber>();
+ FO = Inf< FONumber >();
  iter = num_augm = 0;
  #if( RELAXIV_STATISTICS )
   nmultinode = num_ascnt = 0;
@@ -407,7 +357,7 @@ void RelaxIV::SolveMCF( void )
  if( status )  // initializations are skipped if status == 0- - - - - - - - -
  {             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  status = MCFClass::kOK;
+  status = kOK;
 
   // prices and flows are initialized by either calling the auction()
   // routine or by performing only single-node iterations
@@ -1212,6 +1162,16 @@ void RelaxIV::SolveMCF( void )
   }  // end for( ever ) - main loop ends here - - - - - - - - - - - - - - - -
      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ if( status == kOK ) {
+  cmptprices();
+  cFRow tX = X + m;
+  cCRow tC = C + m;
+  for( FO = 0 ; tX > X ; )
+   FO += *(tX--) * (*(tC--));
+  }
+ else
+  FO = Inf< FONumber >();
+
  if( MCFt )
   MCFt->Stop();
 
@@ -1221,7 +1181,7 @@ void RelaxIV::SolveMCF( void )
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
+void RelaxIV::MCFGetX( FRow F , Index_Set nms , Index strt , Index stp ) const
 {
  if( stp > m )
    stp = m;
@@ -1235,7 +1195,7 @@ void RelaxIV::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
     *(nms++) = i;
     }
 
-   *nms = Inf<Index>();
+   *nms = Inf< Index >();
    }
   }
  else {
@@ -1247,15 +1207,8 @@ void RelaxIV::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::cFRow RelaxIV::MCFGetX( void )
-{
- return( X + 1 );
- }
-
-/*--------------------------------------------------------------------------*/
-
-void RelaxIV::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
-{
+void RelaxIV::MCFGetRC( CRow CR , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -1275,106 +1228,30 @@ void RelaxIV::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::cCRow RelaxIV::MCFGetRC( void )
-{
- return( RC + 1 );
- }
+void RelaxIV::MCFGetPi( CRow P , cIndex_Set nms , Index strt , Index stp )
+ const {
+ if( nms ) {
+  while( *nms < strt )
+   nms++;
 
-/*--------------------------------------------------------------------------*/
-
-MCFClass::CNumber RelaxIV::MCFGetRC( cIndex i )
-{
- return( RC[ i + 1 ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-void RelaxIV::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
-{
- #if( P_ALLOC )
-  if( PiOwnr != this )
-   cmptprices();
-
-  if( nms ) {
-   while( *nms < strt )
-    nms++;
-
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(P++) = Pi[ ++h ];
-   }
-  else {
-   if( stp > n )
-    stp = n;
-
-   CRow tPi = Pi + stp;
-   for( P += stp - strt ; tPi > Pi + strt ; )
-    *(--P) = *(tPi--);
-   }
- #else
-  Pi = P - 1;
-
-  cmptprices();
-
-  Pi++;
-
-  if( nms ) {
-   while( *nms < strt )
-    nms++;
-
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    *(P++) = Pi[ h ];
-   }
-  else
-   if( strt ) {
-    if( stp > n )
-     stp = n;
-
-    CRow tP = P;
-    for( stp -= strt , P += strt ; stp-- ; )
-     *(tP++) = *(P++);
-    }
- #endif
-
- }  // end( RelaxIV::MCFGetPi( CRow ) )
-
-/*--------------------------------------------------------------------------*/
-
-MCFClass::cCRow RelaxIV::MCFGetPi( void )
-{
- #if( P_ALLOC )
-  if( PiOwnr != this )
-   cmptprices();
-
-  return( Pi + 1 );
- #else
-  return( NULL );
- #endif
-
- }  // end( RelaxIV::MCFGetPi( void ) )
-
-/*--------------------------------------------------------------------------*/
-
-MCFClass::FONumber RelaxIV::MCFGetFO( void )
-{
- if( status == MCFClass::kUnfeasible )
-  return( Inf<FONumber>() );
- else {
-  if( FO == Inf<FONumber>() ) {
-   cFRow tX = X + m;
-   cCRow tC = C + m;
-   for( FO = 0 ; tX > X ; )
-    FO += *(tX--) * (*(tC--));
-   }
-
-  return( FO );
+  for( Index h ; ( h = *(nms++) ) < stp ; )
+   *(P++) = Pi[ ++h ];
   }
- }
+ else {
+  if( stp > n )
+   stp = n;
+
+  CRow tPi = Pi + stp;
+  for( P += stp - strt ; tPi > Pi + strt ; )
+   *(--P) = *(tPi--);
+  }
+ }  // end( RelaxIV::MCFGetPi( CRow ) )
 
 /*--------------------------------------------------------------------------*/
 /*------------------------ SPECIALIZED INTERFACE ---------------------------*/
 /*--------------------------------------------------------------------------*/
 
-MCFClass::MCFStatePtr RelaxIV::MCFGetState( void )
+MCFClass::MCFStatePtr RelaxIV::MCFGetState( void ) const
 {
  RIVState *S = new RIVState( m );
 
@@ -1423,32 +1300,27 @@ void RelaxIV::MCFPutState( MCFClass::MCFStatePtr S )
    return;
   }
 
- #if( P_ALLOC )
- {
-  // check that RC[ i , j ] = C[ i , j ] + P[ i ] - P[ j ]- - - - - - - - - -
+ // check that RC[ i , j ] = C[ i , j ] + P[ i ] - P[ j ] - - - - - - - - - -
 
-  CRow tRC = RC;         // save Reduced Costs pointer
-  RC = RS->RedCost - 1;  // temporarily use the new presumed RC
-  cmptprices();          // compute Pi[] with the new RCs
+ CRow tRC = RC;         // save Reduced Costs pointer
+ RC = RS->RedCost - 1;  // temporarily use the new presumed RC
+ cmptprices();          // compute Pi[] with the new RCs
+ cCRow SRC = RC;
+ RC = tRC;             // restore the current prices
 
-  cCRow SRC = RC;
-  RC = tRC;             // restore the current prices
+ cCRow tPi = Pi + n;
+ for( Index_Set tou = FOu + n ; tou > FOu ; ) {
+  cCNumber Pii = *(tPi--);
+  Index arc = *(tou--);
 
-  cCRow tPi = Pi + n;
-  for( Index_Set tou = FOu + n ; tou > FOu ; ) {
-   cCNumber Pii = *(tPi--);
-   Index arc = *(tou--);
+  while( arc ) {
+   cCNumber Dlt = Pi[ Endn[ arc ] ] - Pii - C[ arc ] + SRC[ arc ];
+   if( ! ETZ( Dlt , EpsCst ) )
+    return;
 
-   while( arc ) {
-    cCNumber Dlt = Pi[ Endn[ arc ] ] - Pii - C[ arc ] + SRC[ arc ];
-    if( ! ETZ( Dlt , EpsCst ) )
-     return;
-
-    arc = NxtOu[ arc ];
-    }
+   arc = NxtOu[ arc ];
    }
   }
- #endif
 
  // correct the internal state of RelaxIV - - - - - - - - - - - - - - - - - -
 
@@ -1458,7 +1330,7 @@ void RelaxIV::MCFPutState( MCFClass::MCFStatePtr S )
 
  FRow tX = X + m;
  FRow tU = U + m;
- CRow tRC = RC + m;
+ tRC = RC + m;
  Index_Set tEn = Endn + m;
  Index_Set tSn = Startn + m;
  for( tSF = RS->Flow + m , tSRC = RS->RedCost + m , tCap = Cap + m ;
@@ -1480,7 +1352,7 @@ void RelaxIV::MCFPutState( MCFClass::MCFStatePtr S )
 /*--------------------------------------------------------------------------*/
 
 void RelaxIV::MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms ,
-                       cIndex strt , Index stp )
+                       Index strt , Index stp ) const
 {
  if( nms ) {
   while( *nms < strt )
@@ -1521,8 +1393,8 @@ void RelaxIV::MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms ,
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::MCFCosts( CRow Costv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void RelaxIV::MCFCosts( CRow Costv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -1542,8 +1414,8 @@ void RelaxIV::MCFCosts( CRow Costv , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::MCFUCaps( FRow UCapv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void RelaxIV::MCFUCaps( FRow UCapv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -1563,8 +1435,8 @@ void RelaxIV::MCFUCaps( FRow UCapv , cIndex_Set nms , cIndex strt , Index stp )
   
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::MCFDfcts( FRow Dfctv , cIndex_Set nms , cIndex strt , Index stp )
-{
+void RelaxIV::MCFDfcts( FRow Dfctv , cIndex_Set nms , Index strt , Index stp )
+ const {
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -1584,7 +1456,7 @@ void RelaxIV::MCFDfcts( FRow Dfctv , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::WriteMCF( ostream &oStrm , int frmt )
+void RelaxIV::WriteMCF( ostream &oStrm , int frmt ) const
 {
  #if( ( Ctype == REAL_TYPE ) || ( Ftype == REAL_TYPE ) )
   oStrm.precision( 12 );
@@ -1711,7 +1583,7 @@ void RelaxIV::WriteMCF( ostream &oStrm , int frmt )
 /*----- Changing the costs, deficits and upper capacities of the (MCF) -----*/
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgCosts( cCRow NCost , cIndex_Set nms , cIndex strt ,
+void RelaxIV::ChgCosts( cCRow NCost , cIndex_Set nms , Index strt ,
 			Index stp )
 {
  if( nms )
@@ -1734,7 +1606,7 @@ void RelaxIV::ChgCosts( cCRow NCost , cIndex_Set nms , cIndex strt ,
    for( tC += stp , NCost += stp - strt ; tC > C + strt ; )
     *(tC--) = *(--NCost);
 
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else
   if( nms )
@@ -1748,11 +1620,11 @@ void RelaxIV::ChgCosts( cCRow NCost , cIndex_Set nms , cIndex strt ,
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgCost( Index arc , cCNumber NCost )
+void RelaxIV::ChgCost( Index arc , CNumber NCost )
 {
  if( status || ( ! Senstv ) ) {
   C[ ++arc ] = NCost;
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else
   chgcsti( ++arc , NCost );
@@ -1761,7 +1633,7 @@ void RelaxIV::ChgCost( Index arc , cCNumber NCost )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , cIndex strt ,
+void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , Index strt ,
 			Index stp )
 {
  if( nms )
@@ -1783,7 +1655,7 @@ void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , cIndex strt ,
    for( tB += stp , NDfct += stp - strt ; tB-- > B + strt ; )
     *tB = *(--NDfct);
 
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else {
   FRow tDfct = Dfct + 1;
@@ -1803,12 +1675,12 @@ void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , cIndex strt ,
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgDfct( Index nod , cFNumber NDfct )
+void RelaxIV::ChgDfct( Index nod , FNumber NDfct )
 {
  nod++;
  if( status || ( ! Senstv ) ) {
   B[ nod ] = NDfct;
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else {   
   Dfct[ nod ] += NDfct - B[ nod ];
@@ -1818,7 +1690,7 @@ void RelaxIV::ChgDfct( Index nod , cFNumber NDfct )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , cIndex strt , Index stp )
+void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , Index strt , Index stp )
 {
  if( nms )
   while( *nms < strt ) {
@@ -1840,7 +1712,7 @@ void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , cIndex strt , Index stp )
    for( tCap += stp , NCap += stp - strt ; tCap > Cap + strt ; )
     *(tCap--) = *(--NCap);
 
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else
   if( nms )
@@ -1854,11 +1726,11 @@ void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChgUCap( Index arc , cFNumber NCap )
+void RelaxIV::ChgUCap( Index arc , FNumber NCap )
 {
  if( status || ( ! Senstv ) ) {
   Cap[ ++arc ] = NCap;
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
   }
  else   
   chgcapi( ++arc , NCap );
@@ -1869,21 +1741,20 @@ void RelaxIV::ChgUCap( Index arc , cFNumber NCap )
 /*------------------ Modifying the structure of the graph ------------------*/ 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::CloseArc( cIndex name )
+void RelaxIV::CloseArc( Index name )
 {
  #if( DYNMC_MCF_RIV )
   delarci( name + 1 );
  #else
-  throw(
-   MCFException( "RelaxIV::CloseArc() not implemented if DYNMC_MCF_RIV < 1"
-                 ) );
+  throw( MCFException(
+	      "RelaxIV::CloseArc() not implemented if DYNMC_MCF_RIV < 1" ) );
  #endif
 
  }  // end( RelaxIV::CloseArc )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::DelNode( cIndex name )
+void RelaxIV::DelNode( Index name )
 {
  #if( DYNMC_MCF_RIV )
   Index node = name + USENAME0;
@@ -1908,36 +1779,34 @@ void RelaxIV::DelNode( cIndex name )
     n--;
    while( FOu[ n ] == FIn[ n ] );
 
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
  #else
-  throw(
-   MCFException( "RelaxIV::DelNode() not implemented if DYNMC_MCF_RIV < 1"
-                 ) );
+  throw( MCFException(
+	       "RelaxIV::DelNode() not implemented if DYNMC_MCF_RIV < 1" ) );
  #endif
 
  }  // end( RelaxIV::DelNode )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::OpenArc( cIndex name )
+void RelaxIV::OpenArc( Index name )
 {
  #if( DYNMC_MCF_RIV > 1 )
   addarci( name + 1 );
  #else
-  throw(
-   MCFException( "RelaxIV::OpenArc() not implemented if DYNMC_MCF_RIV < 2"
-                 ) );
+  throw( MCFException(
+	       "RelaxIV::OpenArc() not implemented if DYNMC_MCF_RIV < 2" ) );
  #endif
 
  }  // end( RelaxIV::UnsetArcFree )
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::Index RelaxIV::AddNode( cFNumber aDfct )
+MCFClass::Index RelaxIV::AddNode( FNumber aDfct )
 {
  #if( DYNMC_MCF_RIV > 1 )
   if( n == nmax )
-   return( Inf<Index>() );
+   return( Inf< Index >() );
 
   n++;
 
@@ -1945,31 +1814,26 @@ MCFClass::Index RelaxIV::AddNode( cFNumber aDfct )
   FOu[ n ] = FIn[ n ] = 0;
 
   if( status || ( ! Senstv ) )
-   status = MCFClass::kUnSolved;
+   status = kUnSolved;
   else {
    Dfct[ n ] = aDfct;
    tfstou[ n ] = tfstin[ n ] = 0;
-
-   #if( P_ALLOC )
-    if( PiOwnr == this )
-     Pi[ n ] = 0;
-   #endif
+   Pi[ n ] = 0;
    }
 
   return( n - USENAME0 );
  #else
-  throw(
-   MCFException( "RelaxIV::AddNode() not implemented if DYNMC_MCF_RIV < 2"
-                 ) );
+  throw( MCFException(
+	       "RelaxIV::AddNode() not implemented if DYNMC_MCF_RIV < 2" ) );
 
-  return( Inf<Index>() );
+  return( Inf< Index >() );
  #endif
 
  }  // end( RelaxIV::AddNode )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
+void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
 {
  #if( DYNMC_MCF_RIV > 2 )
   Index arc = name + 1;
@@ -1986,9 +1850,6 @@ void RelaxIV::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
     addarci( arc );
     }
    else {  // reoptimization is required- - - - - - - - - - - - - - - - - - -
-    if( PiOwnr != this )  // compute the dual prices
-     cmptprices();
-
     cCNumber RCa = RC[ arc ] = C[ arc ] + Pi[ nSN ] - Pi[ nEN ];
     cFNumber Ua = Cap[ arc ];
 
@@ -2102,9 +1963,8 @@ void RelaxIV::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
     Endn[ arc ] =  nEN + USENAME0;
    }
  #else
-  throw(
-   MCFException( "RelaxIV::ChangeArc() not implemented if DYNMC_MCF_RIV < 3"
-                 ) );
+  throw( MCFException(
+	     "RelaxIV::ChangeArc() not implemented if DYNMC_MCF_RIV < 3" ) );
  #endif
 
  }  // end( RelaxIV::ChangeArc )
@@ -2128,17 +1988,16 @@ void RelaxIV::DelArc( cIndex name )
   Endn[ arc ] = ffp;
   ffp = arc;
  #else
-  throw(
-   MCFException( "RelaxIV::DelArc() not implemented if DYNMC_MCF_RIV < 3"
-                 ) );
+  throw( MCFException(
+		"RelaxIV::DelArc() not implemented if DYNMC_MCF_RIV < 3" ) );
  #endif
 
  }  // end( RelaxIV::DelArc )
 
 /*--------------------------------------------------------------------------*/
 
-MCFClass::Index RelaxIV::AddArc( cIndex Start , cIndex End , cFNumber aU ,
-				 cCNumber aC )
+MCFClass::Index RelaxIV::AddArc( Index Start , Index End , FNumber aU ,
+				 CNumber aC )
 {
  #if( DYNMC_MCF_RIV > 2 )
   // select position - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -2172,11 +2031,10 @@ MCFClass::Index RelaxIV::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 
   return( arc - 1 );
  #else
-  throw(
-   MCFException( "RelaxIV::AddArc() not implemented if DYNMC_MCF_RIV < 3"
-                 ) );
+  throw( MCFException(
+		"RelaxIV::AddArc() not implemented if DYNMC_MCF_RIV < 3" ) );
 
-  return( Inf<Index>() );
+  return( Inf< Index >() );
  #endif
 
  }  // end( RelaxIV::AddArc )
@@ -2185,43 +2043,7 @@ MCFClass::Index RelaxIV::AddArc( cIndex Start , cIndex End , cFNumber aU ,
 /*------------------------------ DESTRUCTOR --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-RelaxIV::~RelaxIV()
-{
- if( ! --InstCntr ) {  // deallocating static members - - - - - - - - - - - -
-  maxnmax = maxmmax = 0;
-
-  #if( AUCTION )
-   delete[] ++NxtpushB;
-   delete[] ++NxtpushF;
-  #endif
-
-  delete[] save;
-  save = NULL;
-
-  #if( AUCTION )
-   delete[] ++SB_arc;
-   delete[] ++FpushB;
-   delete[] ++extend_arc;
-   delete[] ++SB_level;
-  #endif
-
-  #if( P_ALLOC )
-   delete[] ++Pi;
-  #endif
-
-  delete[] ++DDNeg;
-  delete[] ++DDPos;
-  delete[] ++queue;
-  delete[] ++scan;
-  delete[] ++mark;
-  mark = NULL;
-  delete[] label;
-  delete[] ++Prdcsr;
-  }
-
- MemDeAlloc();  // deallocate all the rest- - - - - - - - - - - - - - - - - -
-
- }  // end( ~RelaxIV )
+RelaxIV::~RelaxIV() { if( nmax && mmax ) MemDeAlloc(); }
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- PRIVATE METHODS -------------------------------*/
@@ -2254,7 +2076,7 @@ void RelaxIV::init_tree( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::init_standard( void )
+void RelaxIV::init_standard( void )
 {
  // reset B and initialize the directional derivative for each coordinate - -
  // (note that DDPos and DDNeg are only used inside init_standard())- - - - -
@@ -2279,10 +2101,8 @@ inline void RelaxIV::init_standard( void )
  CRow tRC = RC + m;
  cFRow tCap = Cap + m;
  for( ; tC > C ; tX-- , tU-- , tRC-- , tCap-- , tC-- ) {
-  #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-   if( *tRC == Inf<CNumber>() )
-    continue;
-  #endif
+  if( *tRC == Inf< CNumber >() )
+   continue;
 
   cFNumber f = *tCap;
   cCNumber RCi = *tRC = *tC;
@@ -2434,9 +2254,9 @@ inline void RelaxIV::init_standard( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::FNumber RelaxIV::svblncdarcs( cIndex node ,
-                                     cIndex_Set tfst1 , cIndex_Set tnxt1 ,
-                                     cIndex_Set tfst2 , cIndex_Set tnxt2 )
+MCFClass::FNumber RelaxIV::svblncdarcs( Index node ,
+					cIndex_Set tfst1 , cIndex_Set tnxt1 ,
+					cIndex_Set tfst2 , cIndex_Set tnxt2 )
 {
  FNumber delx = 0;
  nb_pos = 0;
@@ -2472,9 +2292,9 @@ inline MCFClass::FNumber RelaxIV::svblncdarcs( cIndex node ,
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::FNumber RelaxIV::dascnt( cIndex node , CNumber &delprc ,
-					  cIndex_Set F1 , cIndex_Set Nxt1 ,
-					  cIndex_Set F2 , cIndex_Set Nxt2 )
+MCFClass::FNumber RelaxIV::dascnt( Index node , CNumber &delprc ,
+				   cIndex_Set F1 , cIndex_Set Nxt1 ,
+				   cIndex_Set F2 , cIndex_Set Nxt2 )
 {
  nb_pos = 0;
  nb_neg = m;
@@ -2517,7 +2337,7 @@ inline MCFClass::FNumber RelaxIV::dascnt( cIndex node , CNumber &delprc ,
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::relist( cIndex node )
+void RelaxIV::relist( Index node )
 {
  // first clear the list of balanced arcs in/out of node
 
@@ -2576,15 +2396,14 @@ inline void RelaxIV::relist( cIndex node )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::AugFlow( cIndex augnod , cIndex root ,
-                              cIndex node_p , cIndex node_m ,
-                              cIndex_Set Term1 , cIndex_Set Term2 )
-
+void RelaxIV::AugFlow( Index augnod , Index root , Index node_p ,
+		       Index node_m , cIndex_Set Term1 , cIndex_Set Term2 )
+{
 /* This subroutine execute the flow augmenting step: the augmenting path has
    been already found in the scanning step. The flow on the arcs of the path
    is modified: for the positive (negative) oriented arcs the flow is reduced
    (augmented) to reduce the total deficit. */
-{
+
  Index ib = augnod;
  FNumber dx = - Dfct[ node_p ];
 
@@ -2642,12 +2461,12 @@ inline void RelaxIV::AugFlow( cIndex augnod , cIndex root ,
 
 /*--------------------------------------------------------------------------*/
 
-inline bool RelaxIV::Ascnt( cFNumber sdm , FNumber delx , Index &nlabel ,
-                            bool &Switch , Index &nscan , Index &curnode ,
-                            cIndex_Set Term1 , cIndex_Set Term2 ,
-                            cIndex_Set F1 , cIndex_Set Nxt1 ,
-                            cIndex_Set F2 , cIndex_Set Nxt2 )
-
+bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
+		     bool &Switch , Index &nscan , Index &curnode ,
+		     cIndex_Set Term1 , cIndex_Set Term2 ,
+		     cIndex_Set F1 , cIndex_Set Nxt1 ,
+		     cIndex_Set F2 , cIndex_Set Nxt2 )
+{
 /* This soubroutine performs the multinode price adjustment step. If the
    scanned nodes have positive deficit, it first checks if decreasing the
    price of the scanned nodes increases the dual cost. If yes, then it
@@ -2664,7 +2483,7 @@ inline bool RelaxIV::Ascnt( cFNumber sdm , FNumber delx , Index &nlabel ,
      until the rate of ascent becomes negative (this corresponds to the
      price adjustment step in which both the line search and the degenerate
      ascent iteration are implemented). */
-{
+
  // Store the arcs between the set of scanned nodes and its complement and- -
  // compute delprc, the stepsize to the next breakpoint in the dual cost in -
  // the direction of decreasing prices of the scanned nodes. The arcs are - -
@@ -2967,8 +2786,8 @@ inline bool RelaxIV::Ascnt( cFNumber sdm , FNumber delx , Index &nlabel ,
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::CNumber RelaxIV::nxtbrkpt( cIndex_Set tSt1 , cIndex_Set NSt1 ,
-					    cIndex_Set tSt2 , cIndex_Set NSt2 )
+MCFClass::CNumber RelaxIV::nxtbrkpt( cIndex_Set tSt1 , cIndex_Set NSt1 ,
+				     cIndex_Set tSt2 , cIndex_Set NSt2 )
 {
  CNumber delprc = Inf<CNumber>();
  Index arc = *tSt1;
@@ -2994,9 +2813,9 @@ inline MCFClass::CNumber RelaxIV::nxtbrkpt( cIndex_Set tSt1 , cIndex_Set NSt1 ,
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::CNumber RelaxIV::mvflw1( cIndex arc , FRow tDfct ,
-					  FRow tDDNeg , cIndex_Set Term ,
-					  FRow Flow1 , FRow Flow2 )
+MCFClass::CNumber RelaxIV::mvflw1( Index arc , FRow tDfct ,
+				   FRow tDDNeg , cIndex_Set Term ,
+				   FRow Flow1 , FRow Flow2 )
 {
  CNumber trc = RC[ arc ];
 
@@ -3023,9 +2842,9 @@ inline MCFClass::CNumber RelaxIV::mvflw1( cIndex arc , FRow tDfct ,
 
 /*--------------------------------------------------------------------------*/
 
-inline MCFClass::CNumber RelaxIV::mvflw2( cIndex arc , FRow tDfct ,
-					  FRow tDDPos , cIndex_Set Term ,
-					  FRow Flow1 , FRow Flow2 )
+MCFClass::CNumber RelaxIV::mvflw2( Index arc , FRow tDfct ,
+				   FRow tDDPos , cIndex_Set Term ,
+				   FRow Flow1 , FRow Flow2 )
 {
  CNumber trc = RC[ arc ];
 
@@ -3052,9 +2871,9 @@ inline MCFClass::CNumber RelaxIV::mvflw2( cIndex arc , FRow tDfct ,
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::decrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
-                              CNumber &nxtbrk , FRow tDD1 , FRow DD2 ,
-                              cIndex_Set Term )
+void RelaxIV::decrsRC( Index arc , CNumber trc , CNumber delprc ,
+		       CNumber &nxtbrk , FRow tDD1 , FRow DD2 ,
+		       cIndex_Set Term )
 {
  trc -= delprc;
 
@@ -3072,9 +2891,9 @@ inline void RelaxIV::decrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::incrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
-                              CNumber &nxtbrk , FRow tDD1 , FRow DD2 ,
-                              cIndex_Set Term )
+void RelaxIV::incrsRC( Index arc , CNumber trc , CNumber delprc ,
+		       CNumber &nxtbrk , FRow tDD1 , FRow DD2 ,
+		       cIndex_Set Term )
 { 
  trc += delprc;
 
@@ -3092,58 +2911,55 @@ inline void RelaxIV::incrsRC( cIndex arc , CNumber trc , cCNumber delprc ,
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::chgcsti( cIndex i , CNumber NCost )
+void RelaxIV::chgcsti( Index i , CNumber NCost )
 {
  CNumber RCi = RC[ i ];
  cCNumber DCst = NCost - C[ i ];
  C[ i ] = NCost;
 
- #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-  if( RCi < Inf<CNumber>() )
- #endif
-  {
-   RC[ i ] = ( RCi += DCst );
+ if( RCi < Inf<CNumber>() ) {
+  RC[ i ] = ( RCi += DCst );
 
-   if( GTZ( RCi , EpsCst ) ) {  // RC[ i ] > 0 - - - - - - - - - - - - - - -
-    cFNumber Xi = X[ i ];
-    if( GTZ( Xi , EpsFlw ) ) {
-     X[ i ] = 0;
+  if( GTZ( RCi , EpsCst ) ) {  // RC[ i ] > 0 - - - - - - - - - - - - - - -
+   cFNumber Xi = X[ i ];
+   if( GTZ( Xi , EpsFlw ) ) {
+    X[ i ] = 0;
  
-     Dfct[ Startn[ i ] ] -= Xi;
-     Dfct[ Endn[ i ] ] += Xi;
-     U[ i ] += Xi;
+    Dfct[ Startn[ i ] ] -= Xi;
+    Dfct[ Endn[ i ] ] += Xi;
+    U[ i ] += Xi;
+    }
+   }
+  else
+   if( LTZ( RCi , EpsCst ) ) {  // RC[ i ] < 0- - - - - - - - - - - - - - -
+    cFNumber Ui = U[ i ];
+    if( GTZ( Ui , EpsFlw ) ) {
+     U[ i ] = 0;
+
+     Dfct[ Startn[ i ] ] += Ui;
+     Dfct[ Endn[ i ] ] -= Ui;
+     X[ i ] += Ui;
      }
     }
-   else
-    if( LTZ( RCi , EpsCst ) ) {  // RC[ i ] < 0- - - - - - - - - - - - - - -
-     cFNumber Ui = U[ i ];
-     if( GTZ( Ui , EpsFlw ) ) {
-      U[ i ] = 0;
-
-      Dfct[ Startn[ i ] ] += Ui;
-      Dfct[ Endn[ i ] ] -= Ui;
-      X[ i ] += Ui;
-      }
+   else {  // RC[ i ] == 0 - - - - - - - - - - - - - - - - - - - - - - - - -
+    if( tnxtou[ i ] == i ) {
+     Index node = Startn[ i ];
+     tnxtou[ i ] = tfstou[ node ];
+     tfstou[ node ] = i;
      }
-    else {  // RC[ i ] == 0 - - - - - - - - - - - - - - - - - - - - - - - - -
-     if( tnxtou[ i ] == i ) {
-      Index node = Startn[ i ];
-      tnxtou[ i ] = tfstou[ node ];
-      tfstou[ node ] = i;
-      }
 
-     if( tnxtin[ i ] == i ) {
-      Index node = Endn[ i ];
-      tnxtin[ i ] = tfstin[ node ];
-      tfstin[ node ] = i;
-      }
+    if( tnxtin[ i ] == i ) {
+     Index node = Endn[ i ];
+     tnxtin[ i ] = tfstin[ node ];
+     tfstin[ node ] = i;
      }
-   }  // end( if( Cap[ i ] ) )
+    }
+  }  // end( if( Cap[ i ] ) )
  }  // end( chgcsti )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::chgcapi( cIndex i , cFNumber NCap )
+void RelaxIV::chgcapi( Index i , FNumber NCap )
 {
  Cap[ i ] = NCap;
  cFNumber diffX = NCap - X[ i ];
@@ -3163,7 +2979,7 @@ inline void RelaxIV::chgcapi( cIndex i , cFNumber NCap )
 
 #if( DYNMC_MCF_RIV )
 
-inline void RelaxIV::delarci( cIndex arc )
+void RelaxIV::delarci( Index arc )
 {
  Index arc1 = FOu[ Startn[ arc ] ];
  if( arc1 == arc )
@@ -3238,7 +3054,7 @@ inline void RelaxIV::delarci( cIndex arc )
 
 #if( DYNMC_MCF_RIV > 1 )
 
-inline void RelaxIV::addarci( cIndex arc )
+void RelaxIV::addarci( Index arc )
 {
  RC[ arc ] = C[ arc ];
  cIndex sn = Startn[ arc ]; 
@@ -3247,9 +3063,6 @@ inline void RelaxIV::addarci( cIndex arc )
  if( status || ( ! Senstv ) )
   status = MCFClass::kUnSolved;
  else {
-  if( PiOwnr != this )  // compute the dual prices
-   cmptprices();
-
   cFNumber Ua = Cap[ arc ];
   cCNumber RCa = ( RC[ arc ] += ( Pi[ sn ] - Pi[ en ] ) );
 
@@ -3286,7 +3099,7 @@ inline void RelaxIV::addarci( cIndex arc )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::cmptprices( void )
+void RelaxIV::cmptprices( void )
 {
  CRow tPi = Pi + n;
  for( ; tPi > Pi ; )
@@ -3307,16 +3120,13 @@ inline void RelaxIV::cmptprices( void )
   for( Index start = tPi - Pi ;; ) {  // inner loop: visit this
    Index arc = FOu[ start ];          // connected component
    while( arc ) {                     // scan FS( start )
-    #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-     if( RC[ arc ] < Inf<CNumber>() )
-    #endif
-     {
-      cIndex end = Endn[ arc ];
-      if( Pi[ end ] == Inf<CNumber>() ) {
-       Pi[ *(++tq) = end ] = C[ arc ] - RC[ arc ] + Pstart;
-       pcnt--;
-       }
+    if( RC[ arc ] < Inf< CNumber >() ) {
+     cIndex end = Endn[ arc ];
+     if( Pi[ end ] == Inf<CNumber>() ) {
+      Pi[ *(++tq) = end ] = C[ arc ] - RC[ arc ] + Pstart;
+      pcnt--;
       }
+     }
 
     arc = NxtOu[ arc ];
     }
@@ -3325,16 +3135,13 @@ inline void RelaxIV::cmptprices( void )
     break;
 
    for( arc = FIn[ start ] ; arc ; ) {  // scan BS( start )
-    #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-     if( RC[ arc ] < Inf<CNumber>() )
-    #endif
-     {
-      cIndex end = Startn[ arc ];
-      if( Pi[ end ] == Inf<CNumber>() ) {
-       Pi[ *(++tq) = end ] = RC[ arc ] + Pstart - C[ arc ];
-       pcnt--;
-       }
+    if( RC[ arc ] < Inf< CNumber >() ) {
+     cIndex end = Startn[ arc ];
+     if( Pi[ end ] == Inf<CNumber>() ) {
+      Pi[ *(++tq) = end ] = RC[ arc ] + Pstart - C[ arc ];
+      pcnt--;
       }
+     }
 
     arc = NxtIn[ arc ];
     }
@@ -3345,10 +3152,6 @@ inline void RelaxIV::cmptprices( void )
     break;
    }                // end inner loop
   } while( pcnt );  // end outer loop - - - - - - - - - - - - - - - - - - - -
-
- #if( P_ALLOC )
-  PiOwnr = this;  // "sign" these potentials
- #endif
 
  }  // end( cmptprices )
 
@@ -3383,10 +3186,8 @@ void RelaxIV::auction( void )
   CRow tRC = RC + m;
   cFRow tCap = Cap + m;
   for( ; tC > C ; tX-- , tU-- , tC-- , tRC-- , tCap-- ) {
-   #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-    if( *tRC == Inf<CNumber>() )
-     continue;
-   #endif
+   if( *tRC == Inf<CNumber>() )
+    continue;
 
    cCNumber RCi = *tRC = *tC;
    if( maxcost < RCi )
@@ -4163,10 +3964,8 @@ void RelaxIV::auction( void )
  Index_Set tEn = Endn + m;
  Index_Set tSn = Startn + m;
  for( ; tX > X ; tX-- , tU-- , tRC-- , tEn-- , tSn-- ) {
-  #if( ( ! SAME_GRPH_RIV ) || DYNMC_MCF_RIV )
-   if( *tRC == Inf<CNumber>() )
-    continue;
-  #endif
+  if( *tRC == Inf< CNumber >() )
+   continue;
 
   cIndex en = *tEn;
   cIndex sn = *tSn;
@@ -4198,270 +3997,118 @@ void RelaxIV::auction( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::MemAlloc( void )
+void RelaxIV::MemAlloc( void )
 {
- #if( SAME_GRPH_RIV )
-  if( ! Startn )  // allocating data structures for graph topology- - - - - -
+ Startn = new Index[ mmax ]; Startn--;
+ Endn   = new Index[ mmax ]; Endn--;
+
+ FIn   = new Index[ nmax ]; FIn--;
+ NxtIn = new Index[ mmax ]; NxtIn--;
+
+ FOu   = new Index[ nmax ]; FOu--;
+ NxtOu = new Index[ mmax ]; NxtOu--;
+
+ // allocating node-wise temporaries
+ Prdcsr = new SIndex[ nmax ]; Prdcsr--;
+ label  = new Index[ nmax ];
+ mark   = new bool[ nmax ]; mark--;
+ scan   = new bool[ nmax ]; scan--;
+ queue  = new Index[ nmax ]; queue--;
+ DDPos  = new FNumber[ nmax ]; DDPos--;
+ DDNeg  = new FNumber[ nmax ]; DDNeg--;
+
+ Pi = new CNumber[ nmax ]; Pi--;
+
+ #if( AUCTION )
+  SB_level   = new CNumber[ nmax ]; SB_level--;
+  extend_arc = new SIndex[ nmax ]; extend_arc--;
+
+  FpushF = label; FpushF--;
+
+  FpushB = new Index[ nmax ]; FpushB--;
+  SB_arc = new SIndex[ nmax ]; SB_arc--;
  #endif
-  {
-   Startn = new Index[ mmax ];
-   Endn   = new Index[ mmax ];
 
-   #if( SAME_GRPH_RIV )
-    *Startn = 0;  // 0 is not a feasible value for a Startn[ 1 ]; this tells
-                  // that Startn and Endn have not been initialized yet
-   #endif
-   Startn--;
-   Endn--;
-   }
+ // allocating arc-wise temporaries
+ save = new Index[ mmax ];
 
- #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-  if( ! FIn )     // allocating data structures for FS / BS - - - - - - - - -
+ #if( AUCTION )
+  NxtpushF = new Index[ mmax ]; NxtpushF--;
+  NxtpushB = new Index[ mmax ]; NxtpushB--;
  #endif
-  {
-   FIn   = new Index[ nmax ];
-   NxtIn = new Index[ mmax ];
 
-   FOu   = new Index[ nmax ];
-   NxtOu = new Index[ mmax ];
+ // allocating flows, reduced costs, potentials etc
 
-   #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-    *FIn = Inf<Index>();  // Inf<Index>() is not a feasible value for FIn[ 1 ]; this tells
-                   // that FS and BS have not been initialized yet
-   #endif
-   FIn--;
-   NxtIn--;
-   FOu--;
-   NxtOu--;
-   }
+ X    = new FNumber[ mmax ]; X--;
+ U    = new FNumber[ mmax ]; U--;
+ Cap  = new FNumber[ mmax ]; Cap--;
+ RC   = new CNumber[ mmax ]; RC--;
+ C    = new CNumber[ mmax ]; C--;
+ Dfct = new FNumber[ nmax ]; Dfct--;
+ B    = new FNumber[ nmax ]; B--;
 
- if( maxnmax < nmax ) {  // allocating node-wise temporaries- - - - - - - - -
-  maxnmax = nmax;
+ // allocating "restricted" (to balanecd arcs) BS and FS
 
-  if( mark ) {
-   #if( AUCTION )
-    delete[] ++SB_arc;
-    delete[] ++FpushB;
-    delete[] ++extend_arc;
-    delete[] ++SB_level;
-   #endif
+ tfstin = new Index[ nmax ]; tfstin--;
+ tnxtin = new Index[ mmax ]; tnxtin--;
 
-   #if( P_ALLOC )
-    delete[] ++Pi;
-   #endif
-
-   delete[] ++DDNeg;
-   delete[] ++DDPos;
-   delete[] ++queue;
-   delete[] ++scan;
-   delete[] ++mark;
-   delete[] label;
-   delete[] ++Prdcsr;
-   }
-
-  Prdcsr = new SIndex[ nmax ];
-  label  = new Index[ nmax ];
-  mark   = new bool[ nmax ];
-  scan   = new bool[ nmax ];
-  queue  = new Index[ nmax ];
-  DDPos  = new FNumber[ nmax ];
-  DDNeg  = new FNumber[ nmax ];
-
-  Prdcsr--;
-  mark--;
-  scan--;
-  queue--;
-  DDPos--;
-  DDNeg--;
-
-  #if( P_ALLOC )
-   Pi = new CNumber[ nmax ];
-   Pi--;
-  #endif
-
-  #if( AUCTION )
-   SB_level   = new CNumber[ nmax ];
-   extend_arc = new SIndex[ nmax ];
-
-   FpushF = label;
-
-   FpushB = new Index[ nmax ];
-   SB_arc = new SIndex[ nmax ];
-
-   SB_level--;
-   extend_arc--;
-   FpushF--;
-   FpushB--;
-   SB_arc--;
-  #endif
-
-  }  // end if( allocating node-wise temporaries )
-
- if( maxmmax < mmax ) {  // allocating arc-wise temporaries - - - - - - - - -
-  maxmmax = mmax;
-
-  if( save ) {
-   #if( AUCTION )
-    delete[] ++NxtpushB;
-    delete[] ++NxtpushF;
-   #endif
-
-   delete[] save;
-   }
-
-  save = new Index[ mmax ];
-
-  #if( AUCTION )
-   NxtpushF = new Index[ mmax ];
-   NxtpushB = new Index[ mmax ];
-
-   NxtpushF--;
-   NxtpushB--;
-  #endif
-
-  }  // end if( allocating arc-wise temporaries )
-
- // allocating flows, reduced costs, potentials etc - - - - - - - - - - - - -
-
- X    = new FNumber[ mmax ];
- U    = new FNumber[ mmax ];
- Cap  = new FNumber[ mmax ];
- RC   = new CNumber[ mmax ];
- C    = new CNumber[ mmax ];
- Dfct = new FNumber[ nmax ];
- B    = new FNumber[ nmax ];
-
- U--;
- Cap--;
- RC--;
- C--;
- X--;
- Dfct--;
- B--;
-
- // allocating "restricted" (to balanecd arcs) BS and FS- - - - - - - - - - -
-
- tfstin = new Index[ nmax ];
- tnxtin = new Index[ mmax ];
-
- tfstou = new Index[ nmax ];
- tnxtou = new Index[ mmax ];
-
- tfstin--;
- tnxtin--;
- tfstou--;
- tnxtou--;
+ tfstou = new Index[ nmax ]; tfstou--;
+ tnxtou = new Index[ mmax ]; tnxtou--;
 
  }  // end( MemAlloc )
 
 /*--------------------------------------------------------------------------*/
 
-inline void RelaxIV::MemDeAlloc( void )
+void RelaxIV::MemDeAlloc( void )
 {
- // deallocating "local" vectors- - - - - - - - - - - - - - - - - - - - - - -
-
- if( mmax && nmax ) {
-  delete[] ++tnxtou;
-  delete[] ++tfstou;
-
-  delete[] ++tnxtin;
-  delete[] ++tfstin;
-
-  delete[] ++B;
-  delete[] ++Dfct;
-  delete[] ++C;
-  delete[] ++RC;
-  delete[] ++Cap;
-  delete[] ++U;
-  delete[] ++X;
-  }
-
- #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-  if( ! InstCntr )  // deallocating FS and BS data structures - - - - - - - -
- #else
-  if( mmax && nmax )
+ #if( AUCTION )
+  delete[] ++NxtpushB;
+  delete[] ++NxtpushF;
  #endif
-  {
-   delete[] ++NxtOu;
-   delete[] ++FOu;
 
-   delete[] ++NxtIn;
-   delete[] ++FIn;
-   #if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
-    FIn = NULL;
-   #endif
-   }
+ delete[] save;
 
- #if( SAME_GRPH_RIV )
-  if( ! InstCntr )  // deallocating graph topology description- - - - - - - -
- #else
-  if( mmax && nmax )
+ #if( AUCTION )
+  delete[] ++SB_arc;
+  delete[] ++FpushB;
+  delete[] ++extend_arc;
+  delete[] ++SB_level;
  #endif
-  {
-   delete[] ++Endn;
-   delete[] ++Startn;
 
-   #if( SAME_GRPH_RIV )
-    Startn = NULL;
-   #endif
-   }
+ delete[] ++Pi;
+
+ delete[] ++DDNeg;
+ delete[] ++DDPos;
+ delete[] ++queue;
+ delete[] ++scan;
+ delete[] ++mark;
+ delete[] label;
+ delete[] ++Prdcsr;
+
+ delete[] ++tnxtou;
+ delete[] ++tfstou;
+
+ delete[] ++tnxtin;
+ delete[] ++tfstin;
+
+ delete[] ++B;
+ delete[] ++Dfct;
+ delete[] ++C;
+ delete[] ++RC;
+ delete[] ++Cap;
+ delete[] ++U;
+ delete[] ++X;
+
+ delete[] ++NxtOu;
+ delete[] ++FOu;
+
+ delete[] ++NxtIn;
+ delete[] ++FIn;
+
+ delete[] ++Endn;
+ delete[] ++Startn;
 
  }  // end( MemDeAlloc )
-
-/*--------------------------------------------------------------------------*/
-/*--------------------------- STATIC MEMBERS -------------------------------*/
-/*--------------------------------------------------------------------------*/
-
-MCFClass::Index RelaxIV::InstCntr = 0;
-MCFClass::Index RelaxIV::maxnmax = 0;
-MCFClass::Index RelaxIV::maxmmax = 0;
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#if( SAME_GRPH_RIV )
- MCFClass::Index_Set RelaxIV::Startn = NULL;
- MCFClass::Index_Set RelaxIV::Endn = NULL;
-#endif
-
-#if( SAME_GRPH_RIV && ( ! DYNMC_MCF_RIV ) )
- MCFClass::Index_Set RelaxIV::NxtOu = NULL;
- MCFClass::Index_Set RelaxIV::NxtIn = NULL;
- MCFClass::Index_Set RelaxIV::FOu = NULL;
- MCFClass::Index_Set RelaxIV::FIn = NULL;
-#endif
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-#if( P_ALLOC )
- RelaxIV *RelaxIV::PiOwnr = NULL;
-#endif
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-MCFClass::CRow       RelaxIV::Pi = NULL;
-
-RelaxIV::Bool_Vec    RelaxIV::mark = NULL;
-MCFClass::Index_Set  RelaxIV::save = NULL;
-MCFClass::Index_Set  RelaxIV::label = NULL;
-RelaxIV::SIndex_Set  RelaxIV::Prdcsr = NULL;
-
-RelaxIV::Bool_Vec    RelaxIV::scan = NULL;
-
-MCFClass::Index_Set  RelaxIV::queue = NULL;
-MCFClass::Index      RelaxIV::lastq = 0;
-MCFClass::Index      RelaxIV::prvnde = 0;
-
-MCFClass::FRow       RelaxIV::DDPos = NULL;
-MCFClass::FRow       RelaxIV::DDNeg = NULL;
-#if( AUCTION )
- MCFClass::CRow      RelaxIV::SB_level = NULL;
- RelaxIV::SIndex_Set RelaxIV::extend_arc = NULL;
- RelaxIV::SIndex_Set RelaxIV::SB_arc = NULL;
- MCFClass::Index_Set RelaxIV::FpushF = NULL;
- MCFClass::Index_Set RelaxIV::NxtpushF = NULL;
- MCFClass::Index_Set RelaxIV::FpushB = NULL;
- MCFClass::Index_Set RelaxIV::NxtpushB = NULL;
-#endif
 
 /*--------------------------------------------------------------------------*/
 /*------------------------- End File RelaxIV.C -----------------------------*/

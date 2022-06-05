@@ -2,21 +2,17 @@
 /*----------------------------- File SPTree.h ------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @file
- * Implementation of several "classic" Shortest Path Tree algorithms to
- * solve uncapacitated single-source Min Cost Flow problems. The actual
- * algorithm can be chosen at compile time by setting a proper switch.
- * Conforms to the standard MCF interface defined in MCFClass.h.
- *
- * \version 1.97
- *
- * \date 27 - 02 - 2020
+ * Definition of SPTree, a class deriving from MCFClass, and therefore
+ * conforming to the standard MCF interface defined therein, and implementing
+ * several "classic" Shortest Path Tree algorithms to solve uncapacitated
+ * single-source Min Cost Flow problems. The actual algorithm can be chosen
+ * at compile time by setting a proper switch.
  *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 1996 - 2020 by Antonio Frangioni.
+ * Copyright &copy by Antonio Frangioni.
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
@@ -35,17 +31,17 @@
 /*---------------------------- MACROS --------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @defgroup SPTREE_MACROS Compile-time switches in SPTree.h
-    These macros control some important details of the implementation.
-    Although using macros for activating features of the implementation is
-    not very C++, switching off some unused features may make the code
-    more efficient in running time or memory.
-    @{ */
+ *  These macros control some important details of the implementation.
+ *  Although using macros for activating features of the implementation is
+ *  not very C++, switching off some unused features may make the code
+ *  more efficient in running time or memory.
+ *  @{ */
 
 /*------------------------------ SPT_ALGRTM --------------------------------*/
 
 #define SPT_ALGRTM 4
 
-/**< This macro decides which SPT algorithm has to be used.
+/** This macro decides which SPT algorithm has to be used.
    Possible values are:
 
    - 0  =>  LQueue
@@ -91,21 +87,6 @@
  #endif
 #endif
 
-/*------------------------------ SPT_STRTN ---------------------------------*/
-
-#define SPT_STRTN 1
-
-/* Decides if the "start node" information for each arc is explicitly kept
-   in a data structure. If SPT_STRTN == 0 the "start node" information is
-   computed in O( ln( n ) ) each time it is needed. This is only used in
-   methods for reading or changing the data of the problem, and not in the
-   main (SPT) algorithm, so it may not be too costly. If SPT_STRTN == 1
-   instead the data structure is constructed; if SAME_GRPH_SPT > 0, the
-   data structure is "static".
-
-   \note This switch does not appear in the manual because the current
-         implementation of Startn() for SPT_STRTN == 0 is flawed. */
-
 /*------------------------------ ORDRD_NMS ---------------------------------*/
 
 #define ORDRD_NMS 1
@@ -123,18 +104,6 @@
    parameter `F' in MCFGetX( F , nms ) can actually point to a (n - 1)-vector,
    while if ORDRD_NMS > 0 it must point to a m-vector anyway. */
 
-/*----------------------------- SAME_GRPH_SPT ------------------------------*/
-
-#define SAME_GRPH_SPT 0
-
-/**< Decides if all MCFClass instances share the same graph.
-   If SAME_GRPH_SPT > 0, then all the instances of the class will work on the
-   same "topological" network, while the costs, capacities and supplies can
-   change from one instance to another. This allows implementations to share
-   some data structures describing the graph, e.g. by declaring them "static",
-   saving memory when multiple instances of the solver are active at the same
-   time. */
-
 /*----------------------------- DYNMC_MCF_SPT ------------------------------*/
 
 #define DYNMC_MCF_SPT 0
@@ -149,7 +118,7 @@
    - 1 => all the methods that change the topology of the graph are
           implemented. */
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -159,17 +128,14 @@ namespace MCFClass_di_unipi_it
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CLASSES -------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** @defgroup SPTREE_CLASSES Classes in SPTree.h
-    @{ */
-
 /** The SPTree class derives from the abstract base class MCFClass, thus
-    sharing its (standard) interface, and implements Shortest Path Tree
-    algorithms for solving "uncapacitated" (Linear) Min Cost Flow
-    problems with one source node.
-
-    \warning The SPT algorithm will enter in an infinite loop if a directed
-             cycle of negative cost exists in the graph: there is no check
-	     about this in the code. */
+ *  sharing its (standard) interface, and implements Shortest Path Tree
+ *  algorithms for solving "uncapacitated" (Linear) Min Cost Flow
+ *  problems with one source node.
+ *
+ *  \warning The SPT algorithm will enter in an infinite loop if a directed
+ *           cycle of negative cost exists in the graph: there is no check
+ *	     about this in the code. */
 
 class SPTree : public MCFClass
 {
@@ -192,7 +158,7 @@ class SPTree : public MCFClass
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-   SPTree( cIndex nmx = 0 , cIndex mmx = 0 , bool Drctd = true );
+   SPTree( Index nmx = 0 , Index mmx = 0 , bool Drctd = true );
 
 /**< Constructor of the class.
 
@@ -208,27 +174,21 @@ class SPTree : public MCFClass
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-   void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-		 cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
-		 cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
-		 cIndex_Set pEn = 0 ) override;
+   void LoadNet( Index nmx = 0 , Index mmx = 0 , Index pn = 0 , Index pm = 0 ,
+		 cFRow pU = 0 , cCRow pC = 0 , cFRow pDfct = 0 ,
+		 cIndex_Set pSn = 0 , cIndex_Set pEn = 0 ) override;
 
 /**< Inputs a new network, as in MCFClass::LoadNet().
 
-   Arcs with pC[ i ] == Inf<CNumber>() do not "exist". If DYNMC_MCF_SPT > 0,
-   these arcs are "closed".
+   Arcs with pC[ i ] == Inf< CNumber >() do not "exist". If
+   DYNMC_MCF_SPT > 0, these arcs are "closed".
 
-   If DYNMC_MCF_SPT == 0 but SAME_GRPH_SPT > 0, these arcs are dealt with
-   explicitly, and can be put back into the formulation by simply changing
-   their cost. Note that, however, this is less efficient than eliminating
-   them explicitly from the problem.
-
-   If DYNMC_MCF_SPT == 0 and SAME_GRPH_SPT == 0, these arcs are just removed
-   from the formulation. However, they have some sort of a "special status"
-   (after all, if the user wants to remove them completely he/she can just
-   change the data), in that they are still counted into the number of arcs
-   of the graph and they will always have 0 flow and Inf<CNumber>() reduced
-   cost as "closed" or "deleted" arcs. */
+   If DYNMC_MCF_SPT == 0, these arcs are just removed from the formulation.
+   However, they have some sort of a "special status" (after all, if the
+   user wants to remove them completely he/she can just change the data), in
+   that they are still counted into the number of arcs of the graph and they
+   will always have 0 flow and Inf< CNumber >() reduced cost as "closed" or
+   "deleted" arcs. */
 
 /*--------------------------------------------------------------------------*/
 /*-------------------- METHODS FOR SOLVING THE PROBLEM ---------------------*/
@@ -243,27 +203,24 @@ class SPTree : public MCFClass
    using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
 
    void MCFGetX( FRow F , Index_Set nms = 0  ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		 Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
    using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
    void MCFGetRC( CRow CR , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
-   inline CNumber MCFGetRC( cIndex i ) override;
+   CNumber MCFGetRC( Index i ) const override;
 
 /*--------------------------------------------------------------------------*/
 
    void MCFGetPi( CRow P , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-
-   cCRow MCFGetPi( void ) override;
-
-/**< Same meaning as MCFClass::MCFGetPi().
+/** Same meaning as MCFClass::MCFGetPi().
 
    \note Some of the potentials may be + Inf<CNumber>(): this means that
 
@@ -273,46 +230,83 @@ class SPTree : public MCFClass
    - if LABEL_SETTING == 1, the node is *not* a destination and it has not
      been reached during the algorithm. */
 
+   cCRow MCFGetPi( void ) const override { return( Pi + 1 ); }
+
 /*--------------------------------------------------------------------------*/
-
-   SPTree::FONumber MCFGetFO( void ) override;
-
-/**< Same meaning as MCFClass::MCFGetFO().
+/** Same meaning as MCFClass::MCFGetFO().
 
    \note if not all the specified destinations can be reached from the
-         Origin, returns Inf<FONumber>(). */
+         Origin, returns Inf< FONumber >(). */
+
+   FONumber MCFGetFO( void ) const override { return( FO ); }
 
 /*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 
    void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0  ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   inline Index MCFSNde( cIndex i ) override;
-
-   inline Index MCFENde( cIndex i ) override;
+		 Index strt = 0 , Index stp = Inf<Index>() ) const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   Index MCFSNde( Index i ) const override {
+    if( DirSPT ) 
+     return( Startn[ i ] );
+    else
+     return( FS[ DictM1[ 2 * i + 1 ] ].Nde );
+    }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   Index MCFENde( Index i ) const override {
+    if( DirSPT ) 
+     return( FS[ DictM1[ i ] ].Nde - USENAME0 );
+    else
+     return( FS[ DictM1[ 2 * i ] ].Nde - USENAME0 );
+    }
+
+/*--------------------------------------------------------------------------*/
 
    void MCFCosts( CRow Costv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   inline CNumber MCFCost( cIndex i ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   CNumber MCFCost( Index i ) const override {
+    if( DirSPT ) 
+     return( FS[ DictM1[ i ] ].Cst );
+    else
+     return( FS[ DictM1[ 2 * i ] ].Cst );
+    }
+
+/*--------------------------------------------------------------------------*/
 
    void MCFUCaps( FRow UCapv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
-   inline FNumber MCFUCap( cIndex i ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-   void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+   FNumber MCFUCap( Index i ) const override {
+    #if( ! DYNMC_MCF_SPT )
+     cIndex pos = DictM1[ i ];
+     if( pos >= StrtFS[ n + 1 ] )
+       return( 0 );
+      else
+    #endif
+       return( - B[ Origin ] );
+    }
 
-   inline FNumber MCFDfct( cIndex i ) override;
+/*--------------------------------------------------------------------------*/
+
+   void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0  ,
+		  Index strt = 0 , Index stp = Inf< Index >() )
+    const override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   FNumber MCFDfct( Index i ) const override { return( B[ i + 1 ] ); }
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
@@ -321,48 +315,78 @@ class SPTree : public MCFClass
 /*--------------------------------------------------------------------------*/
 
    void ChgCosts( cCRow NCost , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-   void ChgCost( Index arc , cCNumber NCost ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   void ChgCost( Index arc , CNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
    void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-   void ChgDfct( Index nod , cFNumber NDfct ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   void ChgDfct( Index nod , FNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
    void ChgUCaps( cFRow NCap , cIndex_Set nms = 0  ,
-		  cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		  Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-   void ChgUCap( Index arc , cFNumber NCap ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+   void ChgUCap( Index arc , FNumber NCap ) override;
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
-  void CloseArc( cIndex name ) override;
+  void CloseArc( Index name ) override;
 
-  inline bool IsClosedArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-  void DelNode( cIndex name ) override;
+  bool IsClosedArc( Index name ) const override {
+   #if( DYNMC_MCF_SPT )
+    cIndex pos = DictM1[ name ];  // current position of arc name
+    Index nde = Startn[ name ];   // start node of arc name
+    return( pos < StrtFS[ nde ] + LenFS[ nde ] );
+   #else
+    return( false );
+   #endif
+   }
 
-  void OpenArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-  Index AddNode( cFNumber aDfct ) override;
+  void DelNode( Index name ) override;
 
-  void ChangeArc( cIndex name ,
-		  cIndex nSS = Inf<Index>() , cIndex nEN = Inf<Index>() )
-   override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-  void DelArc( cIndex name ) override;
+  void OpenArc( Index name ) override;
 
-  inline bool IsDeletedArc( cIndex name ) override;
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-  Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
-   override; 
+  Index AddNode( FNumber aDfct ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+  void ChangeArc( Index name , Index nSS = Inf< Index >() ,
+		  Index nEN = Inf< Index >() ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+  void DelArc( Index name ) override;
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+  bool IsDeletedArc( Index name ) const override {
+   return( SPTree::IsClosedArc( name ) );
+   }
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+
+  Index AddArc(cIndex Start , Index End , FNumber aU , CNumber aC ) override; 
 
 /*--------------------------------------------------------------------------*/
 /*------------------------ SPECIALIZED INTERFACE ---------------------------*/
@@ -386,16 +410,17 @@ class SPTree : public MCFClass
    ShortestPathTree() after that any of these methods have been called. */
 
 /*--------------------------------------------------------------------------*/
+/// Changes the Origin from which Shortest Paths are computed.
 
-   inline void SetOrigin( cIndex NewOrg );
-
-/**< Changes the Origin from which Shortest Paths are computed. */
+   void SetOrigin( Index NewOrg ) {
+    if( Origin != NewOrg + USENAME0 ) {
+     Origin = NewOrg + USENAME0;
+     status = MCFClass::kUnSolved;
+     }
+    }
 
 /*--------------------------------------------------------------------------*/
-
-   inline void SetDest( cIndex NewDst );
-
-/**< Changes the Destination node of Shotest Paths. If LABEL_SETTING == 0, it
+/** Changes the Destination node of Shotest Paths. If LABEL_SETTING == 0, it
    has no influence since label correcting methods cannot stop before the
    whole SPT has been computed. Conversely, label setting algorithms can solve
    Origin-Dest Shortest Path Problems; therefore, it is possible to obtain
@@ -409,10 +434,19 @@ class SPTree : public MCFClass
    Path Tree (at least, the SPT of the component of the graph connected with
    Origin) is computed. */
 
+   void SetDest( Index NewDst ) {
+    if( Dest != NewDst + USENAME0 ) {
+     #if( LABEL_SETTING )
+      Dest = NewDst + USENAME0;
+     #endif
+     status = MCFClass::kUnSolved;
+     }
+    }
+
 /*--------------------------------------------------------------------------*/
 
    void MCFGetX( Index ND , cIndex_Set DB , FRow F , Index_Set nms = 0 ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() );
+		 Index strt = 0 , Index stp = Inf< Index >() ) const;
 
 /**< Like SPTree::MCFGetX( FRow , Index_Set , cIndex , Index ), except that
    the primal solution that is returned is relative only to the subset of
@@ -423,7 +457,7 @@ class SPTree : public MCFClass
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   SPTree::FONumber MCFGetFO( Index ND , cIndex_Set DB );
+   FONumber MCFGetFO( Index ND , cIndex_Set DB ) const;
 
 /**< Like SPTree::MCFGetFO( void ), except that the cost that is returned is
    that of the primal solution relative only to the subset of destinations
@@ -432,19 +466,17 @@ class SPTree : public MCFClass
    Note: node names in ND must be in 1 ... n irrespective of USENAME0. */
 
 /*--------------------------------------------------------------------------*/
-
-   inline bool Reached( cIndex i );
-
-/**< Return true if a shortest path from Origin to i have already been
+/** Returns true if a shortest path from Origin to i have already been
    computed; this can be used when LABEL_SETTING == 1 to determine if a
    shortest from Origin to i have been obtained as a by-product of the
    calculation of the shortest path between Origin and some other Dest. */
 
+   bool Reached( Index i ) const {
+    return( ( Pi[ i ] < Inf<CNumber>() ) && ( Q[ i ] == Inf<Index>() ) );
+    }
+
 /*--------------------------------------------------------------------------*/
-
-   inline cIndex_Set Predecessors( void );
-
-/**< Return a cIndex* vector p[] such that p[ i ] is the predecessor of node
+/** Return a cIndex* vector p[] such that p[ i ] is the predecessor of node
    i in the shortest path tree. If a node i has no predecessor, i.e.,
    i == Origin, i does not belong to the connected component of the origin or
    the computation have been stopped before reaching i, then p[ i ] == 0.
@@ -455,46 +487,50 @@ class SPTree : public MCFClass
 
    For this reason, the first entry of p (*p) is not significative. */
 
+   cIndex_Set Predecessors( void ) const { return( NdePrd ); }
+
 /*--------------------------------------------------------------------------*/
-
-   cIndex_Set ArcPredecessors( void );
-
-/**< Return a cIndex* vector a[] such that a[ i ] is the index of the arc
+/** Return a cIndex* vector a[] such that a[ i ] is the index of the arc
    ( p[ i ] , i ), being p[] the vector returned by the above method, and
    with the same structure. If p[ i ] == 0, then a[ i ] is not significative:
    for the Origin (that has p[ Origin ] == 0), however, it is guaranteed that
    a[ Origin ] == Inf<Index>(). */
 
-/*--------------------------------------------------------------------------*/
-
-   inline Index Orig( void );
-
-/**< Return the root of the SPT problem. */
+   cIndex_Set ArcPredecessors( void );
 
 /*--------------------------------------------------------------------------*/
+/// returns the root of the SPT problem
 
-   inline Index DestN( void );
+   Index Orig( void ) const { return( Origin ); }
 
-/**< Return the number of destination nodes in the SPT problem. */
+/*--------------------------------------------------------------------------*/
+/// returns the number of destination nodes in the SPT problem
+
+   Index DestN( void ) const { return( NDsts ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-   inline cIndex_Set Dests( void );
-
-/**< Return the DestN()-vector containig the names of destination nodes in
+/** Returns the DestN()-vector containig the names of destination nodes in
    the SPT problem; the names are in increasing order and INF-terminated. */
 
-/*--------------------------------------------------------------------------*/
-
-   inline Index LenFS( cIndex i );
-
-/**< Return the size of the Forward Star of node i. */
+   cIndex_Set Dests( void ) const { return( DstBse ); }
 
 /*--------------------------------------------------------------------------*/
+/// returns the size of the Forward Star of node i
 
-   inline Index ReadFS( cIndex i , cIndex h );
+   Index LenFS( Index i ) const {
+    #if( DYNMC_MCF_SPT )
+     return( LenFS[ i ] );
+    #else
+     return( StrtFS[ i + 1 ] - StrtFS[ i ] );
+    #endif
+    }
 
-/**< Return the h-th arc in FS( i ) for h = 0, ... , LenFS( i ) - 1. */
+/*--------------------------------------------------------------------------*/
+/// returns the h-th arc in FS( i ) for h = 0, ... , LenFS( i ) - 1
+
+   Index ReadFS( Index i , Index h ) const {
+    return( Dict[ StrtFS[ i ] + h ] );
+    }
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
@@ -560,20 +596,20 @@ class SPTree : public MCFClass
 /*--------------------------- PRIVATE METHODS ------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-   inline void Initialize( void );
+   void Initialize( void );
 
 /* Initialize the data structures for a "cold start". */
 
 /*--------------------------------------------------------------------------*/
 
-   inline void ScanFS( cIndex mi );
+   void ScanFS( cIndex mi );
 
 /* Scans the Forward Star of mi and puts in Q those nodes whose distance
    label can be decreased by using an arc emanating from mi. */
 
 /*--------------------------------------------------------------------------*/
 
-   inline Index ExtractQ( void );
+   Index ExtractQ( void );
 
 /* Extracts an element (depending on the particular algoritm) from the set Q:
    if Q is empty, returns 0. */
@@ -582,11 +618,11 @@ class SPTree : public MCFClass
 
 #if( ( SPT_ALGRTM == 0 ) || ( SPT_ALGRTM == 3 ) )
 
-   inline void InsertQ( cIndex j );
+   void InsertQ( cIndex j );
 
 #else
 
-   inline void InsertQ( cIndex j , cCNumber label );
+   void InsertQ( cIndex j , cCNumber label );
 
 #endif
 
@@ -595,26 +631,15 @@ class SPTree : public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-   inline void CalcArcP( void );
+   void CalcArcP( void );
 
 /* Calculates the ArcPrd[] vector. */
 
 /*--------------------------------------------------------------------------*/
 
-#if( ! SPT_STRTN )
+   void MemAlloc( void );
 
-   inline Index Startn( cIndex What );
-
-/* Extract the starting node of the arc that is in position What in FS[]
-   using a binary search on StartFS[]. */
-
-#endif
-
-/*--------------------------------------------------------------------------*/
-
- inline void MemAlloc( void );
-
- inline void MemDeAlloc( void );
+   void MemDeAlloc( void );
 
 /*--------------------------------------------------------------------------*/
 /*----------------------- PRIVATE DATA STRUCTURES  -------------------------*/
@@ -642,213 +667,29 @@ class SPTree : public MCFClass
  Index tail;         // the tail element of the list, or the first free
                      // position in the heap
 
- // static members- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
- static Index_Set Stack;  // temporary for flow calculation and
-                          // reoptimization
- static Index InstCntr;   // counter of active instances
- static Index maxnmax;    // max value of nmax among all the instances
-
- #if( SPT_STRTN )
-  #if( SAME_GRPH_SPT )
-   static Index_Set Startn;
-  #else
-   Index_Set Startn;
-  #endif
+ Index_Set Startn;
+ Index_Set StrtFS;   // position in FS[] where FS[ i ] begins
+ #if( DYNMC_MCF_SPT )
+  Index_Set LenFS;   // how many arcs there are in FS[ i ]
  #endif
 
- #if( SAME_GRPH_SPT && ( ! DYNMC_MCF_SPT ) )
-  static Index_Set StrtFS;
-
-  static Index_Set Dict;
-  static Index_Set DictM1;
-
-  static bool DirSPT;
- #else
-  Index_Set StrtFS;  // position in FS[] where FS[ i ] begins
-  #if( DYNMC_MCF_SPT )
-   Index_Set LenFS;  // how many arcs there are in FS[ i ]
-  #endif
-
-  Index_Set Dict;    // arc dictionary: for each position in FS[], tells
+ Index_Set Dict;     // arc dictionary: for each position in FS[], tells
                      // which arc is that one
-  Index_Set DictM1;  // inverse of Dict: for each arc, tells where it stands
+ Index_Set DictM1;   // inverse of Dict: for each arc, tells where it stands
                      // in FS[] - if the graph is undirected, the two
 		     // consecutive entries 2 * i and 2 * i + 1 tells the
 		     // two positions of arc i in FS[]
-  bool DirSPT;       // true if the graph is directed
- #endif
+ bool DirSPT;        // true if the graph is directed
 
 /*--------------------------------------------------------------------------*/
 
  };  // end( class SPTree )
 
-/** @} end( group( SPTREE_CLASSES ) ) */
 /*--------------------------------------------------------------------------*/
-/*------------------- inline methods implementation ------------------------*/
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::MCFSNde( cIndex i )
-{
- if( DirSPT ) 
-  #if( SPT_STRTN )
-   return( Startn[ i ] );
-  #else
-   return( Startn( DictM1[ i ] ) - USENAME0 );
-  #endif
- else
-  return( FS[ DictM1[ 2 * i + 1 ] ].Nde );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::MCFENde( cIndex i )
-{
- if( DirSPT ) 
-  return( FS[ DictM1[ i ] ].Nde - USENAME0 );
- else
-  return( FS[ DictM1[ 2 * i ] ].Nde - USENAME0 );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::CNumber SPTree::MCFCost( cIndex i )
-{
- if( DirSPT ) 
-  return( FS[ DictM1[ i ] ].Cst );
- else
-  return( FS[ DictM1[ 2 * i ] ].Cst );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::FNumber SPTree::MCFUCap( cIndex i )
-{
- #if( ! DYNMC_MCF_SPT )
-  cIndex pos = DictM1[ i ];
-  #if( SAME_GRPH_SPT )
-   if( FS[ pos ].Cst == Inf<CNumber>() )
-  #else
-   if( pos >= StrtFS[ n + 1 ] )
-  #endif
-    return( 0 );
-   else
- #endif
-    return( - B[ Origin ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::FNumber SPTree::MCFDfct( cIndex i )
-{
- return( B[ i + 1 ] );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool SPTree::IsClosedArc( cIndex name )
-{
- #if( DYNMC_MCF_SPT )
-  cIndex pos = DictM1[ name ];     // current position of arc name
-  #if( SPT_STRTN )
-   cIndex nde = Startn[ name ];    // start node of arc name
-  #else
-   cIndex nde = Startn( pos );     // start node of arc name
-  #endif
-
-  return( pos < StrtFS[ nde ] + LenFS[ nde ] );
- #else
-  return( false );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool SPTree::IsDeletedArc( cIndex name )
-{
- return( SPTree::IsClosedArc( name ) );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void SPTree::SetOrigin( cIndex NewOrg )
-{
- if( Origin != NewOrg + USENAME0 ) {
-  Origin = NewOrg + USENAME0;
-  status = MCFClass::kUnSolved;
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void SPTree::SetDest( cIndex NewDst )
-{
- if( Dest != NewDst + USENAME0 ) {
-  #if( LABEL_SETTING )
-   Dest = NewDst + USENAME0;
-  #endif
-  status = MCFClass::kUnSolved;
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool SPTree::Reached( cIndex i )
-{
- return( ( Pi[ i ] < Inf<CNumber>() ) && ( Q[ i ] == Inf<Index>() ) );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::cIndex_Set SPTree::Predecessors( void )
-{
- return( NdePrd );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::Orig( void )
-{
- return( Origin );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::DestN( void )
-{
- return( NDsts );
- }
-
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-inline MCFClass::cIndex_Set SPTree::Dests( void )
-{
- return( DstBse );
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::LenFS( cIndex i )
-{
- #if( DYNMC_MCF_SPT )
-  return( LenFS[ i ] );
- #else
-  return( StrtFS[ i + 1 ] - StrtFS[ i ] );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline MCFClass::Index SPTree::ReadFS( cIndex i , cIndex h )
-{
- return( Dict[ StrtFS[ i ] + h ] );
- }
-
 /*--------------------------------------------------------------------------*/
 
 };  // end( namespace MCFClass_di_unipi_it )
 
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #endif  /* SPTree.h included */

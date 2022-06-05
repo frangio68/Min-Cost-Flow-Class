@@ -1,29 +1,20 @@
 /*--------------------------------------------------------------------------*/
 /*---------------------------- File MCFSimplex.C ---------------------------*/
 /*--------------------------------------------------------------------------*/
-/*--                                                                      --*/
-/*-- Linear and Quadratic Min Cost Flow problems solver based on the      --*/
-/*-- (primal and dual) simplex algorithm. Conforms to the standard MCF    --*/
-/*-- interface defined in MCFClass.h.                                     --*/
-/*--                                                                      --*/
-/*--                            VERSION 1.13                              --*/
-/*--                           27 - 02 - 2020                             --*/
-/*--                                                                      --*/
-/*--                           Implementation:                            --*/
-/*--                                                                      --*/
-/*--                         Alessandro Bertolini                         --*/
-/*--                          Antonio Frangioni                           --*/
-/*--                                                                      --*/
-/*--                       Operations Research Group                      --*/
-/*--                      Dipartimento di Informatica                     --*/
-/*--                         Universita' di Pisa                          --*/
-/*--                                                                      --*/
-/*-- Copyright (C) 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni --*/
-/*--                                                                      --*/
+/** @file
+ * Linear and Quadratic Min Cost Flow problems solver based on the (primal
+ * and dual) simplex algorithm. Conforms to the standard MCF interface
+ * defined in MCFClass.h.
+ *
+ * \author Alessandro Bertolini \n
+ *         Antonio Frangioni \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * Copyright &copy by Alessandro Bertolini, Antonio Frangioni
+ */
 /*--------------------------------------------------------------------------*/
 /*--------------------------- IMPLEMENTATION -------------------------------*/
-/*--------------------------------------------------------------------------*/
-
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -114,26 +105,6 @@ using namespace MCFClass_di_unipi_it;
    Unfortunately this doesn't work well: for this reason it is set to 0. */
 
 /*--------------------------------------------------------------------------*/
-/*--------------------------- FUNCTIONS ------------------------------------*/
-/*--------------------------------------------------------------------------*/
-
-template<class T>
-inline T ABS( const T x )
-{
- return( x >= T( 0 ) ? x : - x );
- }
-
-/*--------------------------------------------------------------------------*/
-
-template<class T>
-inline void Swap( T &v1 , T &v2 )
-{
- T temp = v1;
- v1 = v2;
- v2 = temp;
- }
-
-/*--------------------------------------------------------------------------*/
 /*--------------------------- CONSTANTS ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -171,15 +142,13 @@ static const int DUAL_HIGH_HOT_LIST_SIZE =  2;
 /*--------------------------- COSTRUCTOR -----------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
-            :
-            MCFClass( nmx , mmx )
+MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
 {
  #if( QUADRATICCOST )
-  if( numeric_limits<FNumber>::is_integer )
+  if( numeric_limits< FNumber >::is_integer )
    throw( MCFException( "FNumber must be float if QUADRATICCOST == 1" ) );
 
-  if( numeric_limits<CNumber>::is_integer )
+  if( numeric_limits< CNumber >::is_integer )
    throw( MCFException( "CNumber must be float if QUADRATICCOST == 1" ) );
 
   recomputeFOLimits = 100;
@@ -222,7 +191,7 @@ MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::LoadNet( cIndex nmx , cIndex mmx , cIndex pn , cIndex pm ,
+void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
                           cFRow pU , cCRow pC , cFRow pDfct ,
                           cIndex_Set pSn , cIndex_Set pEn )
 {
@@ -528,16 +497,11 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::SetPar( int par, int val )
+void MCFSimplex::SetPar( int par , int val )
 {
  switch( par ) {
  case kAlgPrimal:
-  if( val == kYes )
-   SetAlg( true , pricingRule );
-
-  if( val == kNo )
-   SetAlg( false , pricingRule );
-
+  SetAlg( val == kYes ? true : false , pricingRule );
   break;
 
  case kAlgPricing:
@@ -635,12 +599,13 @@ void MCFSimplex::SolveMCF( void )
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
+void MCFSimplex::MCFGetX( FRow F , Index_Set nms ,
+			  Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
 
- #if QUADRATICCOST
+ #if( QUADRATICCOST )
   if( nms ) {
    for( Index i = strt ; i < stp ; i++ ) {
     FNumber tXi = ( arcsP + i )->flow;
@@ -650,7 +615,7 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
      }
     }
 
-   *nms = Inf<Index>();
+   *nms = Inf< Index >();
    }        
   else
    for( Index i = strt; i < stp; i++ )
@@ -689,7 +654,8 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
+void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms ,
+			   Index strt , Index stp ) const
 {
  if( nms ) {
   while( *nms < strt )
@@ -727,7 +693,7 @@ void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-MCFSimplex::CNumber MCFSimplex::MCFGetRC( cIndex i )
+MCFSimplex::CNumber MCFSimplex::MCFGetRC( Index i ) const
 {
  #if QUADRATICCOST
   return( CNumber( ReductCost( arcsP + i ) ) );
@@ -742,7 +708,8 @@ MCFSimplex::CNumber MCFSimplex::MCFGetRC( cIndex i )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
+void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms ,
+			   Index strt , Index stp ) const
 {
  if( stp > n )
   stp = n;
@@ -780,15 +747,15 @@ void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms , cIndex strt , Index stp )
 
 /*--------------------------------------------------------------------------*/
 
-MCFSimplex::FONumber MCFSimplex::MCFGetFO( void )
+MCFSimplex::FONumber MCFSimplex::MCFGetFO( void ) const
 {
  if( status == kOK )
-  return( (FONumber) GetFO() );
+  return( GetFO() );
  else
   if( status == kUnbounded ) 
-   return( - Inf<FONumber>() );
+   return( - Inf< FONumber >() );
   else
-   return( Inf<FONumber>() );
+   return( Inf< FONumber >() );
 
  }  // end( MCFSimplex::MCFGetFO )
 
@@ -797,7 +764,7 @@ MCFSimplex::FONumber MCFSimplex::MCFGetFO( void )
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
-			  cIndex_Set nms , cIndex strt , Index stp )
+			  cIndex_Set nms , Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
@@ -806,7 +773,7 @@ void MCFSimplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
   while( *nms < strt )
    nms++;
 
-  #if QUADRATICCOST
+  #if( QUADRATICCOST )
    for( Index h ; ( h = *(nms++) ) < stp ; ) {
     if( Startv )
      *(Startv++) = Index( (arcsP + h)->tail - nodesP) + 1 - USENAME0;
@@ -860,7 +827,7 @@ void MCFSimplex::MCFArcs( Index_Set Startv , Index_Set Endv ,
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::MCFCosts( CRow Costv , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
@@ -899,7 +866,7 @@ void MCFSimplex::MCFCosts( CRow Costv , cIndex_Set nms ,
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::MCFQCoef( CRow Qv , cIndex_Set nms  ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
@@ -930,7 +897,7 @@ void MCFSimplex::MCFQCoef( CRow Qv , cIndex_Set nms  ,
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
-			   cIndex strt , Index stp ) 
+			   Index strt , Index stp ) const
 {
  if( stp > m )
   stp = m;
@@ -969,7 +936,7 @@ void MCFSimplex::MCFUCaps( FRow UCapv , cIndex_Set nms ,
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp ) const
 {
  if( stp > n )
   stp = n;
@@ -1010,7 +977,7 @@ void MCFSimplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -1102,13 +1069,13 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
+void MCFSimplex::ChgCost( Index arc , CNumber NCost )
 {
  if( arc >= m )
   return;
 
  #if QUADRATICCOST
-  if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+  if( ( arcsP + arc )->cost == Inf< CNumber >() ) 
    return;
 
   ( arcsP + arc )->cost = NCost;
@@ -1173,7 +1140,7 @@ void MCFSimplex::ChgCost( Index arc , cCNumber NCost )
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -1212,7 +1179,7 @@ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgQCoef( Index arc , cCNumber NQCoef )
+void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
 {
  #if( QUADRATICCOST )
   if( arc >= m )
@@ -1242,7 +1209,7 @@ void MCFSimplex::ChgQCoef( Index arc , cCNumber NQCoef )
 /*-------------------------------------------------------------------------*/
     
 void MCFSimplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp )
 {
  if( stp > m )
   stp = m;
@@ -1306,7 +1273,7 @@ void MCFSimplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgDfct( Index nod , cFNumber NDfct )
+void MCFSimplex::ChgDfct( Index nod , FNumber NDfct )
 { 
  if( nod > n )
   return;
@@ -1348,7 +1315,7 @@ void MCFSimplex::ChgDfct( Index nod , cFNumber NDfct )
 /*-------------------------------------------------------------------------*/
 
 void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
-			   cIndex strt , Index stp )
+			   Index strt , Index stp )
 {
  FNumber fn;
  if( stp > m )
@@ -1453,7 +1420,7 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgUCap( Index arc , cFNumber NCap )
+void MCFSimplex::ChgUCap( Index arc , FNumber NCap )
 {
  FNumber fn;
  if( arc >= m )
@@ -1524,24 +1491,7 @@ void MCFSimplex::ChgUCap( Index arc , cFNumber NCap )
 
 /*-------------------------------------------------------------------------*/
 
-bool MCFSimplex::IsClosedArc( cIndex name )
-{
- if( name >= m )
-  return( false );
-
- #if( QUADRATICCOST )
-  return( ( arcsP + name )->cost == Inf<CNumber>() );
- #else
-  if( usePrimalSimplex )
-   return( ( ( arcsP + name )->ident < BASIC ) );
-  else
-   return( ( ( arcsD + name )->ident < BASIC ) );
- #endif
- }
-
-/*-------------------------------------------------------------------------*/
-
-void MCFSimplex::CloseArc( cIndex name )
+void MCFSimplex::CloseArc( Index name )
 {
  if( name >= m )
   return;
@@ -1633,7 +1583,7 @@ void MCFSimplex::CloseArc( cIndex name )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::DelNode( cIndex name )
+void MCFSimplex::DelNode( Index name )
 {
  if( name >= n )
   return;
@@ -1719,7 +1669,7 @@ void MCFSimplex::DelNode( cIndex name )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::OpenArc( cIndex name )
+void MCFSimplex::OpenArc( Index name )
 {
  if( name >= m )
   return;
@@ -1762,7 +1712,7 @@ void MCFSimplex::OpenArc( cIndex name )
 
 /*--------------------------------------------------------------------------*/
 
-MCFSimplex::Index MCFSimplex::AddNode( cFNumber aDfct )
+MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
 {
  if( n >= nmax )
   return( Inf<Index>() );        
@@ -1823,7 +1773,7 @@ MCFSimplex::Index MCFSimplex::AddNode( cFNumber aDfct )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
+void MCFSimplex::ChangeArc( Index name , Index nSN , Index nEN )
 {
  if( name >= m )
   return;
@@ -1856,7 +1806,7 @@ void MCFSimplex::ChangeArc( cIndex name , cIndex nSN , cIndex nEN )
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::DelArc( cIndex name )
+void MCFSimplex::DelArc( Index name )
 {
  if( name >= m )
   return;
@@ -1915,8 +1865,8 @@ void MCFSimplex::DelArc( cIndex name )
 
 /*--------------------------------------------------------------------------*/
 
-MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
-				      cFNumber aU , cCNumber aC ) 
+MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
+				      FNumber aU , CNumber aC ) 
 {
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP;
@@ -1999,24 +1949,7 @@ MCFSimplex::Index MCFSimplex::AddArc( cIndex Start , cIndex End ,
 
 /*--------------------------------------------------------------------------*/
 
-bool MCFSimplex::IsDeletedArc( cIndex name )
-{
- if( name >= m )
-  return( false );
-
- #if( QUADRATICCOST )
-  return( ( ( arcsP + name )->upper == -Inf<FNumber>() ) );
- #else
-  if( usePrimalSimplex )
-   return( ( arcsP + name )->ident == DELETED );
-  else
-   return( ( arcsD + name )->ident == DELETED );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-void MCFSimplex::UsePastInformation()
+void MCFSimplex::UsePastInformation( void )
 {
  recomputeInitialBase = false;
  ComputePotential( dummyRootP );
@@ -2155,7 +2088,7 @@ recomputeInitialBase = false;
 
 /*--------------------------------------------------------------------------*/
 
-void MCFSimplex::PostPVisit( nodePType *node, int level )
+void MCFSimplex::PostPVisit( nodePType *node , int level )
 {
  node->subTreeLevel = level;
  if ( prevN != NULL ) {
@@ -2582,7 +2515,7 @@ void MCFSimplex::PrimalSimplex( void )
    if( ETZ( Q, EpsCst ) )
     theta = Inf<FNumber>();  // This value will be certainly decreased 
    else
-    theta = ABS( rc / Q );
+    theta = std::abs( rc / Q );
     // This is the best theta value (with best f.o. value decrease) 
 
    leavingArc = enteringArc;
@@ -3036,7 +2969,7 @@ void MCFSimplex::DualSimplex( void )
        // Evaluate each arc from T2 to T1 which isn't in T
        if( arc->ident == AT_LOWER ) {
 	if( lv ) {
-	 CNumber rc = ABS( ReductCost( arc ) );
+	 CNumber rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3052,7 +2985,7 @@ void MCFSimplex::DualSimplex( void )
 
        if( arc->ident == AT_UPPER ) {
 	if( ! lv ) {
-	 CNumber rc = ABS( ReductCost( arc ) );
+	 CNumber rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3078,7 +3011,7 @@ void MCFSimplex::DualSimplex( void )
        // Evaluate each arc from T1 to T2 which isn't in T
        if( arc->ident == AT_LOWER ) {
 	if( ! lv ) {
-	 CNumber rc = ABS( ReductCost( arc ) );
+	 CNumber rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3094,7 +3027,7 @@ void MCFSimplex::DualSimplex( void )
 
        if( arc->ident == AT_UPPER ) {
 	if( lv ) {
-	 CNumber rc = ABS( ReductCost( arc ) );
+	 CNumber rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3130,7 +3063,7 @@ void MCFSimplex::DualSimplex( void )
        // Evaluate each arc from T1 to T2 which isn't in T
        if( arc->ident == AT_LOWER ) {
 	if( ! lv ) {
-	 rc = ABS( ReductCost( arc ) );
+	 rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3146,7 +3079,7 @@ void MCFSimplex::DualSimplex( void )
 
        if( arc->ident == AT_UPPER ) {
 	if( lv ) {
-	 rc = ABS( ReductCost( arc ) );
+	 rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3171,7 +3104,7 @@ void MCFSimplex::DualSimplex( void )
        // Evaluate each arc from T2 to T1 which isn't in T
        if( arc->ident == AT_LOWER ) {
 	if( lv ) {
-	 rc = ABS( ReductCost( arc ) );
+	 rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3187,7 +3120,7 @@ void MCFSimplex::DualSimplex( void )
 
        if( arc->ident == AT_UPPER ) {
 	if( ! lv ) {
-	 rc = ABS( ReductCost( arc ) );
+	 rc = std::abs( ReductCost( arc ) );
 	 if( LT( rc , maxRc , EpsCst ) ) {
 	  enteringArc = arc;
 	  maxRc = rc;
@@ -3765,7 +3698,7 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
        ( GTZ( red_cost , EpsCst ) && ( arc->ident == AT_UPPER ) ) ) {
     next++;
     candP[ next ].arc = arc;
-    candP[ next ].absRC = ABS( red_cost );
+    candP[ next ].absRC = std::abs( red_cost );
     }
    }
 
@@ -3780,7 +3713,7 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
      if( LTZ( red_cost , EpsCst ) ) {
       tempCandidateListSize++;
       candP[ tempCandidateListSize ].arc = arc;
-      candP[ tempCandidateListSize ].absRC = ABS( red_cost );
+      candP[ tempCandidateListSize ].absRC = std::abs( red_cost );
       }
      }
     else
@@ -3789,7 +3722,7 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
       if( GTZ( red_cost , EpsCst ) ) {
        tempCandidateListSize++;
        candP[ tempCandidateListSize ].arc = arc;
-       candP[ tempCandidateListSize ].absRC = ABS( red_cost );
+       candP[ tempCandidateListSize ].absRC = std::abs( red_cost );
        }
       }
     }
@@ -3811,7 +3744,7 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFSimplex::InitializePrimalCandidateList( void )
+void MCFSimplex::InitializePrimalCandidateList( void )
 {
  numGroup = ( ( m - 1 ) / numCandidateList ) + 1;
  groupPos = 0;
@@ -3820,7 +3753,7 @@ inline void MCFSimplex::InitializePrimalCandidateList( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFSimplex::SortPrimalCandidateList( Index min , Index max )
+void MCFSimplex::SortPrimalCandidateList( Index min , Index max )
 {
  Index left = min;
  Index right = max;
@@ -3836,7 +3769,7 @@ inline void MCFSimplex::SortPrimalCandidateList( Index min , Index max )
    right--;
 
   if( left < right )
-   Swap( candP[ left ] , candP[ right ] );
+   std::swap( candP[ left ] , candP[ right ] );
 
   if(left <= right) {
    left++;
@@ -3864,7 +3797,7 @@ MCFSimplex::arcDType* MCFSimplex::RuleDualCandidateListPivot( void )
   if( LTZ( flow , EpsFlw ) ) {
    next++;
    candD[ next ].node = node;
-   candD[ next ].absInfeas = ABS( flow );
+   candD[ next ].absInfeas = std::abs( flow );
    }
 
   if( GT( flow , arc->upper , EpsFlw ) ) {
@@ -3885,7 +3818,7 @@ MCFSimplex::arcDType* MCFSimplex::RuleDualCandidateListPivot( void )
    if( LTZ( flow , EpsFlw ) ) {
     tempCandidateListSize++;
     candD[ tempCandidateListSize ].node = node;
-    candD[ tempCandidateListSize ].absInfeas = ABS( flow );
+    candD[ tempCandidateListSize ].absInfeas = std::abs( flow );
     }
 
    if( GT( flow , arc->upper , EpsFlw) ) {
@@ -3912,7 +3845,7 @@ MCFSimplex::arcDType* MCFSimplex::RuleDualCandidateListPivot( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFSimplex::InitializeDualCandidateList( void )
+void MCFSimplex::InitializeDualCandidateList( void )
 {
  numGroup = ( ( n - 1 ) / numCandidateList ) + 1;
  groupPos = 0;
@@ -3921,7 +3854,7 @@ inline void MCFSimplex::InitializeDualCandidateList( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFSimplex::SortDualCandidateList(Index min, Index max)
+void MCFSimplex::SortDualCandidateList(Index min, Index max)
 {
  Index left = min;
  Index right = max;
@@ -3932,7 +3865,7 @@ inline void MCFSimplex::SortDualCandidateList(Index min, Index max)
   while( cut > candD[ right ].absInfeas )
    right--;
   if( left < right ) 
-   Swap( candD[left ] , candD[ right ] );
+   std::swap( candD[left ] , candD[ right ] );
   if( left <= right) {
    left++;
    right--;
@@ -3948,7 +3881,7 @@ inline void MCFSimplex::SortDualCandidateList(Index min, Index max)
 /*--------------------------------------------------------------------------*/
 
 template<class N, class RCT>
-inline void MCFSimplex::AddPotential( N *r , RCT delta )
+void MCFSimplex::AddPotential( N *r , RCT delta )
 {
  int level = r->subTreeLevel;
  N *n = r;
@@ -3962,7 +3895,7 @@ inline void MCFSimplex::AddPotential( N *r , RCT delta )
 /*--------------------------------------------------------------------------*/
 
 template<class N>
-inline void MCFSimplex::ComputePotential( N *r )
+void MCFSimplex::ComputePotential( N *r )
 {
  N *n = r;
  int level = r->subTreeLevel;
@@ -4293,7 +4226,7 @@ void MCFSimplex::PostDVisit( nodeDType *r )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFSimplex::ResetWhenInT2( void )
+void MCFSimplex::ResetWhenInT2( void )
 {
  for( nodeDType *n = nodesD ; n != stopNodesD ; n++)
   n->whenInT2 = 0;
@@ -4301,8 +4234,8 @@ inline void MCFSimplex::ResetWhenInT2( void )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class A>
-inline N* MCFSimplex::Father( N *n , A *a )
+template<class N , class A >
+N* MCFSimplex::Father( N *n , A *a )
 {
  if( a == NULL )
   return NULL;
@@ -4315,7 +4248,32 @@ inline N* MCFSimplex::Father( N *n , A *a )
 
 /*-------------------------------------------------------------------------*/
 
-inline MCFSimplex::FONumber MCFSimplex::GetFO( void )
+#if( QUADRATICCOST )
+
+template< class A >
+MCFSimplex::FONumber MCFSimplex::ReductCost( A *a ) const
+{
+ FONumber redc = (a->tail)->potential - (a->head)->potential;
+ redc = redc + a->cost;
+ redc = redc + a->quadraticCost * a->flow;
+ return( redc );
+ }
+
+#else
+
+template< class A >
+MCFSimplex::CNumber MCFSimplex::ReductCost( A *a ) const
+{
+ CNumber redc = (a->tail)->potential - (a->head)->potential;
+ redc = redc + a->cost;
+ return( redc );
+ }
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+MCFSimplex::FONumber MCFSimplex::GetFO( void ) const
 {
  FONumber fo = 0;
  if( usePrimalSimplex ) {
@@ -4654,34 +4612,6 @@ void MCFSimplex::ShowSituation( int tab )
    infoDNode( node , tab );
   }
  }
-
-string MCFSimplex::Int2String( int num, int cifreMinime )
-{
-	char *c = new char[100];
-	sprintf( c, "%d", num );
-	string s = c;
-	if ( cifreMinime > 1 )
-	{
-		int esp = cifreMinime - 1;
-		int x = 10;
-		for ( int i = 2; i <= esp; i++ )
-		{
-			x = x * 10;
-		}
-		while ( num < x )
-		{
-			s = "0" + s;
-			x = x / 10;
-			if ( ( x == 1 ) && ( num == 0 ) )
-			{
-				break;
-			}
-		}
-	}
-	delete[] c;
-	return s;
-} // end( Int2String )
-
 
 /*-------------------------------------------------------------------------*/
 /*---------------------- End File MCFSimplex.C ----------------------------*/

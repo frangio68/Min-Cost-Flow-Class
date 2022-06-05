@@ -89,7 +89,7 @@
    - 1 => all the methods that change the topology of the graph are
           implemented. */
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -99,12 +99,9 @@ namespace MCFClass_di_unipi_it
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFCplex --------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** @defgroup MCFCPLEX_CLASSES Classes in MCFCplex.h
-    @{ */
-
 /** The MCFCplex class derives from the abstract base class MCFClass, thus
-    sharing its (standard) interface, and solves (Linear) Min Cost Flow
-    problems via calls to Cplex Callable Library functions. */
+ *  sharing its (standard) interface, and solves (Linear) Min Cost Flow
+ *  problems via calls to Cplex Callable Library functions. */
 
 class MCFCplex: public MCFClass {
 
@@ -123,20 +120,20 @@ class MCFCplex: public MCFClass {
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** Public enum describing the possible parameters of the MCF solver,
-    "extended" from MCFClass::MCFParam, to be used with the methods
-    SetPar() and GetPar(). */
+ *  "extended" from MCFClass::MCFParam, to be used with the methods
+ *  SetPar() and GetPar(). */
 
   enum MCFCParam { kQPMethod = kLastParam     ///< solution method
                    };
 
 /*--------------------------------------------------------------------------*/
 /** enum describing possible ways for solving QP problem: see the Cplex
-    manual for details */
+ *  manual for details */
 
-   enum QPMethod { qpAutomatic = 0,
-		   qpPSimplex  = 1,
-		   qpDSimplex  = 2,
-		   qpNSimplex  = 3,
+   enum QPMethod { qpAutomatic = 0 ,
+		   qpPSimplex  = 1 ,
+		   qpDSimplex  = 2 ,
+		   qpNSimplex  = 3 ,
 		   qpBarrier   = 4
                    }; 
 
@@ -146,41 +143,21 @@ class MCFCplex: public MCFClass {
 /*-------------------------CONSTRUCTOR--------------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** Constructor of the class.
+ *
+ * For the meaning of nmx and mmx see MCFClass::MCFClass(). */
 
-   For the meaning of nmx and mmx see MCFClass::MCFClass().
-
-   If extenv != NULL, it is taken as a pointer to a valid Cplex environment
-   [see GetCplexEnv() below] that will be used for all the lifetime of the
-   object. Otherwise, a Cplex environment is possibly initialized in the
-   constructor. The environment is shared among all the active instances of
-   MCFCplex objects; this is done in order to save on the number of (costly)
-   Cplex licenses required to have multiple MCF solvers active at the same
-   time, since any environment consumes a licence. Thus, the environment is
-   actually initialized only when the first instance is constructed, and it
-   is released when the last destructor (of an instance using it) is invoked.
-
-   The possibility of passing an external environment is let because having
-   all the instances to share the same environment has the drawback that
-   all changes made to optimization parameters of the environment [see
-   SetPar() below] are "seen" be all active instances, even though the
-   changes are invoked for one specific object. If for some reason this is
-   unacceptable, the user should provide each "sensitive" instance with its
-   own private environment, letting all the others to share the "static" one.
-   Of course, it is then user's responsibility to initialize and free the
-   environment. */
-
-   MCFCplex( cIndex nmx = 0 , cIndex mmx = 0 , CPXENVptr extenv = NULL );
+   MCFCplex( cIndex nmx = 0 , cIndex mmx = 0 );
 
 /*--------------------------------------------------------------------------*/
 /*---------------------- OTHER INITIALIZATIONS -----------------------------*/
 /*--------------------------------------------------------------------------*/
 /** Inputs a new network, as in MCFClass::LoadNet().
-
-   Passing pC[ i ] == C_INF means that the arc `i' does not exist in the
-   problem. These arcs are just "closed" and their cost is set to 0: this is
-   done for being (if DYNMC_MCF_CPX > 0) subsequently capable of "opening"
-   them back with OpenArc(). If the corresponding pU[ i ] is == F_INF then
-   the arc is just "deleted". */
+ *
+ * Passing pC[ i ] == C_INF means that the arc `i' does not exist in the
+ * problem. These arcs are just "closed" and their cost is set to 0: this is
+ * done for being (if DYNMC_MCF_CPX > 0) subsequently capable of "opening"
+ * them back with OpenArc(). If the corresponding pU[ i ] is == F_INF then
+ * the arc is just "deleted". */
 
    void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
 		 cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
@@ -204,7 +181,20 @@ class MCFCplex: public MCFClass {
                   away via CPXsetintparam() [see the documentation in the
                   Cplex manual for details. */
 
-   virtual void SetPar( int par , int val ) override;
+   void SetPar( int par , int val ) override {
+    try {
+     MCFClass::SetPar( par , val );  // is it handled by the base class?
+
+     if( par == kMaxIter )           // let MaxIter to be handled by Cplex
+      CPXsetintparam( env , CPX_PARAM_NETITLIM , val > 0 ? val : 2100000000 );
+     }
+    catch( MCFException &e ) {      // it is *not* handled by the base class
+     if( par == kQPMethod )
+      QPMthd = (QPMethod) val;
+     else
+      CPXsetintparam( env , par , val );
+     }
+    }
 
 /*--------------------------------------------------------------------------*/
 /** Set float parameters of the algorithm.
@@ -217,23 +207,32 @@ class MCFCplex: public MCFClass {
 
    - <any other>: any unrecognized value is taken to be one of the the many
                   "int" algorithmic parameters of Cplex and passed right
-                  away via CPXsetintparam() [see the documentation in the
+                  away via CPXsetintparam(); see the documentation in the
                   Cplex manual for details. */
 
-   virtual void SetPar( int par , double val ) override;
+   void SetPar( int par , double val ) override {
+    try {
+     MCFClass::SetPar( par , val );  // is it handled by the base class?
+
+     if( par == kMaxTime )           // let MaxTime to be handled by Cplex
+      CPXsetdblparam( env , CPX_PARAM_TILIM , val > 0 ? val : 1e+75 );
+     }
+    catch( MCFException &e ) {      // it is *not* handled by the base class
+     CPXsetdblparam( env , par , val );
+     }
+    }
 
 /*--------------------------------------------------------------------------*/
-/** This method returns one of the integer parameter of the algorithm.
+/** Returns one of the integer parameters of the algorithm
+ *
+ * @param par  is the parameter to return [see SetPar( int ) for comments];
+ *
+ * @param val  upon return, it will contain the value of the parameter.
+ *
+ * Apart from the parameters of the base class, this method handles
+ * kQPMethod. */
 
-   @param par  is the parameter to return [see SetPar( int ) for comments];
-
-   @param val  upon return, it will contain the value of the parameter.
-
-   Apart from the parameters of the base class, this method handles
-   kQPMethod. */
-
-   virtual void GetPar( int par , int &val ) const override
-   {
+   void GetPar( int par , int &val ) const override {
     if( par == kQPMethod )
      val = (int) QPMthd;
     else
@@ -241,27 +240,20 @@ class MCFCplex: public MCFClass {
     }
 
 /*--------------------------------------------------------------------------*/
-   /// This method returns one of the double parameters of the algorithm.
-
-   virtual void GetPar( int par , double & val ) const override {
+/** Returns one of the double parameters of the algorithm
+ *
+ * This should in princible not be necessary, as MCFCplex has no double
+ * parameters to report. However, without this being well-defined, template
+ * classes having MCFCplex as template type may fail to be able to use the
+ * base class method in its stead (no idea why), so this useless method has
+ * to be kept here. */
+   
+   void GetPar( int par , double & val ) const override {
     MCFClass::GetPar( par, val );
     }
 
 /*--------------------------------------------------------------------------*/
-/** Returns a pointer to the internal Cplex environment.
-
-   This method is provided as an alternative to the two forms of SetPar()
-   [see above]; by getting the pointer to the internal Cplex environment with
-   GetCplexEnv(), CPXset***param() can be called directly. This also allows to
-   perform any other operation with the environment, such as reading the value
-   of the parameters with CPXgetintparam() and CPXgetdbqparam(), so care must
-   be taken.
-
-   The returned pointer is the same passed to the constructor [see above],
-   if any; otherwise it is the "static" environment shared by all the active
-   MCFCplex instances. In the latter case, any change in the environment
-   simultaneously affect *all* the existing (and future) MCFCplex instances
-   which have not been given a "private" environment. */
+/// returns a pointer to the internal Cplex environment
 
    CPXENVptr GetCplexEnv( void ) const { return( env ); }
 
@@ -277,122 +269,205 @@ class MCFCplex: public MCFClass {
 
   using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
 
-  void MCFGetX( FRow F , Index_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFGetX( FRow F , Index_Set nms = 0 , Index strt = 0 ,
+		Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
   using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
-  void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFGetRC( CRow CR , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
 
-  CNumber MCFGetRC( cIndex i ) override;
+  CNumber MCFGetRC( Index i ) const override;
 
 /*--------------------------------------------------------------------------*/
 
   using MCFClass::MCFGetPi;  // the ( void ) method, which is otherwise hidden
 
-  void MCFGetPi( CRow P , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFGetPi( CRow P , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
-  FONumber MCFGetFO( void ) override;
+  FONumber MCFGetFO( void ) const override;
 
 /*--------------------------------------------------------------------------*/
 /*---------- METHODS FOR READING THE DATA OF THE PROBLEM -------------------*/
 /*--------------------------------------------------------------------------*/
 
-  void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
-  Index MCFSNde( cIndex i ) override;
-     
-  Index MCFENde( cIndex i ) override;
+/*--------------------------------------------------------------------------*/
+
+  Index MCFSNde( Index i ) const override {
+   int strtn;
+   if( net )
+    CPXNETgetarcnodes( env , net , &strtn , NULL , int( i ) , int( i ) );
+   else
+    strtn = Startn[ i ];
+
+   #if( ! USENAME0 )
+    strtn++;
+   #endif
+
+   return( strtn );
+   }
+
+/*--------------------------------------------------------------------------*/
+
+  Index MCFENde( Index i ) const override {
+   int endn;
+   if( net )
+    CPXNETgetarcnodes( env , net , NULL , &endn , int( i ) , int( i ) );
+   else
+    endn = Endn[ i ];
+
+   #if( ! USENAME0 )
+    endn++;
+   #endif
+
+   return( endn );
+   }
 
 /*--------------------------------------------------------------------------*/
  
-  void MCFCosts( CRow Costv , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-    
-  CNumber MCFCost( cIndex i ) override;
+  void MCFCosts( CRow Costv , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
-  void MCFQCoef( CRow Qv , cIndex_Set nms = NULL ,    
-                 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  CNumber MCFCost( Index i ) const override {
+   double cst;
+   if( net )  
+    CPXNETgetobj( env , net , &cst , int( i ) , int( i ) );
+   else
+    CPXgetobj( env , qp , &cst , int( i ) , int( i ) );
 
-  CNumber MCFQCoef( cIndex i ) override;
+   return( cst );
+   }
 
 /*--------------------------------------------------------------------------*/
 
-  void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFQCoef( CRow Qv , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
 
-  FNumber MCFUCap( cIndex i ) override;
+/*--------------------------------------------------------------------------*/
+
+  CNumber MCFQCoef( Index i ) const override {
+   double qcoef = 0;
+   if( qp )
+    CPXgetqpcoef( env , qp , int( i ) , int( i ) , &qcoef );
+
+   return( qcoef );
+   }
+
+/*--------------------------------------------------------------------------*/
+
+  void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
+
+/*--------------------------------------------------------------------------*/
+
+  FNumber MCFUCap( Index i ) const override {
+   #if( DYNMC_MCF_CPX )
+    if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < Inf< FNumber >() ) )
+     return( ArcPos[ i ] );
+   #endif
+
+   double ucap;
+   if( net )
+    CPXNETgetub( env , net , &ucap , int( i ) , int( i ) );
+   else
+    CPXgetub( env , qp , &ucap , int( i ) , int ( i ) );
+
+   return( ucap );
+   }
+
+/*--------------------------------------------------------------------------*/
      
-/*--------------------------------------------------------------------------*/
-     
-  void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0 , Index strt = 0 ,
+		 Index stp = Inf< Index >() ) const override;
 
-  FNumber MCFDfct( cIndex i ) override;
+/*--------------------------------------------------------------------------*/
+
+  FNumber MCFDfct( Index i ) const override {
+   double dfct;
+   if( net )
+    CPXNETgetsupply( env , net , &dfct , int( i ) , int( i ) );
+   else
+    CPXgetrhs( env , qp , &dfct , int( i ) , int( i ) );
+
+   return( - dfct ); 
+   }
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
 /*--------------------------------------------------------------------------*/
 
-  void ChgCosts( cCRow NCost , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
+		 Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-  void ChgCost( Index arc , cCNumber NCost ) override;
+  void ChgCost( Index arc , CNumber NCost ) override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  void ChgQCoef( cCRow NQCoef, cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void ChgQCoef( cCRow NQCoef, cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-  void ChgQCoef( Index arc , cCNumber NQCoef ) override;
+  void ChgQCoef( Index arc , CNumber NQCoef ) override;
 
 /*--------------------------------------------------------------------------*/
   
-  void ChgDfcts( cFRow NDfct , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
+		 Index strt = 0 , Index stp = Inf< Index >() ) override;
 
   void ChgDfct( Index node , cFNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
-  void ChgUCaps( cFRow NCap , cIndex_Set nms = NULL ,
-		 cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+  void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
+		 Index strt = 0 , Index stp = Inf< Index >() ) override;
 
-  void ChgUCap( Index arc , cFNumber NCap  ) override;
+  void ChgUCap( Index arc , FNumber NCap  ) override;
 
 /*--------------------------------------------------------------------------*/
 /*----------------- MODIFYING THE STRUCTURE OF THE GRAPH -------------------*/
 /*--------------------------------------------------------------------------*/ 
 
-  void CloseArc( cIndex name ) override;
+  void CloseArc( Index name ) override;
      
-  bool IsClosedArc( cIndex name ) override;
+  bool IsClosedArc( Index name ) const override {
+   #if( DYNMC_MCF_CPX )
+    return( ( ArcPos[ name ] >= 0 ) &&
+	    ( ArcPos[ name ] < Inf< FNumber >() ) );
+   #else
+    return( MCFCplex::MCFUCap( name ) == 0 );
+   #endif
+   }
 
-  void DelNode( cIndex name ) override;
+  void DelNode( Index name ) override;
 
-  void OpenArc( cIndex name ) override;
+  void OpenArc( Index name ) override;
 
-  Index AddNode( cFNumber aDfct ) override;
+  Index AddNode( FNumber aDfct ) override;
 
-  void ChangeArc( cIndex name ,
-		  cIndex nSN = Inf<Index>() , cIndex nEN = Inf<Index>() )
+  void ChangeArc( Index name ,
+		  Index nSN = Inf< Index >() , Index nEN = Inf< Index >() )
    override;
 
-  void DelArc( cIndex name ) override;
+  void DelArc( Index name ) override;
 
-  bool IsDeletedArc( cIndex name ) override;
+  bool IsDeletedArc( Index name ) const override {
+   #if( DYNMC_MCF_CPX )
+    return( ArcPos[ name ] == Inf< FNumber >() );
+   #else
+    return( false );
+   #endif
+   }
 
-  Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
-   override; 
+  Index AddArc( Index Start , Index End , FNumber aU , CNumber aC ) override; 
 
 /*--------------------------------------------------------------------------*/
 /*---------------------------- DESTRUCTOR ----------------------------------*/
@@ -422,194 +497,33 @@ class MCFCplex: public MCFClass {
 /*----------------------- PRIVATE DATA STRUCTURES  -------------------------*/
 /*--------------------------------------------------------------------------*/
 
-  CPXENVptr env;      // Cplex environment pointer 
-  CPXNETptr net;      // network pointer
-  CPXLPptr qp;        // QP pointer 
+ CPXENVptr env;      // Cplex environment pointer 
+ CPXNETptr net;      // network pointer
+ CPXLPptr qp;        // QP pointer 
 
-  int* Startn;        // arcs' start nodes
-  int* Endn;          // arcs' end nodes
+ int* Startn;        // arcs' start nodes
+ int* Endn;          // arcs' end nodes
  
-  QPMethod QPMthd;    // QP solving method
+ QPMethod QPMthd;    // QP solving method
 
-  #if( DYNMC_MCF_CPX )
-   FRow ArcPos;       // ArcPos[ i ] == 0 means that arc i exists, == F_INF
-                      // means that the position is available for creating
-                      // a new arc, anything in between means that the arc
-                      // is closed and that is its original capacity
-   Index FreePos;     // first position available for creating a new arc, i.e.
-                      // smallest index i s.t. ArcPos[ i ] == F_INF
-  #endif
-
-  // static members - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  static CPXENVptr genv;      // "global" Cplex environment pointer 
-  static Index InstCntr;      // active instances counter
-  static Index EnvICntr;      // counter of active instances that use genv
-
-  static int* ind;            // contains index of arcs for cplex methods
-  static double* val;         // contains new values for cplex methods
-  static char* ChangeUB;      // vector used in McfSolve::ChangeUCap(..)
-  static Index nmaxarc;
-
-/*-------------------------------------------------------------------------*/
-/*-------------------------------------------------------------------------*/
-
-  };  // end( class MCFCplex )
-
-/** @} end( group( MCFCPLEX_CLASSES ) ) */
-/*-------------------------------------------------------------------------*/
-/*-------------------inline methods implementation-------------------------*/
-/*-------------------------------------------------------------------------*/
-
-inline void MCFCplex::SetPar( int par , int val )
-{
- try {
-  MCFClass::SetPar( par , val );  // is it handled by the base class?
-
-  if( par == kMaxIter )           // let MaxIter to be handled by Cplex
-   CPXsetintparam( env , CPX_PARAM_NETITLIM ,  val > 0 ? val : 2100000000 );
-  }
- catch( MCFException &e ) {      // it is *not* handled by the base class
-  if( par == kQPMethod )
-   QPMthd = (QPMethod) val;
-  else
-   CPXsetintparam( env , par , val );
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void MCFCplex::SetPar( int par , double val )
-{
- try {
-  MCFClass::SetPar( par , val );  // is it handled by the base class?
-
-  if( par == kMaxTime )           // let MaxTime to be handled by Cplex
-   CPXsetdblparam( env , CPX_PARAM_TILIM ,  val > 0 ? val : 1e+75 );
-  }
- catch( MCFException &e ) {      // it is *not* handled by the base class
-   CPXsetdblparam( env , par , val );
-  }
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFCplex::Index MCFCplex::MCFSNde( MCFCplex::cIndex i )
-{
- int strtn;
- if( net )
-  CPXNETgetarcnodes( env , net , (int *) &strtn , NULL , int( i ) , int( i ) );
- else
-  strtn = Startn[ i ];
-
- #if( ! USENAME0 )
-  strtn++;
- #endif
-
- return( Index( strtn ) );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFCplex::Index MCFCplex::MCFENde( MCFCplex::cIndex i )
-{
- int endn;
- if( net )
-  CPXNETgetarcnodes( env , net , NULL , (int *) &endn , int( i ) , int( i ) );
- else
-  endn = Endn[ i ];
-
- #if( ! USENAME0 )
-  endn++;
- #endif
-
- return( Index( endn ) );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFCplex::CNumber MCFCplex::MCFCost( MCFCplex::cIndex i )
-{
- double cst;
- if( net )  
-  CPXNETgetobj( env , net , &cst , int( i ) , int( i ) );
- else
-  CPXgetobj( env , qp , &cst , int( i ) , int( i ) );
-
- return( CNumber( cst ) );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFCplex::CNumber MCFCplex::MCFQCoef( MCFCplex::cIndex i )
-{
- double qcoef = 0;
- if( qp )
-  CPXgetqpcoef( env , qp , int( i ) , int( i ) , &qcoef );
-
- return( qcoef );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFCplex::FNumber MCFCplex::MCFUCap( MCFCplex::cIndex i )
-{
  #if( DYNMC_MCF_CPX )
-  if( ArcPos[ i ] && ( ArcPos[ i ] < Inf<FNumber>() ) )
-   return( ArcPos[ i ] );
-  else
+  FRow ArcPos;       // ArcPos[ i ] < 0 means that arc i exists, == F_INF
+                     // means that the position is available for creating
+                     // a new arc, anything in between means that the arc
+                     // is closed and that is its original capacity
+  Index FreePos;     // first position available for creating a new arc, i.e.
+                     // smallest index i s.t. ArcPos[ i ] == F_INF
  #endif
-  {
-   double ucap;
-   if( net )
-    CPXNETgetub( env , net , &ucap , int( i ) , int( i ) );
-   else
-    CPXgetub( env , qp , &ucap , int( i ) , int ( i ) );
-
-   return( FNumber( ucap ) );
-   }
- } 
 
 /*-------------------------------------------------------------------------*/
 
-inline MCFCplex::FNumber MCFCplex::MCFDfct( MCFCplex::cIndex i )
-{
- double dfct;
- if( net )
-  CPXNETgetsupply( env , net , &dfct , int( i ) , int( i ) );
- else
-  CPXgetrhs( env , qp , &dfct , int( i ) , int( i ) );
+ };  // end( class MCFCplex )
 
- return( - FNumber( dfct ) ); 
- }
+/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-/*--------------------------------------------------------------------------*/
+}  // end( namespace MCFClass_di_unipi_it )
 
-inline bool MCFCplex::IsClosedArc( MCFCplex::cIndex name )
-{
- #if( DYNMC_MCF_CPX )
-  return( ArcPos[ name ] && ( ArcPos[ name ] < Inf<Index>() ) );
- #else
-  return( MCFCplex::MCFUCap( name ) == 0 );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline bool MCFCplex::IsDeletedArc( MCFCplex::cIndex name )
-{
- #if( DYNMC_MCF_CPX )
-  return( ArcPos[ name ] == Inf<Index>() );
- #else
-  return( false );
- #endif
- }
-
-/*--------------------------------------------------------------------------*/
-
-};  // end( namespace MCFClass_di_unipi_it )
-
-/*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #endif  /* MCFCplex.h included */

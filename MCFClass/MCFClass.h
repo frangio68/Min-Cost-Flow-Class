@@ -367,7 +367,7 @@ class MCFClass {
    set to 0 in the constructor precisely to indicate that no instance is
    currently loaded. */
 
- MCFClass( cIndex nmx = 0 , cIndex mmx = 0 )
+ MCFClass( Index nmx = 0 , Index mmx = 0 )
  {
   nmax = nmx;
   mmax = mmx;
@@ -454,8 +454,8 @@ class MCFClass {
    coefficients of the second-order terms in the objective function are
    assumed to be zero. */
 
- virtual void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-		       cIndex pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
+ virtual void LoadNet( Index nmx = 0 , Index mmx = 0 , Index pn = 0 ,
+		       Index pm = 0 , cFRow pU = 0 , cCRow pC = 0 ,
 		       cFRow pDfct = 0 , cIndex_Set pSn = 0 ,
 		       cIndex_Set pEn = 0 ) = 0;
 
@@ -548,7 +548,13 @@ class MCFClass {
 	       considerably, but this is not always true, especially if the
 	       data of the problem changes a lot.*/
 
- virtual inline void SetPar( int par , int val );
+ virtual void SetPar( int par , int val ) {
+  switch( par ) {
+   case( kMaxIter ): MaxIter = val; break;
+   case( kReopt ):   Senstv = (val == kYes);  break;
+   default: throw( MCFException( "Error: unknown parameter in SetPar" ) );
+   }
+  }
 
 /*--------------------------------------------------------------------------*/
 /// set float parameters of the algorithm.
@@ -590,11 +596,38 @@ class MCFClass {
    - kMaxTime: sets the max time (in seconds) in which the MCF Solver can find
                an optimal solution (default 0, which means no limit). */
 
- virtual inline void SetPar( int par , double val );
+ virtual void SetPar( int par , double val ) {
+  switch( par ) {
+   case( kEpsFlw ):
+    if( EpsFlw != FNumber( val ) ) {
+     EpsFlw = FNumber( val );
+     EpsDfct = EpsFlw * ( nmax ? nmax : 100 );
+     status = kUnSolved;
+     }
+    break;
+
+   case( kEpsDfct ):
+    if( EpsDfct != FNumber( val ) ) {
+     EpsDfct = FNumber( val );
+     status = kUnSolved;
+     }
+    break;
+
+   case( kEpsCst ):
+    if( EpsCst != CNumber( val ) ) {
+     EpsCst = CNumber( val );
+     status = kUnSolved;
+     }
+    break;
+
+   case( kMaxTime ): MaxTime = val; break;
+   default: throw( MCFException( "Error: unknown parameter in SetPar" ) );
+   }
+  }
 
 /*--------------------------------------------------------------------------*/
-/// returns one of the integer parameter of the algorithm
-/** This method returns one of the integer parameter of the algorithm.
+/// returns one of the integer parameters of the algorithm
+/** This method returns one of the integer parameters of the algorithm.
 
    @param par  is the parameter to return [see SetPar( int ) for comments];
 
@@ -603,7 +636,7 @@ class MCFClass {
    The base class implementation handles the parameters kMaxIter and kReopt.
    */
 
- virtual inline void GetPar( int par , int &val ) const
+ virtual void GetPar( int par , int &val ) const
  {
   switch( par ) {
    case( kMaxIter ): val = MaxIter; break;
@@ -613,8 +646,8 @@ class MCFClass {
   }
 
 /*--------------------------------------------------------------------------*/
-/// returns one of the integer parameter of the algorithm
-/** This method returns one of the integer parameter of the algorithm.
+/// returns one of the double parameters of the algorithm
+/** This method returns one of the double parameters of the algorithm.
 
    @param par  is the parameter to return [see SetPar( double ) for comments];
 
@@ -623,7 +656,7 @@ class MCFClass {
    The base class implementation handles the parameters kEpsFlw, kEpsDfct,
    kEpsCst, and kMaxTime. */
 
- virtual inline void GetPar( int par , double &val ) const
+ virtual void GetPar( int par , double &val ) const
  {
   switch( par ) {
    case( kEpsFlw ):  val = double( EpsFlw ); break;
@@ -710,7 +743,7 @@ class MCFClass {
    method, in order to allow the derived classes to extend the set of return
    values if they need to do so. */
 
- int MCFGetStatus( void ) { return( status ); }
+ int MCFGetStatus( void ) const { return( status ); }
 
 /** @} ---------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
@@ -731,8 +764,8 @@ class MCFClass {
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). */
 
- virtual void MCFGetX( FRow F ,  Index_Set nms = 0 ,
-		       cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+ virtual void MCFGetX( FRow F , Index_Set nms = 0 , Index strt = 0 ,
+		       Index stp = Inf< Index >() ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the flow solution
@@ -742,7 +775,7 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cFRow MCFGetX( void ) { return( 0 ); }
+ virtual cFRow MCFGetX( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// tells if a different flow solution is available
@@ -783,8 +816,8 @@ class MCFClass {
     values corresponding to nodes which are *both* in nms[] and whose index is
     in the correct range are returned. */
 
- virtual void MCFGetPi( CRow P ,  cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+ virtual void MCFGetPi( CRow P , cIndex_Set nms = 0 , Index strt = 0 ,
+			Index stp = Inf< Index >() ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the node potentials
@@ -794,7 +827,7 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cCRow MCFGetPi( void ) { return( 0 ); }
+ virtual cCRow MCFGetPi( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// tells if a different dual solution is available
@@ -834,8 +867,8 @@ class MCFClass {
    @note the output of MCFGetRC() will change after any call to HaveNewPi()
          [see above] which returns true. */
 
- virtual void MCFGetRC(  CRow CR ,  cIndex_Set nms = 0 ,
-			 cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+ virtual void MCFGetRC(  CRow CR , cIndex_Set nms = 0 , Index strt = 0 ,
+			 Index stp = Inf< Index >() ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to an the reduced costs 
@@ -848,7 +881,7 @@ class MCFClass {
     @note the output of MCFGetRC() will change after any call to HaveNewPi()
           which returns true. */
 
- virtual cCRow MCFGetRC( void ) { return( 0 ); }
+ virtual cCRow MCFGetRC( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the reduced cost of the i-th arc
@@ -858,7 +891,7 @@ class MCFClass {
     @note the output of MCFGetRC() will change after any call to HaveNewPi()
           which returns true. */
 
- virtual CNumber MCFGetRC( cIndex i ) = 0;
+ virtual CNumber MCFGetRC( Index i ) const = 0;
 
 /** @} ---------------------------------------------------------------------*/
 /** @name Reading the objective function value
@@ -877,7 +910,7 @@ class MCFClass {
     on the optimal objective function value (typically, the objective function
     value of one primal feasible solution). */
 
- virtual FONumber MCFGetFO( void ) = 0;
+ virtual FONumber MCFGetFO( void ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the objective function value of the dual solution
@@ -893,12 +926,11 @@ class MCFClass {
     MCF solvers where the primal and dual optimal solution values always
     are identical (except if the problem is unfeasible/unbounded). */
 
- virtual FONumber MCFGetDFO( void )
- {
+ virtual FONumber MCFGetDFO( void ) const {
   switch( MCFGetStatus() ) {
    case( kUnSolved ):
    case( kStopped ):
-   case( kError ):    return( -Inf<FONumber>() );
+   case( kError ):    return( -Inf< FONumber >() );
    default:           return( MCFGetFO() );
    }
   }
@@ -938,9 +970,9 @@ class MCFClass {
    information; thus, returning 0 (no cut) is allowed, as in the base class
    implementation, to signify that this information is not available. */
 
- virtual FNumber MCFGetUnfCut( Index_Set Cut )
+ virtual FNumber MCFGetUnfCut( Index_Set Cut ) const
  {
-  *Cut = Inf<Index>();
+  *Cut = Inf< Index >();
   return( 0 );
   }
 
@@ -969,9 +1001,9 @@ class MCFClass {
     information; thus, returning Inf<Index>() is allowed, as in the base class
     implementation, to signify that this information is not available. */
 
- virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
+ virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred ) const
  {
-  return( Inf<Index>() );
+  return( Inf< Index >() );
   }
 
 /** @} ---------------------------------------------------------------------*/
@@ -988,7 +1020,7 @@ class MCFClass {
      derived class of) class MCFState which describes the current state of the
      MCF solver. */
 
- virtual MCFStatePtr MCFGetState( void ) { return( 0 ); }
+ virtual MCFStatePtr MCFGetState( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// restore the state of the solver
@@ -1056,7 +1088,7 @@ class MCFClass {
   }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/// Like TimeMCF(double,double) [see above], but returns the total time
+/// Like TimeMCF( double , double ) [see above], but returns the total time
 
  double TimeMCF( void ) const { return( MCFt ? MCFt->Read() : 0 ); }
 
@@ -1074,7 +1106,7 @@ class MCFClass {
     reading the data of the problem; as such, they will work for any derived
     class that properly implements all these methods. */
 
- void CheckPSol( void );
+ void CheckPSol( void ) const;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// checks the dual solution
@@ -1087,7 +1119,7 @@ class MCFClass {
     reading the data of the problem; as such, they will work for any derived
     class that properly implements all these methods. */
 
- void CheckDSol( void );
+ void CheckDSol( void ) const;
 
 /** @} ---------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
@@ -1101,7 +1133,7 @@ class MCFClass {
    fields \c nmax, which is provided for derived classes to hold this
    information. */
 
- Index MCFnmax( void ) { return( nmax ); }
+ Index MCFnmax( void ) const { return( nmax ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the maximum number of arcs
@@ -1110,7 +1142,7 @@ class MCFClass {
     fields \c mmax, which is provided for derived classes to hold this
     information. */
 
- Index MCFmmax( void ) { return( mmax ); }
+ Index MCFmmax( void ) const { return( mmax ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the current number of nodes
@@ -1119,7 +1151,7 @@ class MCFClass {
     fields \c n, which is provided for derived classes to hold this
     information. */
 
- Index MCFn( void ) { return( n ); }
+ Index MCFn( void ) const { return( n ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the current number of arcs
@@ -1128,7 +1160,7 @@ class MCFClass {
     fields \c m, which is provided for derived classes to hold this
     information. */
 
- Index MCFm( void ) { return( m ); }
+ Index MCFm( void ) const { return( m ); }
 
 /*--------------------------------------------------------------------------*/
 /// write the starting and ending nodes in vectors
@@ -1154,9 +1186,9 @@ class MCFClass {
     @note If the graph is "dynamic", be careful to use MCFn() e MCFm() to
           properly choose the dimension of nodes and arcs arrays. */
 
- virtual void MCFArcs( Index_Set Startv ,  Index_Set Endv ,
-		       cIndex_Set nms = 0 , cIndex strt = 0 ,
-		       Index stp = Inf<Index>() ) = 0;
+ virtual void MCFArcs( Index_Set Startv , Index_Set Endv ,
+		       cIndex_Set nms = 0 , Index strt = 0 ,
+		       Index stp = Inf< Index >() ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the starting (tail) node of the arc `i'
@@ -1166,7 +1198,7 @@ class MCFClass {
          1 .. n, while if USENAME0 == 1 the returned node names will be in
          the range 0 .. n - 1. */
 
- virtual Index MCFSNde( cIndex i ) = 0;
+ virtual Index MCFSNde( Index i ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the ending (head) node of the arc `i'
@@ -1176,7 +1208,7 @@ class MCFClass {
          1 .. n, while if USENAME0 == 1 the returned node names will be in
          the range 0 .. n - 1. */
 
- virtual Index MCFENde( cIndex i ) = 0;
+ virtual Index MCFENde( Index i ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of starting nodes
@@ -1186,7 +1218,7 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cIndex_Set MCFSNdes( void ) { return( 0 ); }
+ virtual cIndex_Set MCFSNdes( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of ending nodes
@@ -1196,9 +1228,9 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cIndex_Set MCFENdes( void ) { return( 0 ); }
+ virtual cIndex_Set MCFENdes( void ) const { return( 0 ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Reading arc costs / capacities
     @{ */
 
@@ -1214,12 +1246,12 @@ class MCFClass {
     the correct range are returned. */
 
  virtual void MCFCosts( CRow Costv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			Index strt = 0 , Index stp = Inf<Index>() ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the cost of the i-th arc
 
- virtual CNumber MCFCost( cIndex i ) = 0;
+ virtual CNumber MCFCost( Index i ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of arc costs
@@ -1229,7 +1261,7 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cCRow MCFCosts( void ) { return( 0 ); }
+ virtual cCRow MCFCosts( void ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// write the quadratic coefficients of the arc costs into a vector
@@ -1249,7 +1281,7 @@ class MCFClass {
     coefficients. */
 
  virtual void MCFQCoef( CRow Qv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() )
+			Index strt = 0 , Index stp = Inf<Index>() ) const
  {
   if( nms ) {
    while( *nms < strt )
@@ -1274,7 +1306,7 @@ class MCFClass {
     linear" MCF solvers that only work with all zero quadratic coefficients.
     */
 
- virtual CNumber MCFQCoef( cIndex i ) { return( 0 ); }
+ virtual CNumber MCFQCoef( Index i ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of arc quadratic costs
@@ -1286,7 +1318,7 @@ class MCFClass {
     work with all zero quadratic coefficients) does not need to implement the
     method. */
 
- virtual cCRow MCFQCoef( void ) { return( 0 ); }
+ virtual cCRow MCFQCoef( void ) const { return( 0 ); }
 
 /*--------------------------------------------------------------------------*/
 /// write the arc capacities into a vector
@@ -1301,12 +1333,13 @@ class MCFClass {
     the correct range are returned. */
 
  virtual void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			Index strt = 0 , Index stp = Inf< Index >() )
+  const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the capacity of the i-th arc
 
- virtual FNumber MCFUCap( cIndex i ) = 0;
+ virtual FNumber MCFUCap( Index i ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to an the vector of arc capacities
@@ -1316,11 +1349,11 @@ class MCFClass {
     This is done by the base class already, so a derived class that does not
     have the information ready does not need to implement the method. */
 
- virtual cFRow MCFUCaps( void ) { return( 0 ); }
+ virtual cFRow MCFUCaps( void ) const { return( 0 ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Reading node deficits
-    @{ */
+ *  @{ */
 
 /// write the node deficits into a vector
 /** Write the node deficits into Dfctv[]. If nms == 0, then all the
@@ -1339,7 +1372,8 @@ class MCFClass {
 	  but its deficit is returned by MCFDfcts( Dfctv , 0 , 0 , 1 ). */
 
  virtual void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			Index strt = 0 , Index stp = Inf< Index >() )
+  const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the deficit of the i-th node
@@ -1349,7 +1383,7 @@ class MCFClass {
          USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
          but its deficit is returned by MCFDfct( 0 ). */
 
- virtual FNumber MCFDfct( cIndex i ) = 0;
+ virtual FNumber MCFDfct( Index i ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of node deficits
@@ -1363,11 +1397,11 @@ class MCFClass {
           USENAME0; hence, if USENAME0 == 0 then the first node is "named 1",
 	  but its deficit is contained in MCFDfcts()[ 0 ]. */
 
- virtual cFRow MCFDfcts( void ) { return( 0 ); }
+ virtual cFRow MCFDfcts( void ) const { return( 0 ); }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Write problem to file
-    @{ */
+ *  @{ */
 
 /// write the current MCF problem to an ostream
 /** Write the current MCF problem to an ostream. This may be useful e.g. for
@@ -1398,14 +1432,13 @@ class MCFClass {
          nonzero quadratic coefficients are present, they are just ignored.
    */
 
- virtual void WriteMCF( ostream &oStrm , int frmt = 0 );
+ virtual void WriteMCF( ostream &oStrm , int frmt = 0 ) const;
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Changing the arc costs / capacities
-    @{ */
-
+ *  @{ */
 
 /// change the arc costs
 /** Change the arc costs. In particular, change the costs that are:
@@ -1426,7 +1459,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			Index strt = 0 , Index stp = Inf<Index>() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the cost of the i-th arc
@@ -1437,7 +1470,7 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
- virtual void ChgCost( Index arc , cCNumber NCost ) = 0;
+ virtual void ChgCost( Index arc , CNumber NCost ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the quadratic coefficients of the arc costs
@@ -1465,8 +1498,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() )
- {
+			Index strt = 0 , Index stp = Inf<Index>() ) {
   if( NQCoef )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
   }
@@ -1484,8 +1516,7 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
- virtual void ChgQCoef( Index arc , cCNumber NQCoef )
- {
+ virtual void ChgQCoef( Index arc , CNumber NQCoef ) {
   if( NQCoef )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
   }
@@ -1510,7 +1541,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			Index strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the capacity of the i-th arc
@@ -1521,11 +1552,11 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
- virtual void ChgUCap( Index arc , cFNumber NCap ) = 0;
+ virtual void ChgUCap( Index arc , FNumber NCap ) = 0;
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Changing the node deficits
-    @{ */
+ *  @{ */
 
 /// change the node deficits
 /** Change the node deficits. In particular, change the deficits that are:
@@ -1550,8 +1581,7 @@ class MCFClass {
 	 touched with these methods. */
 
  virtual void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
-
+			Index strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the deficit of the i-th node
@@ -1565,11 +1595,11 @@ class MCFClass {
          only nodes that have not been deleted [see DelNode() below] can be
 	 touched with these methods. */
 
- virtual void ChgDfct( Index node , cFNumber NDfct ) = 0;
+ virtual void ChgDfct( Index node , FNumber NDfct ) = 0;
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /** @name Changing graph topology
-    @{ */
+ *  @{ */
 
 /// "close" one arc
 /** "Close" the arc `name'. Although all the associated information (name,
@@ -1580,12 +1610,12 @@ class MCFClass {
    arc; for instance, MCFm() does *not* decrease as an effect of a call to
    CloseArc(). How this closure is implemented is solver-specific. */
 
- virtual void CloseArc( cIndex name ) = 0;
+ virtual void CloseArc( Index name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// returns true if and only if the arc `name' is closed
 
- virtual bool IsClosedArc( cIndex name ) = 0;
+ virtual bool IsClosedArc( Index name ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// delete one node
@@ -1599,14 +1629,14 @@ class MCFClass {
    MCFn() is reduced by at least one, until the n-th node is not a deleted
    one. */
 
- virtual void DelNode( cIndex name ) = 0;
+ virtual void DelNode( Index name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// re-opens a closed arc
 /** Restore the previously closed arc `name'. It is an error to open an arc
     that has not been previously closed. */
 
- virtual void OpenArc( cIndex name ) = 0;
+ virtual void OpenArc( Index name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// adds a ned node
@@ -1615,7 +1645,7 @@ class MCFClass {
     are either { 0 .. nmax - 1 } or { 1 .. nmax }, depending on the value of
     USENAME0. */
 
- virtual Index AddNode( cFNumber aDfct ) = 0;
+ virtual Index AddNode( FNumber aDfct ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the starting and/or ending node of one arc
@@ -1626,8 +1656,8 @@ class MCFClass {
     in the latter case, at the end of ChangeArc() the arc is *still closed*,
     and it remains so until OpenArc( name ) [see above] is called. */
 
- virtual void ChangeArc( cIndex name , cIndex nSN = Inf<Index>() ,
-			 cIndex nEN = Inf<Index>() ) = 0;
+ virtual void ChangeArc( Index name , Index nSN = Inf< Index >() ,
+			              Index nEN = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// deletes one arc
@@ -1639,15 +1669,16 @@ class MCFClass {
     MCFm() is reduced by at least one, until the m-th arc is not a deleted
     one. Otherwise, the flow on the arc is always ensured to be 0. */
 
- virtual void DelArc( cIndex name ) = 0;
+ virtual void DelArc( Index name ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return true if and only if the arc is deleted
-/** Return true if and only if the arc `name' is deleted. It should only
-    be called with name < MCFm(), as every other arc is deleted by
-    definition. */
+/** Return true if and only if the arc `name' is deleted. It should only be
+ * called with name < MCFm(), as every other arc is deleted by definition.
+ * Note that a deleted arc is not closed, and vice-versa: to be closed an
+ * arc must exist, i.e., not be deleted. */
 
- virtual bool IsDeletedArc( cIndex name ) = 0;
+ virtual bool IsDeletedArc( Index name ) const = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// adds a new arc
@@ -1655,14 +1686,14 @@ class MCFClass {
     its name. Inf<Index>() is returned if there is no room for a new arc.
     Remember that arc names go from 0 to mmax - 1. */
 
- virtual Index AddArc( cIndex Start , cIndex End , cFNumber aU ,
-		       cCNumber aC ) = 0; 
+ virtual Index AddArc( Index Start , Index End ,
+		       FNumber aU , CNumber aC ) = 0; 
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Destructor
-    @{ */
+ *  @{ */
 
 /// destructor of the class
 /** Destructor of the class. The implementation in the base class only
@@ -1670,7 +1701,7 @@ class MCFClass {
 
  virtual ~MCFClass() { delete MCFt; }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*-------------------- PROTECTED PART OF THE CLASS -------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--                                                                      --*/
@@ -1687,15 +1718,15 @@ class MCFClass {
 /*-------------------------- MANAGING COMPARISONS --------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Managing comparisons.
-    The following methods are provided for making it easier to perform
-    comparisons, with and without tolerances.
-    @{ */
+ *  The following methods are provided for making it easier to perform
+ *  comparisons, with and without tolerances.
+ *  @{ */
 
 /*--------------------------------------------------------------------------*/
 /** true if flow x is equal to zero (possibly considering tolerances). */
         
-   template<class T>
-   inline bool ETZ( T x , const T eps )
+   template< class T >
+   inline bool ETZ( T x , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x == 0 );
@@ -1706,8 +1737,8 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is greater than zero (possibly considering tolerances). */
 
-   template<class T>
-   inline bool GTZ( T x , const T eps )
+   template< class T >
+   inline bool GTZ( T x , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x > 0 );
@@ -1719,8 +1750,8 @@ class MCFClass {
 /** true if flow x is greater than or equal to zero (possibly considering
     tolerances). */
 
-   template<class T>
-   inline bool GEZ( T x , const T eps )
+   template< class T >
+   inline bool GEZ( T x , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x >= 0 );
@@ -1731,8 +1762,8 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is less than zero (possibly considering tolerances). */
 
-   template<class T>
-   inline bool LTZ( T x , const T eps )
+   template< class T >
+   inline bool LTZ( T x , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x < 0 );
@@ -1744,8 +1775,8 @@ class MCFClass {
 /** true if flow x is less than or equal to zero (possibly considering
     tolerances). */
 
-   template<class T>
-   inline bool LEZ( T x , const T eps )
+   template< class T >
+   inline bool LEZ( T x , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x <= 0 );
@@ -1757,8 +1788,8 @@ class MCFClass {
 /** true if flow x is greater than flow y (possibly considering tolerances).
  */
 
-   template<class T>
-   inline bool GT( T x , T y , const T eps )
+   template< class T >
+   inline bool GT( T x , T y , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x > y );
@@ -1769,8 +1800,8 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is less than flow y (possibly considering tolerances). */
 
-   template<class T>
-   inline bool LT( T x , T y , const T eps )
+   template< class T >
+   inline bool LT( T x , T y , T eps ) const
    {
     if( numeric_limits<T>::is_integer )
      return( x < y );
@@ -1778,7 +1809,7 @@ class MCFClass {
      return( x < y - eps );
     }
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*---------------------- PROTECTED DATA STRUCTURES -------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -1808,7 +1839,7 @@ class MCFClass {
 
   };   // end( class MCFClass )
 
-/**@} ----------------------------------------------------------------------*/
+/** @} ---------------------------------------------------------------------*/
 /*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -1974,61 +2005,7 @@ inline void MCFClass::LoadDMX( istream &DMXs , bool IsQuad )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFClass::SetPar( int par , int val )
-{
- switch( par ) {
- case( kMaxIter ):
-  MaxIter = val;
-  break;
-
- case( kReopt ):
-  Senstv = (val == kYes);
-  break;
-  
- default:
-  throw( MCFException( "Error using SetPar: unknown parameter" ) );
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void MCFClass::SetPar( int par, double val )
-{
- switch( par ) {
- case( kEpsFlw ):
-  if( EpsFlw != FNumber( val ) ) {
-   EpsFlw = FNumber( val );
-   EpsDfct = EpsFlw * ( nmax ? nmax : 100 );
-   status = kUnSolved;
-   }
-  break;
-
- case( kEpsDfct ):
-  if( EpsDfct != FNumber( val ) ) {
-   EpsDfct = FNumber( val );
-   status = kUnSolved;
-   }
-  break;
-
- case( kEpsCst ):
-  if( EpsCst != CNumber( val ) ) {
-   EpsCst = CNumber( val );
-   status = kUnSolved;
-   }
-  break;
-  
- case( kMaxTime ):
-  MaxTime = val;
-  break;
-
- default:
-  throw( MCFException( "Error using SetPar: unknown parameter" ) );
-  }
- }
-
-/*--------------------------------------------------------------------------*/
-
-inline void MCFClass::CheckPSol( void )
+inline void MCFClass::CheckPSol( void ) const
 {
  FRow tB = new FNumber[ MCFn() ];
  MCFDfcts( tB );
@@ -2074,7 +2051,7 @@ inline void MCFClass::CheckPSol( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFClass::CheckDSol( void )
+inline void MCFClass::CheckDSol( void ) const
 {
  CRow tPi = new CNumber[ MCFn() ];
  MCFGetPi( tPi );
@@ -2135,7 +2112,7 @@ inline void MCFClass::CheckDSol( void )
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFClass::WriteMCF( ostream &oStrm , int frmt )
+inline void MCFClass::WriteMCF( ostream &oStrm , int frmt ) const
 {
  if( ( ! numeric_limits<FNumber>::is_integer ) ||
      ( ! numeric_limits<CNumber>::is_integer ) )

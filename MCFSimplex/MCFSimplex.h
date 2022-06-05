@@ -2,28 +2,23 @@
 /*------------------------- File MCFSimplex.h ------------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @file
- * Linear and Quadratic Min Cost Flow problems solver based on the (primal and
- * dual) simplex algorithm. Conforms to the standard MCF interface defined in
- * MCFClass.h.
- *
- * \Version 1.21
- *
- * \date 27 - 02 - 2020
+ * Linear and Quadratic Min Cost Flow problems solver based on the (primal
+ * and dual) simplex algorithm. Conforms to the standard MCF interface
+ * defined in MCFClass.h.
  *
  * \author Alessandro Bertolini \n
  *         Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni
+ * Copyright &copy by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 #ifndef __MCFSimplex
- #define __MCFSimplex  /* self-identification: #endif at the end of the file */
+ #define __MCFSimplex /* self-identification: #endif at the end of the file */
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
@@ -34,7 +29,7 @@
 #include <iostream>
 #include <fstream>
 
-/**@} ----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 /*--------------------------- NAMESPACE ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -72,18 +67,14 @@ namespace MCFClass_di_unipi_it
    Thus, with QUADRATICCOST == 0 the solver cannot solve problems with
    quadratic costs, but it does solve problems with linear costs faster. */
 
-/**@}  end( group( MCFCLASS_MACROS ) ) */ 
-
+/**@}  end( group( MCFCLASS_MACROS ) ) */
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CLASSES -------------------------------------*/
 /*--------------------------------------------------------------------------*/
-/** @defgroup MCFSimplex_CLASSES Classes in MCFSimplex.h
-    @{ */
-
 /** The MCFSimplex class derives from the abstract base class MCFClass, thus
-    sharing its (standard) interface, and implements both the Primal and
-    Dual network simplex algorithms for solving (Linear and Quadratic) 
-    Min Cost Flow problems */
+ *  sharing its (standard) interface, and implements both the Primal and
+ *  Dual network simplex algorithms for solving (Linear and Quadratic) 
+ *  Min Cost Flow problems */
 
 class MCFSimplex: public MCFClass 
 {
@@ -105,8 +96,7 @@ class MCFSimplex: public MCFClass
 
 /** Public enum describing the parameters of MCFSimplex. */
 
- enum SimplexParam 
- { 
+ enum SimplexParam { 
   kAlgPrimal = kLastParam , ///< parameter to set algorithm (Primal/Dual):
   kAlgPricing ,             ///< parameter to set algorithm of pricing
   kNumCandList ,            /**< parameter to set the number of candidate
@@ -123,46 +113,38 @@ class MCFSimplex: public MCFClass
     
 /** Public enum describing the pricing rules in MCFSimplex::SetAlg(). */
 
- enum enumPrcngRl 
- { 
+ enum enumPrcngRl { 
   kDantzig = 0,        ///< Dantzig's rule (most violated constraint)
   kFirstEligibleArc ,  ///< First eligible arc in round-robin
   kCandidateListPivot  ///< Candidate List Pivot Rule
   };
 
- struct MCFStatePtr
- {
-  int		*enterArcs;
-  FNumber   *flowEnterArcs;
-  Index		*UArcs;
- };
+ struct MCFStatePtr {
+  int	  *enterArcs;
+  FNumber *flowEnterArcs;
+  Index	  *UArcs;
+  };
 
 /*--------------------------------------------------------------------------*/
 /*--------------------------- PUBLIC METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*---------------------------- CONSTRUCTOR ---------------------------------*/
 /*--------------------------------------------------------------------------*/
+/// constructor of the class, as in MCFClass::MCFClass()
 
- MCFSimplex( cIndex nmx = 0 , cIndex mmx = 0 );
-
-/**< Constructor of the class, as in MCFClass::MCFClass(). */
+ MCFSimplex( Index nmx = 0 , Index mmx = 0 );
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
+/// inputs a new network, as in MCFClass::LoadNet()
 
- void LoadNet( cIndex nmx = 0 , cIndex mmx = 0 , cIndex pn = 0 ,
-	       cIndex pm = 0 , cFRow pU = NULL , cCRow pC = NULL ,
-	       cFRow pDfct = NULL , cIndex_Set pSn = NULL ,
-	       cIndex_Set pEn = NULL ) override;
-
-/**< Inputs a new network, as in MCFClass::LoadNet(). */
+ void LoadNet( Index nmx = 0 , Index mmx = 0 , Index pn = 0 , Index pm = 0 ,
+	       cFRow pU = 0 , cCRow pC = 0 , cFRow pDfct = 0 ,
+	       cIndex_Set pSn = 0 , cIndex_Set pEn = 0 ) override;
 
 /*--------------------------------------------------------------------------*/
- 
- void SetAlg( bool UsPrml , char WhchPrc );
-
-/**< Selects which algorithm (Primal vs Dual Network Simplex), and which
+/** Selects which algorithm (Primal vs Dual Network Simplex), and which
    pricing rule within the algorithm, is used.
 
    If UsPrml == TRUE then the Primal Network Simplex algorithm is used,
@@ -181,12 +163,11 @@ class MCFSimplex: public MCFClass
    If this method is *not* called, the Primal Network Simplex with the
    Candidate List Pivot Rule (the best setting on most instances) is
    used. */
+ 
+ void SetAlg( bool UsPrml , char WhchPrc );
 
 /*--------------------------------------------------------------------------*/
-
- virtual void SetPar( int par , int val ) override;
-
-/**< Set general integer parameters.
+/** Set general integer parameters.
 
    @param par   is the parameter to set; since this method accepts an int
                 value, the enum SimplexParam can be used in addition to the
@@ -195,11 +176,10 @@ class MCFSimplex: public MCFClass
 
    @param value is the value to assign to the parameter. */
 
+ virtual void SetPar( int par , int val ) override;
+
 /*-------------------------------------------------------------------------*/
-
- virtual void SetPar( int par , double val ) override;
-
-/**< Set general float parameters.
+/** Set general float parameters.
 
    @param par   is the parameter to set; since this method accepts an int
                 value, the enum SimplexParam can be used in addition to the
@@ -208,10 +188,11 @@ class MCFSimplex: public MCFClass
 
    @param value is the value to assign to the parameter. */
 
+ virtual void SetPar( int par , double val ) override;
+
 /*--------------------------------------------------------------------------*/
 
- virtual inline void GetPar( int par , int &val ) const override
- {
+ virtual void GetPar( int par , int &val ) const override {
   switch( par ) {
    case( kAlgPrimal ):         val = usePrimalSimplex ? kYes : kNo; break;
    case( kAlgPricing ):        val = pricingRule; break;
@@ -224,8 +205,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
- virtual inline void GetPar( int par , double &val ) const override
- {
+ virtual void GetPar( int par , double &val ) const override {
   if( par == kEpsOpt )
    val = double( EpsOpt );
   else
@@ -244,68 +224,103 @@ class MCFSimplex: public MCFClass
 
  using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
 
- void MCFGetX( FRow F , Index_Set nms = NULL ,
-	       cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void MCFGetX( FRow F , Index_Set nms = 0 , Index strt = 0 ,
+	       Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
  using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
- void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void MCFGetRC( CRow CR , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
- CNumber MCFGetRC( cIndex i ) override;
+ CNumber MCFGetRC( Index i ) const override;
 
 /*--------------------------------------------------------------------------*/
 
  using MCFClass::MCFGetPi;  // the ( void ) method, which is otherwise hidden
 
- void MCFGetPi( CRow P , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void MCFGetPi( CRow P , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
- FONumber MCFGetFO( void ) override;
+ FONumber MCFGetFO( void ) const override;
 
 /*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 
- virtual void MCFArcs( Index_Set Startv , Index_Set Endv ,
-		       cIndex_Set nms = NULL , cIndex strt = 0 ,
-		       Index stp = Inf<Index>() ) override;
+ void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0 ,
+	       Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
- inline Index MCFSNde( cIndex i ) override;
+/*-------------------------------------------------------------------------*/
 
- inline Index MCFENde( cIndex i ) override;
+ Index MCFSNde( Index i ) const override {
+  if( usePrimalSimplex )
+   return( Index( ( (arcsP + i)->tail - nodesP + 1 ) - USENAME0 ) );
+  else
+   return( Index( ( (arcsD + i)->tail - nodesD + 1 ) - USENAME0 ) );
+  }
+
+/*-------------------------------------------------------------------------*/
+
+ Index MCFENde( Index i ) const override {
+  if( usePrimalSimplex )
+   return( Index( ( (arcsP + i)->head - nodesP + 1 ) - USENAME0 ) );
+  else
+   return( Index( ( (arcsD + i)->head - nodesD + 1 ) - USENAME0 ) );
+  }
 
 /*--------------------------------------------------------------------------*/
   
- void MCFCosts( CRow Costv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
- inline CNumber MCFCost( cIndex i ) override;
+ void MCFCosts( CRow Costv , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
 /*--------------------------------------------------------------------------*/
 
- void MCFQCoef( CRow Qv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
- inline CNumber MCFQCoef( cIndex i ) override;
+ CNumber MCFCost( Index i ) const override {
+  return( usePrimalSimplex ? ( arcsP + i )->cost : ( arcsD + i )->cost );
+  }
 
 /*--------------------------------------------------------------------------*/
 
- void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void MCFQCoef( CRow Qv , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
- inline FNumber MCFUCap( cIndex i ) override;
+/*--------------------------------------------------------------------------*/
+
+ CNumber MCFQCoef( Index i ) const override {
+  #if( QUADRATICCOST )
+   return( usePrimalSimplex ? ( arcsP + i )->quadraticCost
+	                    : ( arcsD + i )->quadraticCost );
+  #else
+   return( 0 );
+  #endif
+  }
+
+/*--------------------------------------------------------------------------*/
+
+ void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
+
+/*-------------------------------------------------------------------------*/
+
+ FNumber MCFUCap( Index i ) const override {
+  return( usePrimalSimplex ? ( arcsP + i )->upper : ( arcsD + i )->upper );
+  }
 
 /*--------------------------------------------------------------------------*/
 
  void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
- inline FNumber MCFDfct( cIndex i ) override;
+/*-------------------------------------------------------------------------*/
+
+ FNumber MCFDfct( Index i ) const override {
+  return( usePrimalSimplex ? ( nodesP + i )->balance
+	                   : ( nodesD + i )->balance );
+  }
 
 /*--------------------------------------------------------------------------*/
 /*------------- METHODS FOR ADDING / REMOVING / CHANGING DATA --------------*/
@@ -313,59 +328,81 @@ class MCFSimplex: public MCFClass
 /*------- Changing the costs, QCoef, deficits and upper capacities ---------*/
 /*--------------------------------------------------------------------------*/
 
- void ChgCosts( cCRow NCost , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
- void ChgCost( Index arc , cCNumber NCost ) override;
-
-/*--------------------------------------------------------------------------*/
-
- void ChgQCoef( cCRow NQCoef = NULL , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
-
- void ChgQCoef( Index arc , cCNumber NQCoef ) override;
+ void ChgCost( Index arc , CNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
- void ChgDfcts( cFRow NDfct , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+ void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
- void ChgDfct( Index nod , cFNumber NDfct ) override;
+ void ChgQCoef( Index arc , CNumber NQCoef ) override;
+
+/*--------------------------------------------------------------------------*/
+
+ void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
+		Index strt = 0 , Index stp = Inf<Index>() ) override;
+
+ void ChgDfct( Index nod , FNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgUCaps( cFRow NCap , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
- void ChgUCap( Index arc , cFNumber NCap ) override;
+ void ChgUCap( Index arc , FNumber NCap ) override;
 
  /*--------------------------------------------------------------------------*/
 
- void UsePastInformation();
+ void UsePastInformation( void );
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
 /*--------------------------------------------------------------------------*/
 
- void CloseArc( cIndex name ) override;
+ void CloseArc( Index name ) override;
 
- void DelNode( cIndex name ) override;
+ void DelNode( Index name ) override;
 
- bool IsClosedArc( cIndex name ) override;
+ bool IsClosedArc( Index name ) const override {
+  if( name >= m )
+   return( false );
 
- void OpenArc( cIndex name ) override;
+  #if( QUADRATICCOST )
+   return( ( ! IsDeletedArc( name ) ) &&
+	   ( ( arcsP + name )->cost == Inf< CNumber >() ) );
+  #else
+   auto ident = usePrimalSimplex ? ( arcsP + name )->ident
+                                 : ( arcsD + name )->ident;
+   return( ident == -1 );  // CLOSED == -1
+  #endif
+  }
 
- Index AddNode( cFNumber aDfct ) override;
+ void OpenArc( Index name ) override;
 
- void ChangeArc( cIndex name , cIndex nSS = Inf<Index>() ,
-		 cIndex nEN = Inf<Index>() ) override;
+ Index AddNode( FNumber aDfct ) override;
 
- void DelArc( cIndex name ) override;
+ void ChangeArc( Index name , Index nSS = Inf< Index >() ,
+		              Index nEN = Inf<Index>() ) override;
 
- Index AddArc( cIndex Start , cIndex End , cFNumber aU , cCNumber aC )
-  override;
+ void DelArc( Index name ) override;
 
- bool IsDeletedArc( cIndex name ) override;
+ Index AddArc( Index Start , Index End , FNumber aU , CNumber aC ) override;
+
+ bool IsDeletedArc( cIndex name ) const override {
+  if( name >= m )
+   return( false );
+
+  #if( QUADRATICCOST )
+   return( ( ( arcsP + name )->upper == -Inf< FNumber >() ) );
+  #else
+   auto ident = usePrimalSimplex ? ( arcsP + name )->ident
+                                 : ( arcsD + name )->ident;
+   return( ident == -2 );  // DELETED == -2
+  #endif
+  }
 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ DESTRUCTOR --------------------------------*/
@@ -426,8 +463,8 @@ class MCFSimplex: public MCFClass
                           // node depending upon whether balance is larger
                           // than, smaller than, or equal to zero
   #if( QUADRATICCOST )
-   CNumber sumQuadratic;  // the sum of the quadratic coefficients of the tree's arcs
-                          // from root of T to the node
+   CNumber sumQuadratic;  // the sum of the quadratic coefficients of the
+                          // tree's arcs from root of T to the node
 
    FONumber potential;    // the node potential corresponding with the flow
                           // conservation constrait of this node
@@ -453,8 +490,8 @@ class MCFSimplex: public MCFClass
                           // than, smaller than, or equal to zero
 
  #if( QUADRATICCOST )
-  CNumber sumQuadratic;   // the sum of the quadratic coefficients of the tree's arcs
-                          // from root of T to the node
+  CNumber sumQuadratic;   // the sum of the quadratic coefficients of the
+                          // tree's arcs from root of T to the node
         
   FONumber potential;     // the node potential corresponding with the flow
                           // conservation constrait of this node
@@ -477,12 +514,11 @@ class MCFSimplex: public MCFClass
   nodePType *head;        // head node
   FNumber flow;           // arc flow
   CNumber cost;           // arc linear cost
-  //string id;
 
   #if( QUADRATICCOST )
    CNumber quadraticCost; // arc quadratic cost
   #else
-   char ident;            // tells if arc is deleted, closed, in T, L, or U
+   char ident;            // if arc is deleted, closed, in T, L, or U
   #endif
 
   FNumber upper;          // arc upper bound
@@ -497,7 +533,7 @@ class MCFSimplex: public MCFClass
   #if( QUADRATICCOST )
    CNumber quadraticCost; // arc quadratic cost
   #else
-   char ident;            // indicates if arc is deleted, closed, in T, in L, or in U
+   char ident;            // if arc is deleted, closed, in T, in L, or in U
   #endif
 
   FNumber upper;          // arc upper bound
@@ -603,11 +639,11 @@ class MCFSimplex: public MCFClass
     
  Index numCandidateList;        // number of candidate lists
     
- Index hotListSize;             // number of candidate lists and hot list dimension
+ Index hotListSize;             // hot list dimension
 
- Index forcedNumCandidateList;  // value used to force the number of candidate list
+ Index forcedNumCandidateList;  // used to force the number of candidate list
     
- Index forcedHotListSize;       // value used to force the number of candidate list
+ Index forcedHotListSize;       // used to force the number of candidate list
                                 // and hot list dimension
 
  bool newSession;               // true if algorithm is just started
@@ -714,7 +750,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class A>
+  template< class N , class A >
   void UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 );
 
   /**< Method to update the spanning tree T every iteration.
@@ -744,8 +780,8 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
-  N* CutAndUpdateSubtree( N *root, int delta );
+  template< class N >
+  N* CutAndUpdateSubtree( N *root , int delta );
 
 /**< This method cuts a generic subtree from the spanning tree T. Then it
    updates the field "subTreeLevel" of every subtree's nodes adding the value
@@ -753,7 +789,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
+  template< class N >
   void PasteSubtree( N *root , N *lastNode , N *previousNode );
 
 /**< This method inserts a generic subtree with root passed by parameter into
@@ -761,7 +797,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  arcPType* RuleDantzig( void );
+  arcPType * RuleDantzig( void );
 
 /**< This method returns an arc which violates the dual conditions. It searchs
    the arc with most violation of dual conditions in the entire set of real
@@ -770,7 +806,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  arcPType* PRuleFirstEligibleArc( void );
+  arcPType * PRuleFirstEligibleArc( void );
 
 /**< This method returns the first found arc which violates the dual conditions
    in the case of Primal Simplex, the primal condition in the case of Dual
@@ -811,14 +847,14 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  inline void InitializePrimalCandidateList( void );
+  void InitializePrimalCandidateList( void );
 
 /**< Method to initialize some important details for Primal Candidate List
    Rule. */
 
 /*--------------------------------------------------------------------------*/
 
-  inline void SortPrimalCandidateList( Index min , Index max );
+  void SortPrimalCandidateList( Index min , Index max );
 
 /**< Method to order the little set of candidate arcs according to
    infeasibility of dual conditions. It implements the "quicksort"
@@ -832,21 +868,21 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  inline void InitializeDualCandidateList( void );
+  void InitializeDualCandidateList( void );
 
 /**< Method to initialize some important details for Dual Candidate List Rule.
     */
 
 /*--------------------------------------------------------------------------*/
 
-  inline void SortDualCandidateList( Index min , Index max );
+  void SortDualCandidateList( Index min , Index max );
 
 /**< Similar to SortPrimalCandidateList() for the Dual Simplex. */
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class RCT>
-  inline void AddPotential( N *r , RCT delta );
+  template< class N , class RCT >
+  void AddPotential( N *r , RCT delta );
 
 /**< Method to quickly update the dual solutions. During the change of the
    base, the potential of node "k2" (deepest node in T of incoming arc "k",
@@ -859,15 +895,15 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
-  inline void ComputePotential( N *r );
+  template< class N >
+  void ComputePotential( N *r );
 
 /**< Method to update the dual solutions. It computes all the potential of the
    nodes of the subtree which has r as root. */
 
 /*--------------------------------------------------------------------------*/
 
-  inline void ResetWhenInT2( void );
+  void ResetWhenInT2( void );
 
 /**< Method to order the small set of candidate arcs according to dual
    infeasibility. It implements the algorithm "quicksort". */
@@ -928,26 +964,26 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class A>
-  inline N* Father( N *n, A *a );
+  template< class N , class A >
+  N* Father( N *n , A *a );
 
 /**< Method to find the predecessor of the node in the tree. */
 
 /*--------------------------------------------------------------------------*/
 
- #if(QUADRATICCOST)
-  template<class A>
-  inline FONumber ReductCost( A *a );
+ #if( QUADRATICCOST )
+  template< class A >
+  FONumber ReductCost( A *a ) const;
  #else
-  template<class A>
-  inline CNumber ReductCost( A *a );
+  template< class A >
+  CNumber ReductCost( A *a ) const;
  #endif
 
 /**< Method to calculate the reduct cost of the arc. */
 
 /*--------------------------------------------------------------------------*/
 
-  inline FONumber GetFO( void );
+  FONumber GetFO( void ) const;
 
 /**< Method to calculate the temporary (or the final) objective function
    value. */
@@ -1032,107 +1068,13 @@ class MCFSimplex: public MCFClass
 
 /**< Method to show the actual complete situation. */
 
-/*--------------------------------------------------------------------------*/
-
-  string Int2String( int num, int cifreMinime );
-    
-  };  // end( class MCFSimplex )
-
-/** @} end( group( MCFSimplex_CLASSES ) ) */
-/*-------------------------------------------------------------------------*/
-/*-------------------inline methods implementation-------------------------*/
 /*-------------------------------------------------------------------------*/
 
-inline MCFClass::Index MCFSimplex::MCFSNde( MCFClass::cIndex i )
-{
- if( usePrimalSimplex )
-  return( Index( ( (arcsP + i)->tail - nodesP + 1 ) - USENAME0 ) );
- else
-  return( Index( ( (arcsD + i)->tail - nodesD + 1 ) - USENAME0 ) );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFClass::Index MCFSimplex::MCFENde( MCFClass::cIndex i )
-{
- if( usePrimalSimplex )
-  return( Index( ( (arcsP + i)->head - nodesP + 1 ) - USENAME0 ) );
- else
-  return( Index( ( (arcsD + i)->head - nodesD + 1 ) - USENAME0 ) );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFClass::CNumber MCFSimplex::MCFCost( MCFClass::cIndex i )
-{
- if( usePrimalSimplex )
-  return( (arcsP + i)->cost );
- else
-  return( (arcsD + i)->cost );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFClass::CNumber MCFSimplex::MCFQCoef( MCFClass::cIndex i )
-{
- #if( QUADRATICCOST )
-  if( usePrimalSimplex )
-   return( (arcsP + i)->quadraticCost );
-  else
-   return( (arcsD + i)->quadraticCost );
- #else
-  return( 0 );
- #endif
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFClass::FNumber MCFSimplex::MCFUCap( MCFClass::cIndex i )
-{
- if( usePrimalSimplex )
-  return( (arcsP + i)->upper );
- else
-  return( (arcsD + i)->upper );
- }
-
-/*-------------------------------------------------------------------------*/
-
-inline MCFClass::FNumber MCFSimplex::MCFDfct( MCFClass::cIndex i )
-{
- if( usePrimalSimplex )
-  return( (nodesP + i)->balance );
- else
-  return( (nodesD + i)->balance );
- }
-
-/*-------------------------------------------------------------------------*/
-
-#if( QUADRATICCOST )
-
-template <class A>
-inline MCFSimplex::FONumber MCFSimplex::ReductCost( A *a )
-{
- FONumber redc = (a->tail)->potential - (a->head)->potential;
- redc = redc + a->cost;
- redc = redc + a->quadraticCost * a->flow;
- return( redc );
- }
-
-#else
-
-template <class A>
-inline MCFSimplex::CNumber MCFSimplex::ReductCost( A *a )
-{
- CNumber redc = (a->tail)->potential - (a->head)->potential;
- redc = redc + a->cost;
- return( redc );
- }
-
-#endif
+ };  // end( class MCFSimplex )
 
 /*-------------------------------------------------------------------------*/
  
-};  // end( namespace MCFClass_di_unipi_it )
+}  // end( namespace MCFClass_di_unipi_it )
 
 /*-------------------------------------------------------------------------*/
 /*-------------------------------------------------------------------------*/

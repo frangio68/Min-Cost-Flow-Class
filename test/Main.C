@@ -11,21 +11,15 @@
  * from file and solved. In addition, the same problem can be written on a
  * file in MPS format. 
  *
- * \version 4.01
- *
- * \date 27 - 02 - 2020
- *
  * \author Alessandro Bertolini \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2006 - 2020 by Alessandro Bertolini, Antonio Frangioni
+ * Copyright &copy by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
