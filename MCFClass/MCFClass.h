@@ -47,7 +47,7 @@
 
 #define USENAME0 0
 
-/** @}  end( group( MCFCLASS_MACROS ) ) */ 
+/** @} end( group( MCFCLASS_MACROS ) ) */ 
 /*--------------------------------------------------------------------------*/
 /*------------------------------ INCLUDES ----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -76,10 +76,6 @@ namespace MCFClass_di_unipi_it
 
 /*--------------------------------------------------------------------------*/
 /*-------------------------- CLASS MCFClass --------------------------------*/
-/*--------------------------------------------------------------------------*/
-/** @defgroup MCFCLASS_CLASSES Classes in MCFClass.h
- *  @{ */
-
 /*--------------------------------------------------------------------------*/
 /*--------------------------- GENERAL NOTES --------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -306,7 +302,6 @@ class MCFClass {
 
   enum MCFStatus { kUnSolved = -1 , ///< no solution available
                    kOK = 0 ,        ///< optimal solution found
-
                    kStopped ,       ///< optimization stopped
                    kUnfeasible ,    ///< problem is unfeasible
                    kUnbounded ,     ///< problem is unbounded
@@ -1625,9 +1620,14 @@ class MCFClass {
    CloseArc() above] (*not* Deleted, see DelArc() below) and the deficit is
    set to zero.
 
-   Il furthermore `name' is the last node, the number of nodes as reported by
-   MCFn() is reduced by at least one, until the n-th node is not a deleted
-   one. */
+   Note that deleting a node leaves a "hole" in the set of node names: the
+   number of nodes as reported by MCFn() remains the same (save for the case
+   described next). No attempt at keeping a consecutive set of valid node
+   names is done: if this is important, it's the user who have to work
+   towards such a goal by "moving" nodes, i.e., deleting and re-adding them,
+   see AddNode(). The only exception is if `name' here is the last node; in
+   this case the number of nodes as reported by MCFn() is reduced by at least
+   one, until the n-th node is not a deleted one. */
 
  virtual void DelNode( Index name ) = 0;
 
@@ -1640,10 +1640,19 @@ class MCFClass {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// adds a ned node
-/** Add a new node with deficit aDfct, returning its name. Inf<Index>() is
+/** Add a new node with deficit aDfct, returning its name. Inf< Index >() is
     returned if there is no room for a new node. Remember that the node names
     are either { 0 .. nmax - 1 } or { 1 .. nmax }, depending on the value of
-    USENAME0. */
+    USENAME0.
+
+    The handling of the set of node names should be arranged in a way that
+    "tries as much as possible to have a consecutive set of small names
+    without trying to hard". That is, if there are no deleted nodes (see
+    DelNode()), then the new node name will be MCFn() + 1, with MCFn() being
+    the value prior to the call, and MCFn() increasing by one after the call.
+    If, instead, there are deleted nodes, then the new node name will be the
+    name of the currently deleted node with smaller name, and MCFn() will
+    remain the same. */
 
  virtual Index AddNode( FNumber aDfct ) = 0;
 
@@ -1665,9 +1674,14 @@ class MCFClass {
     associated with a deleted arc is lost and `name' is made available as a
     name for new arcs to be created with AddArc() [see below].
 
-    Il furthermore `name' is the last arc, the number of arcs as reported by
-    MCFm() is reduced by at least one, until the m-th arc is not a deleted
-    one. Otherwise, the flow on the arc is always ensured to be 0. */
+    Note that deleting an arc leaves a "hole" in the set of node arcs: the
+    number of arcs as reported by MCFm() remains the same (save for the case
+    described next). No attempt at keeping a consecutive set of valid arc
+    names is done: if this is important, it's the user who have to work
+    towards such a goal by "moving" arcs, i.e., deleting and re-adding them,
+    see AddArc(). The only exception is if `name' here is the last arc; in
+    this case the number of arcs as reported by MCFm() is reduced by at least
+    one, until the m-th arc is not a deleted one. */
 
  virtual void DelArc( Index name ) = 0;
 
@@ -1684,7 +1698,16 @@ class MCFClass {
 /// adds a new arc
 /** Add the new arc ( Start , End ) with cost aC and capacity aU, returning
     its name. Inf<Index>() is returned if there is no room for a new arc.
-    Remember that arc names go from 0 to mmax - 1. */
+    Remember that arc names go from 0 to mmax - 1.
+
+    The handling of the set of arc names should be arranged in a way that
+    "tries as much as possible to have a consecutive set of small names
+    without trying to hard". That is, if there are no deleted arcs (see
+    DelArc()), then the new node name will be MCFm() + 1, with MCFm() being
+    the value prior to the call, and MCFm() increasing by one after the call.
+    If, instead, there are deleted nodes, then the new arc name will be the
+    name of the currently deleted arc with smaller name, and MCFm() will
+    remain the same. */
 
  virtual Index AddArc( Index Start , Index End ,
 		       FNumber aU , CNumber aC ) = 0; 

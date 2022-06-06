@@ -245,16 +245,20 @@ class RelaxIV : public MCFClass {
 
 /*--------------------------------------------------------------------------*/
 // set double parameters of the algorithm
-/* Set double parameters of the algorithm. This only calls the base class
- * method. It should not be necessary, but sometimes it is.
+/* Set double parameters of the algorithm.
  *
- * not necessary: RelaxIV has no double parameters
+ * This should in princible not be necessary, as RelaxIV has no double
+ * parameters to set. However, without this being well-defined, template
+ * classes having RelaxIV as template type may fail to be able to use the
+ * base class method in its stead and resort to wrongly calling the
+ * SetPar( , int ) version instead (no idea why), so this useless method has
+ * to be kept here. */
 
    void SetPar( int par , double val ) override {
     MCFClass::SetPar( par , val );
     }
 
-----------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 /** Returns one of the integer parameters of the algorithm.
 
    @param par  is the parameter to return [see SetPar( int ) for comments];
@@ -506,10 +510,10 @@ class RelaxIV : public MCFClass {
 
    bool IsClosedArc( Index name ) const override {
     #if( DYNMC_MCF_RIV > 2 )
-     return( ( RC[ name + 1 ] == Inf<CNumber>() ) &&
-	     ( Startn[ name + 1 ] < Inf<Index>() ) );
+     return( ( RC[ name + 1 ] == Inf< CNumber >() ) &&
+	     ( Startn[ name + 1 ] < Inf< Index >() ) );
     #elif( DYNMC_MCF_RIV )
-     return( RC[ name + 1 ] == Inf<CNumber>() );
+     return( RC[ name + 1 ] == Inf< CNumber >() );
     #else
      return( false );
     #endif
@@ -540,7 +544,7 @@ class RelaxIV : public MCFClass {
 
    bool IsDeletedArc( Index name ) const override {
     #if( DYNMC_MCF_RIV > 2 )
-     return( Startn[ name + 1 ] == Inf<Index>() );
+     return( Startn[ name + 1 ] == Inf< Index >() );
     #else
      return( false );
     #endif
@@ -729,106 +733,108 @@ class RelaxIV : public MCFClass {
 /*----------------------- PRIVATE DATA STRUCTURES  -------------------------*/
 /*--------------------------------------------------------------------------*/
 
- FRow X;                  // arc Flows
- FRow U;                  // arc residual capacities
- FRow Cap;                // arc Capacities
+ FRow X;                  ///< arc Flows
+ FRow U;                  ///< arc residual capacities
+ FRow Cap;                ///< arc Capacities
 
- CRow C;                  // arc Costs
- CRow RC;                 // arc Reduced Costs
+ CRow C;                  ///< arc Costs
+ CRow RC;                 ///< arc Reduced Costs
 
- FRow B;                  // node deficits vector
- FRow Dfct;               // node residual deficits
+ FRow B;                  ///< node deficits vector
+ FRow Dfct;               ///< node residual deficits
 
- FONumber FO;             // Objective Function value
+ FONumber FO;             ///< Objective Function value
 
- Index_Set tfstou;        // tfstou e tnxtou describe the subsets of the
- Index_Set tfstin;        // forward stars composed by balanced arcs;
- Index_Set tnxtin;        // tfstin e tnxtin have the same function but for
- Index_Set tnxtou;        // backward stars
+ Index_Set tfstou;        ///< first forward balanced arc
+ Index_Set tnxtou;        ///< next forward balanced arc
+ Index_Set tfstin;        ///< first backward balanced arc
+ Index_Set tnxtin;        ///< next backward balanced arc
 
- Index nb_pos;            // number of "directed" ...
- Index nb_neg;            // ... and "inverse" balanced arcs
+ Index nb_pos;            ///< number of "directed" balanced arcs
+ Index nb_neg;            ///< number of "inverse" balanced arcs
 
  #if( DYNMC_MCF_RIV > 2 )
-  Index ffp;              // first free position in arc vectors
+ Index ffp;  ///< first free arc name, InINF if none
+	     /**< ffp, if not-InINF, is the head of a queue of available
+	      * arc names implemented in Endn[]. That is, Endn[ ffp ] is
+	      * the next available name, Endn[ Endn[ ffp ] ] is the one
+	      * after, and so on. The queue is kept ordered by arc name,
+	      * which requires O( number of deleted arcs ) in DelArc() but
+	      * O( 1 ) in AddArc(), and it is InINF-terminated. */
  #endif
 
  #if( AUCTION )
-  bool crash;             // true => initialization is perfomed by the
-                          // auction routine, false => it is performed by
-			  // single node relaxation iterations
+  bool crash;             /**< true => initialization is perfomed by the
+			   * auction routine, false => it is performed by
+			   * single node relaxation iterations */
  #endif
 
- int iter;                // number of iterations (of both types)
- int num_augm;            // number of flow augmentation steps
+ int iter;                ///< number of iterations (of both types)
+ int num_augm;            ///< number of flow augmentation steps
  #if( RELAXIV_STATISTICS )
-  int nmultinode;         // number of multinode iterations
-  int num_ascnt;          // number of multinode ascent steps
+  int nmultinode;         ///< number of multinode iterations
+  int num_ascnt;          ///< number of multinode ascent steps
   #if( AUCTION )
-   int nsp;               // n. of auction/shortest path iterations
+   int nsp;               ///< n. of auction/shortest path iterations
   #endif
  #endif
 
- Index error_node;        // error handling variables: if the problem is
- Index error_info;        // found to be unfeasible, these variables contain
-                          // a description of the kind of unfeasibility and
-                          // where it is located. error_info is
-                          // 1 unfeasibility detected in PreProcessing(): out
-                          //   capacity of node error_node < - deficit
-                          // 2 unfeasibility detected in PreProcessing(): in
-                          //   capacity of node error_node < deficit
-                          // 3 exit during initialization by single node
-                          //   iterations: dual ascent feasible ray was found
-                          //   while increasing price of node error_node;
-                          // 4 exit during initialization by single node
-                          //   iterations: dual ascent feasible ray was found
-                          //   while decreasing price of node error_node;
-                          // 5 dual ascent feasible ray was found during a
-                          //   relaxation iterazion at node error_node with
-                          //   positive deficit;
-                          // 6 dual ascent feasible ray was found during a
-                          //   relaxation iterazion at node error_node with
-                          //   negative deficit;
-                          // 7 dual ascent feasible ray was found during a
-                          //   multinode relaxation iteration, error_node is
-                          //   the starting node of the iteration;
-                          // 8 problem has been detected unfeasible in
-                          //   Auction() initialization.
+ Index error_node;  ///< node where unfeasibility/unboundednedd is detected
 
- CRow Pi;          // node Potentials
+ Index error_info;  /**< 1 unfeasibility detected in PreProcessing(): out
+                     *     capacity of node error_node < - deficit
+                     *   2 unfeasibility detected in PreProcessing(): in
+                     *     capacity of node error_node < deficit
+                     *   3 exit during initialization by single node
+                     *     iterations: dual ascent feasible ray was found
+                     *     while increasing price of node error_node;
+                     *   4 exit during initialization by single node
+                     *     iterations: dual ascent feasible ray was found
+                     *     while decreasing price of node error_node;
+                     *   5 dual ascent feasible ray was found during a
+                     *     relaxation iterazion at node error_node with
+                     *     positive deficit;
+                     *   6 dual ascent feasible ray was found during a
+                     *     relaxation iterazion at node error_node with
+                     *     negative deficit;
+                     *   7 dual ascent feasible ray was found during a
+                     *     multinode relaxation iteration, error_node is
+                     *     the starting node of the iteration;
+                     *   8 problem has been detected unfeasible in
+                     *     Auction() initialization. */
 
- Bool_Vec mark;    // various temporaries for multinode iterations
- Index_Set save;
- Index_Set label;
- SIndex_Set Prdcsr;
+ CRow Pi;          ///< node Potentials
 
- Bool_Vec scan;    // in multinode iteration, scan denote that a
-                   // node belongs to S in the cut
- Index_Set queue;  // queue of non zero deficit nodes
- Index lastq;      // index of the last element in the queue
- Index prvnde;     // index of the element preceding lastqueue
+ Bool_Vec mark;      ///< temporary for multinode iterations
+ Index_Set save;     ///< temporary for multinode iterations
+ Index_Set label;    ///< temporary for multinode iterations
+ SIndex_Set Prdcsr;  ///< temporary for multinode iterations
 
- FRow DDNeg;       // positive directional derivative at nodes
- FRow DDPos;       // negative directional derivative at nodes
+ Bool_Vec scan;    ///< which node belongs to S in multinode iteration
+ Index_Set queue;  ///< queue of non zero deficit nodes
+ Index lastq;      ///< index of the last element in the queue
+ Index prvnde;     ///< index of the element preceding lastqueue
+
+ FRow DDNeg;       ///< positive directional derivative at nodes
+ FRow DDPos;       ///< negative directional derivative at nodes
 
  #if( AUCTION )
-  CRow SB_level;   // various temporaries used in Auction()
-  SIndex_Set extend_arc;
-  SIndex_Set SB_arc;
-  Index_Set FpushF;
-  Index_Set NxtpushF;
-  Index_Set FpushB;
-  Index_Set NxtpushB;
+  CRow SB_level;          ///< temporary used in Auction()
+  SIndex_Set extend_arc;  ///< temporary used in Auction()
+  SIndex_Set SB_arc;      ///< temporary used in Auction()
+  Index_Set FpushF;       ///< temporary used in Auction()
+  Index_Set NxtpushF;     ///< temporary used in Auction()
+  Index_Set FpushB;       ///< temporary used in Auction()
+  Index_Set NxtpushB;     ///< temporary used in Auction()
  #endif
 
- Index_Set Startn;  // Start ...
- Index_Set Endn;    // .. and End node of each edge
+ Index_Set Startn;  ///< Start node of each arc
+ Index_Set Endn;    ///< End node of each arc
 
- Index_Set FOu;     // index of the first edge exiting from node
- Index_Set FIn;     // index of the first edge entering into node
- Index_Set NxtOu;   // for each edge a, NxtOu[ a ] is the next edge 
-                    // exiting from Startn[ a ]
- Index_Set NxtIn;   // analogous for entering arcs
+ Index_Set FOu;     ///< first arc exiting from node
+ Index_Set NxtOu;   ///< next arc exiting from Startn[ a ]
+ Index_Set FIn;     ///< first arc entering into node
+ Index_Set NxtIn;   ///< next arc entering into Endn[ a ]
 
 /*--------------------------------------------------------------------------*/
 

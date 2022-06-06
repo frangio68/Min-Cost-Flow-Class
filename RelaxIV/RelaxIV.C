@@ -96,6 +96,16 @@ static MCFClass::cIndex maxdns = 10;
 /*--------------------------------------------------------------------------*/
 /*-------------------------- "PRIVATE" MACROS ------------------------------*/
 /*--------------------------------------------------------------------------*/
+/* Bitwise-encoded macro that enables costly checks on the data structures
+ * that should never be done in production versions of the code but can help
+ * during debugging.
+ * - bit 0: the FS() and BS() data structures are checked after that the
+ *          topology of the graph changes
+ */
+
+#define CHECK_DS 0
+
+/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #if( RELAXIV_STATISTICS )
  #define pp( x ) x++
@@ -264,7 +274,6 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
    NxtIn[ j ] = FIn[ i = Endn[ j ] ];
    FIn[ i ] = j;
    }
-
  #if( AUCTION )
   crash = false;
  #endif
@@ -277,7 +286,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
  #endif
 
  #if( DYNMC_MCF_RIV > 2 )
-  ffp = 0;
+   ffp = Inf< Index >();
  #endif
 
  status = MCFClass::kUnSolved;
@@ -1272,7 +1281,7 @@ MCFClass::MCFStatePtr RelaxIV::MCFGetState( void ) const
 
 void RelaxIV::MCFPutState( MCFClass::MCFStatePtr S )
 {
- RIVState *RS = dynamic_cast<RIVState*>( S );
+ RIVState * RS = dynamic_cast< RIVState * >( S );
  if( ! RS )
   return;
 
@@ -1744,6 +1753,9 @@ void RelaxIV::ChgUCap( Index arc , FNumber NCap )
 void RelaxIV::CloseArc( Index name )
 {
  #if( DYNMC_MCF_RIV )
+  if( IsClosedArc( name ) )  // closed already
+   return;                   // nothing to do
+
   delarci( name + 1 );
  #else
   throw( MCFException(
@@ -1792,6 +1804,9 @@ void RelaxIV::DelNode( Index name )
 void RelaxIV::OpenArc( Index name )
 {
  #if( DYNMC_MCF_RIV > 1 )
+  if( ! IsClosedArc( name ) )  // opened already
+   return;                     // nothing to do
+
   addarci( name + 1 );
  #else
   throw( MCFException(
@@ -1837,7 +1852,7 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
 {
  #if( DYNMC_MCF_RIV > 2 )
   Index arc = name + 1;
-  if( RC[ arc ] < Inf<CNumber>() )  // the arc is currently open- - - - - - -
+  if( RC[ arc ] < Inf< CNumber >() )  // the arc is currently open- - - - - -
    if( status || ( ! Senstv ) ) {  // no need to reoptimize - - - - - - - - -
     delarci( arc );
 
@@ -1956,10 +1971,10 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
    }      // end( else( reoptimization is required ) )- - - - - - - - - - - -
   else {  // the arc is currently closed- - - - - - - - - - - - - - - - - - -
           //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-   if( nSN < Inf<Index>() )
+   if( nSN < Inf< Index >() )
     Startn[ arc ] = nSN + USENAME0;
 
-   if( nEN < Inf<Index>() )
+   if( nEN < Inf< Index >() )
     Endn[ arc ] =  nEN + USENAME0;
    }
  #else
@@ -1971,22 +1986,55 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
 
 /*--------------------------------------------------------------------------*/
 
-void RelaxIV::DelArc( cIndex name )
+void RelaxIV::DelArc( Index name )
 {
  #if( DYNMC_MCF_RIV > 2 )
-  Index arc = name;
-  delarci( ++arc );
+  ++name;
+  if( Startn[ name ] == Inf< Index >() )  // deleted already
+   return;                                // nothing to do
 
-  if( arc == m ) {
-   while( arc && ( RC[ arc ] == Inf<CNumber>() ) )
-    arc--;
- 
-   m = arc;
+  // only call delarci() if the node is not closed, for if it is it has
+  // already been removed for FS() and BS(), while delarci() assumes it is
+  // still there
+  if( RC[ name ] < Inf< CNumber >() )
+   delarci( name );
+
+  Startn[ name ] = Inf< Index >();
+
+  if( name == m ) {
+   // special case, eliminating the last arc: decrease m up until the
+   // m-th arc is no longer deleted
+   while( m && ( Startn[ m ] == Inf< Index >() ) ) {
+    // the thusly deleted nodes (save the first one) are in the queue
+    // of deleted node names: remove them from the queue
+    Endn[ m ] = Inf< Index >();
+    --m;
+    }
+   if( ffp > m )  // the queue has been emptied
+    ffp = Inf< Index >();
    }
+  else {
+   // eliminating an arc "in the middle": put name in the proper place in
+   // the list of deleted arc names implemented in Endn[]
 
-  Startn[ arc ] = Inf<Index>();
-  Endn[ arc ] = ffp;
-  ffp = arc;
+   if( name < ffp ) {
+    // name is < than the first currently available name, so put if at the
+    // beginning of the list; this surely happen if the list if empty, i.e.,
+    // ffp = InINF (this puts Endn[ name ] == InINF, terminating the list)
+    Endn[ name ] = ffp;
+    ffp = name;
+    }
+   else {
+    // find the first name in the list such that its next element is > than
+    // name; this may be the last element of the list (next == InINF)
+    Index darc = ffp;
+    while( Endn[ darc ] < name )
+     darc = Endn[ darc ];
+    // slot name in that position of the list
+    Endn[ name ] = Endn[ darc ];
+    Endn[ darc ] = name;
+    }
+   }
  #else
   throw( MCFException(
 		"RelaxIV::DelArc() not implemented if DYNMC_MCF_RIV < 3" ) );
@@ -2002,22 +2050,19 @@ MCFClass::Index RelaxIV::AddArc( Index Start , Index End , FNumber aU ,
  #if( DYNMC_MCF_RIV > 2 )
   // select position - - - - - - - - - - - - - - - - - - - - - - - - - - - -
  
-  Index arc = ffp;
-  while( arc ) {   
-   ffp = Endn[ ffp ];
-
-   if( arc <= m )
-    break;
-
-   arc = ffp;
+ Index arc = ffp;  // first element in the list of available names
+ if( arc == Inf< Index >() ) {  // the list is empty
+  if( m < mmax )                // but there are available names at the end
+   arc = ++m;                   // increase m
+  else                          // there are no available names at the end
+   return( Inf< Index >() );    // return failure
    }
-
-  if( ! arc ) {
-   if( m < mmax ) {
-    arc = ++m;
-   } else {
-    return ( Inf< Index >() );
-   }
+ else {                         // the list is nonempty
+  ffp = Endn[ ffp ];            // advance the head: note that if ffp is the
+                                // last element in the list,
+                                // Endn[ ffp ] == InINF ==> ffp == InINF
+  if( ffp > m )                 // the next node was deleted
+   ffp = Inf< Index >();        // the list is now empty
   }
 
  // insert new arc in position arc - - - - - - - - - - - - - - - - - - - - -
@@ -2981,6 +3026,26 @@ void RelaxIV::chgcapi( Index i , FNumber NCap )
 
 void RelaxIV::delarci( Index arc )
 {
+ #if( CHECK_DS & 1 )
+  for( Index i = 1 ; i <= m ; ++i )
+   if( ( Startn[ i ] < Inf< Index >() ) && ( RC[ i ] < Inf< CNumber >() ) ) {
+    cIndex sn = Startn[ i ];
+    Index j = FOu[ sn ];
+    while( j && ( j != i ) )
+     j = NxtOu[ j ];
+    if( j != i )
+     throw( std::logic_error( "arc " + std::to_string( i ) +
+			      " not found in FS " + std::to_string( sn ) ) );
+    cIndex en = Endn[ i ];
+    j = FIn[ en ];
+    while( j && ( j != i ) )
+     j = NxtIn[ j ];
+    if( j != i )
+     throw( std::logic_error( "arc " + std::to_string( i ) +
+			      " not found in BS " + std::to_string( en ) ) );
+    }
+ #endif
+
  Index arc1 = FOu[ Startn[ arc ] ];
  if( arc1 == arc )
   FOu[ Startn[ arc ] ] = NxtOu[ arc1 ];
@@ -3007,7 +3072,7 @@ void RelaxIV::delarci( Index arc )
   }
 
  if( status || ( ! Senstv ) )
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
  else {
   Dfct[ Startn[ arc ] ] -= X[ arc ];
   Dfct[ Endn[ arc ] ] += X[ arc ];
@@ -3046,7 +3111,7 @@ void RelaxIV::delarci( Index arc )
   }
 
  X[ arc ] = 0;
- RC[ arc ] = Inf<CNumber>();
+ RC[ arc ] = Inf< CNumber >();
 
  }  // end( delarci )
 
@@ -3061,7 +3126,7 @@ void RelaxIV::addarci( Index arc )
  cIndex en = Endn[ arc ];
 
  if( status || ( ! Senstv ) )
-  status = MCFClass::kUnSolved;
+  status = kUnSolved;
  else {
   cFNumber Ua = Cap[ arc ];
   cCNumber RCa = ( RC[ arc ] += ( Pi[ sn ] - Pi[ en ] ) );
@@ -3077,12 +3142,14 @@ void RelaxIV::addarci( Index arc )
    U[ arc ] = Ua;
    }
 
-  if( ETZ( RCa , EpsCst ) ) {
-   tnxtou[ arc ] = tfstou[ sn ];
+  if( ETZ( RCa , EpsCst ) ) {      // if the arc is balanced
+   tnxtou[ arc ] = tfstou[ sn ];   // add it to the balanced FS( sn )
    tfstou[ sn ] = arc;
-   tnxtin[ arc ] = tfstin[ en ];
+   tnxtin[ arc ] = tfstin[ en ];   // add it to the balanced BS( en )
    tfstin[ en ] = arc;
    }
+  else                             // the arc is not balanced
+   tnxtou[ arc ] = tnxtin[ arc ] = arc;  // it is not in the FS/BS
   }
 
  // update FS & BS: this *must* be done *after* the call to cmptprices()- - -
@@ -3092,6 +3159,26 @@ void RelaxIV::addarci( Index arc )
  NxtIn[ arc ] = FIn[ en ];
  FIn[ en ] = arc;
 
+ #if( CHECK_DS & 1 )
+  for( Index i = 1 ; i <= m ; ++i )
+   if( ( Startn[ i ] < Inf< Index >() ) && ( RC[ i ] < Inf< CNumber >() ) ) {
+    cIndex sn = Startn[ i ];
+    Index j = FOu[ sn ];
+    while( j && ( j != i ) )
+     j = NxtOu[ j ];
+    if( j != i )
+     throw( std::logic_error( "arc " + std::to_string( i ) +
+			      " not found in FS " + std::to_string( sn ) ) );
+    cIndex en = Endn[ i ];
+    j = FIn[ en ];
+    while( j && ( j != i ) )
+     j = NxtIn[ j ];
+    if( j != i )
+     throw( std::logic_error( "arc " + std::to_string( i ) +
+			      " not found in BS " + std::to_string( en ) ) );
+    }
+ #endif
+ 
  }  // end( addarci )
 
 #endif  // DYNMC_MCF_RIV > 1
@@ -3103,13 +3190,13 @@ void RelaxIV::cmptprices( void )
 {
  CRow tPi = Pi + n;
  for( ; tPi > Pi ; )
-  *(tPi--) = Inf<CNumber>();        // reset all potentials to +INF
+  *(tPi--) = Inf< CNumber >();  // reset all potentials to +INF
 
  Index pcnt = n;           // # of potentials still to compute
  do {                      // outer loop: for all connected components- - - -
   do
    ++tPi;
-  while( *tPi < Inf<CNumber>() );   // search "root" of unvisited component
+  while( *tPi < Inf< CNumber >() );  // search "root" of unvisited component
 
   *tPi = 0;                // set any initial potential
   if( ! --pcnt )
