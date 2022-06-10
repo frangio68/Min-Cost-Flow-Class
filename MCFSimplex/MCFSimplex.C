@@ -158,8 +158,6 @@ MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
   // EpsOpt is the fixed precision of the quadratic Primal Simplex
  #endif
 
- newSession = true;
-
  pricingRule = kCandidateListPivot;
  forcedNumCandidateList = 0;
  forcedHotListSize = 0;
@@ -183,8 +181,10 @@ MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
  else
   nmax = mmax = 0;
 
- recomputeInitialBase = true;
-
+ Senstv = false;  //!! unlike what it should be, Senstv is false by default
+                  //!! since reoptimization has some issues that have not
+                  //!! been ironed out yet
+ 
  }  // end( MCFSimplex )
 
 /*--------------------------------------------------------------------------*/
@@ -290,209 +290,212 @@ void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
 
 void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
 {
- bool newUsePrimalSimplex = UsPrml;
  bool oldUsePrimalSimplex = usePrimalSimplex;
- char newPricingRule = WhchPrc;
  char oldPricingRule = pricingRule;
+ usePrimalSimplex = UsPrml;
+ pricingRule = WhchPrc;
 
- usePrimalSimplex = newUsePrimalSimplex;
- pricingRule = newPricingRule;
-
- if( ( ! usePrimalSimplex ) && ( pricingRule == kDantzig) ) {
+ if( ( ! usePrimalSimplex ) && ( pricingRule == kDantzig ) )
   pricingRule = kFirstEligibleArc;
-  newPricingRule = pricingRule;
-  }
 
- if( ( newUsePrimalSimplex != oldUsePrimalSimplex ) ||
-     ( newPricingRule != oldPricingRule ) ) {
-  MemDeAllocCandidateList();
+ if( ( usePrimalSimplex == oldUsePrimalSimplex ) &&
+     ( pricingRule == oldPricingRule ) )
+  return;
 
-  if( newUsePrimalSimplex != oldUsePrimalSimplex ) {
-   #if( QUADRATICCOST )
-     throw(
-      MCFException( "Primal Simplex is the only option if QUADRATICCOST == 1"
-                    ) );
-   }
-   #else
-    MemAlloc();
-    nodePType *nP = nodesP;
-    nodeDType *nD = nodesD;
-    arcPType *aP = arcsP;
-    arcDType *aD = arcsD;
+ if( ! ( nmax && mmax ) )  // instance not loaded yet
+  return;                  // nothing else to do
 
-    if( newUsePrimalSimplex ) { // from Dual to Primal
-     if( nodesD == NULL )
-      return;
-
-     if( newSession )
-      CreateInitialDualBase();
-
-     dummyRootP = nodesP + nmax;
-     stopNodesP = nodesP + n;
-     dummyArcsP = arcsP + mmax;
-     stopArcsP = arcsP + m;
-     stopDummyP = dummyArcsP + n;
-     // Copy the old Dual data structure in a new Primal data structure
-     while( nD != stopNodesD ) {
-      nP->prevInT = nodesP + ( nD->prevInT - nodesD );
-      nP->nextInT = nodesP + ( nD->nextInT - nodesD );
-      nP->enteringTArc = arcsP + ( nD->enteringTArc - arcsD );
-      nP->balance = nD->balance;
-      nP->potential = nD->potential;
-      nP->subTreeLevel = nD->subTreeLevel;
-      nP++;
-      nD++;
-      }
-
-     dummyRootP->prevInT = NULL;
-     dummyRootP->nextInT = nodesP + ( dummyRootD->nextInT - nodesD );
-     dummyRootP->enteringTArc = arcsP + ( dummyRootD->enteringTArc - arcsD );
-     dummyRootP->balance = dummyRootD->balance;
-     dummyRootP->potential = dummyRootD->potential;
-     dummyRootP->subTreeLevel = dummyRootD->subTreeLevel;
-     while( aD != stopArcsD ) {
-      aP->tail = nodesP + ( aD->tail - nodesD );
-      aP->head = nodesP + ( aD->head - nodesD );
-      aP->flow = aD->flow;
-      aP->cost = aD->cost;
-      aP->ident = aD->ident;
-      aP->upper = aD->upper;
-      aP++;
-      aD++;
-      }
-
-     aP = dummyArcsP;
-     aD = dummyArcsD;
-     while( aD != stopDummyD ) {
-      aP->tail = nodesP + ( aD->tail - nodesD );
-      aP->head = nodesP + ( aD->head - nodesD );
-      aP->flow = aD->flow;
-      aP->cost = aD->cost;
-      aP->ident = aD->ident;
-      if( ( ETZ(aP->flow, EpsFlw) ) && (aP->ident == AT_UPPER) )
-       aP->ident = AT_LOWER;
-
-      aP->upper = Inf<FNumber>();
-      aP++;
-      aD++;
-      }
-
-     MemDeAlloc(false);
-     if( Senstv && ( status != kUnSolved ) ) {
-      nodePType *node = dummyRootP;
-      for( Index i = 0 ; i < n ; i++ )
-       node = node->nextInT;
-
-      node->nextInT = NULL;
-      dummyRootP->prevInT = NULL;
-      dummyRootP->enteringTArc = NULL;
-      // balance the flow
-      CreateInitialPModifiedBalanceVector();
-      PostPVisit( dummyRootP );
-      // restore the primal admissibility
-      BalanceFlow( dummyRootP );
-      ComputePotential( dummyRootP );
-      }
-     else
-      status = kUnSolved;
-     }
-   else {  // from Primal to Dual
-    if( nodesP == NULL )
-     return;
-
-    if( newSession )
-     CreateInitialPrimalBase();
-
-    dummyRootD = nodesD + nmax;
-    stopNodesD = nodesD + n;
-    dummyArcsD = arcsD + mmax;
-    stopArcsD = arcsD + m;
-    stopDummyD = dummyArcsD + n;
-    // Copy the old Primal data structure in a new Dual data structure
-    while( nP != stopNodesP ) {
-     nD->prevInT = nodesD + ( nP->prevInT - nodesP );
-     nD->nextInT = nodesD + ( nP->nextInT - nodesP );
-     nD->enteringTArc = arcsD + ( nP->enteringTArc - arcsP );
-     nD->balance = nP->balance;
-     nD->potential = nP->potential;
-     nD->subTreeLevel = nP->subTreeLevel;
-     nP++;
-     nD++;
-     }
-
-    dummyRootD->prevInT = NULL;
-    dummyRootD->nextInT = nodesD + ( dummyRootP->nextInT - nodesP );
-    dummyRootD->enteringTArc = NULL;
-    dummyRootD->balance = dummyRootP->balance;
-    dummyRootD->potential = dummyRootP->potential;
-    dummyRootD->subTreeLevel = dummyRootP->subTreeLevel;
-    while( aP != stopArcsP ) {
-     aD->tail = nodesD + ( aP->tail - nodesP );
-     aD->head = nodesD + ( aP->head - nodesP );
-     aD->flow = aP->flow;
-     aD->cost = aP->cost;
-     aD->ident = aP->ident;
-     aD->upper = aP->upper;
-     aP++;
-     aD++;
-     }
-
-    aP = dummyArcsP;
-    aD = dummyArcsD;
-    while( aP != stopDummyP ) {
-     aD->tail = nodesD + ( aP->tail - nodesP );
-     aD->head = nodesD + ( aP->head - nodesP );
-     aD->flow = aP->flow;
-     aD->cost = aP->cost;
-     aD->ident = aP->ident;
-     aD->upper = 0;
-     aP++;
-     aD++;
-     }
-
-    CreateAdditionalDualStructures();
-    MemDeAlloc(true);
-    nodeDType *node = dummyRootD;
-    for( Index i = 0 ; i < n ; i++ )
-     node = node->nextInT;
-
-    node->nextInT = NULL;
-    dummyRootD->enteringTArc = NULL;
-    dummyRootD->prevInT = NULL;
-    if( Senstv && ( status != kUnSolved ) ) {
-     // fix every flow arc according to its reduct cost
-     for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
-      if( (arc->ident == AT_LOWER) && LTZ( ReductCost( arc ) , EpsCst ) ) {
-       arc->flow = arc->upper;
-       arc->ident = AT_UPPER;
-       }
-
-      if( ( arc->ident == AT_UPPER ) && GTZ( ReductCost( arc ) , EpsCst ) ) {
-       arc->flow = 0;
-       arc->ident = AT_LOWER;
-       }
-      }
-
-     // balance the flow
-     CreateInitialDModifiedBalanceVector();
-     PostDVisit( dummyRootD );
-     }
-    else
-     status = kUnSolved;
-    }
-   //#endif
-   }
-#endif
- if( newPricingRule == kFirstEligibleArc ) {
-  if( newUsePrimalSimplex )
+ // candidate lists change both if the pricing rule changes and if
+ // the primal/dual simplex change
+ MemDeAllocCandidateList();
+ if( pricingRule == kFirstEligibleArc ) {
+  if( usePrimalSimplex )
    arcToStartP = arcsP;
   else
    arcToStartD = arcsD;
   }
 
- if( ( nmax && mmax ) && ( newPricingRule == kCandidateListPivot ) )
+ if( pricingRule == kCandidateListPivot )
   MemAllocCandidateList();
+
+ if( usePrimalSimplex == oldUsePrimalSimplex )
+  return;
+
+ #if( QUADRATICCOST )
+  if( ! usePrimalSimplex )
+   throw( MCFException(
+	     "Primal Simplex is the only option if QUADRATICCOST == 1" ) );
+ #endif
+
+ // allocate the data structures for the new algorithm, temporarily
+ // leaving those of the old algorithm in place so as to copy them
+ MemAlloc();
+
+ // copy the old data structure of the old algorithm to the data structure
+ // of the new one
+ 
+ nodePType *nP = nodesP;
+ nodeDType *nD = nodesD;
+ arcPType *aP = arcsP;
+ arcDType *aD = arcsD;
+
+ if( usePrimalSimplex ) {  // from Dual to Primal
+  if( status == kUnSolved )
+   CreateInitialDualBase();
+
+  dummyRootP = nodesP + nmax;
+  stopNodesP = nodesP + n;
+  dummyArcsP = arcsP + mmax;
+  stopArcsP = arcsP + m;
+  stopDummyP = dummyArcsP + n;
+  while( nD != stopNodesD ) {
+   nP->prevInT = nodesP + ( nD->prevInT - nodesD );
+   nP->nextInT = nodesP + ( nD->nextInT - nodesD );
+   nP->enteringTArc = arcsP + ( nD->enteringTArc - arcsD );
+   nP->balance = nD->balance;
+   nP->potential = nD->potential;
+   nP->subTreeLevel = nD->subTreeLevel;
+   nP++;
+   nD++;
+   }
+
+  dummyRootP->prevInT = NULL;
+  dummyRootP->nextInT = nodesP + ( dummyRootD->nextInT - nodesD );
+  dummyRootP->enteringTArc = arcsP + ( dummyRootD->enteringTArc - arcsD );
+  dummyRootP->balance = dummyRootD->balance;
+  dummyRootP->potential = dummyRootD->potential;
+  dummyRootP->subTreeLevel = dummyRootD->subTreeLevel;
+  while( aD != stopArcsD ) {
+   aP->tail = nodesP + ( aD->tail - nodesD );
+   aP->head = nodesP + ( aD->head - nodesD );
+   aP->flow = aD->flow;
+   aP->cost = aD->cost;
+   aP->ident = aD->ident;
+   aP->upper = aD->upper;
+   aP++;
+   aD++;
+   }
+
+  aP = dummyArcsP;
+  aD = dummyArcsD;
+  while( aD != stopDummyD ) {
+   aP->tail = nodesP + ( aD->tail - nodesD );
+   aP->head = nodesP + ( aD->head - nodesD );
+   aP->flow = aD->flow;
+   aP->cost = aD->cost;
+   aP->ident = aD->ident;
+   if( ( ETZ(aP->flow , EpsFlw) ) && ( aP->ident == AT_UPPER ) )
+    aP->ident = AT_LOWER;
+
+   aP->upper = Inf<FNumber>();
+   aP++;
+   aD++;
+   }
+
+  MemDeAlloc( false );  // delete the dual data structure
+  if( Senstv && ( status != kUnSolved ) ) {
+   nodePType *node = dummyRootP;
+   for( Index i = 0 ; i < n ; i++ )
+    node = node->nextInT;
+
+   node->nextInT = NULL;
+   dummyRootP->prevInT = NULL;
+   dummyRootP->enteringTArc = NULL;
+   // balance the flow
+   CreateInitialPModifiedBalanceVector();
+   PostPVisit( dummyRootP );
+   // restore the primal admissibility
+   BalanceFlow( dummyRootP );
+   ComputePotential( dummyRootP );
+   }
+  else
+   status = kUnSolved;
+
+  return;
   }
+
+ // from Primal to Dual
+
+ if( status == kUnSolved )
+  CreateInitialPrimalBase();
+
+ dummyRootD = nodesD + nmax;
+ stopNodesD = nodesD + n;
+ dummyArcsD = arcsD + mmax;
+ stopArcsD = arcsD + m;
+ stopDummyD = dummyArcsD + n;
+ while( nP != stopNodesP ) {
+  nD->prevInT = nodesD + ( nP->prevInT - nodesP );
+  nD->nextInT = nodesD + ( nP->nextInT - nodesP );
+  nD->enteringTArc = arcsD + ( nP->enteringTArc - arcsP );
+  nD->balance = nP->balance;
+  nD->potential = nP->potential;
+  nD->subTreeLevel = nP->subTreeLevel;
+  nP++;
+  nD++;
+  }
+
+ dummyRootD->prevInT = NULL;
+ dummyRootD->nextInT = nodesD + ( dummyRootP->nextInT - nodesP );
+ dummyRootD->enteringTArc = NULL;
+ dummyRootD->balance = dummyRootP->balance;
+ dummyRootD->potential = dummyRootP->potential;
+ dummyRootD->subTreeLevel = dummyRootP->subTreeLevel;
+ while( aP != stopArcsP ) {
+  aD->tail = nodesD + ( aP->tail - nodesP );
+  aD->head = nodesD + ( aP->head - nodesP );
+  aD->flow = aP->flow;
+  aD->cost = aP->cost;
+  aD->ident = aP->ident;
+  aD->upper = aP->upper;
+  aP++;
+  aD++;
+  }
+
+ aP = dummyArcsP;
+ aD = dummyArcsD;
+ while( aP != stopDummyP ) {
+  aD->tail = nodesD + ( aP->tail - nodesP );
+  aD->head = nodesD + ( aP->head - nodesP );
+  aD->flow = aP->flow;
+  aD->cost = aP->cost;
+  aD->ident = aP->ident;
+  aD->upper = 0;
+  aP++;
+  aD++;
+  }
+
+ CreateAdditionalDualStructures();
+ MemDeAlloc( true );  // delete primal data structure
+
+ nodeDType *node = dummyRootD;
+ for( Index i = 0 ; i < n ; i++ )
+  node = node->nextInT;
+
+ node->nextInT = NULL;
+ dummyRootD->enteringTArc = NULL;
+ dummyRootD->prevInT = NULL;
+ if( Senstv && ( status != kUnSolved ) ) {
+  // fix every flow arc according to its reduct cost
+  for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
+   if( (arc->ident == AT_LOWER) && LTZ( ReductCost( arc ) , EpsCst ) ) {
+    arc->flow = arc->upper;
+    arc->ident = AT_UPPER;
+    }
+
+   if( ( arc->ident == AT_UPPER ) && GTZ( ReductCost( arc ) , EpsCst ) ) {
+    arc->flow = 0;
+    arc->ident = AT_LOWER;
+    }
+   }
+
+  // balance the flow
+  CreateInitialDModifiedBalanceVector();
+  PostDVisit( dummyRootD );
+  }
+ else
+  status = kUnSolved;
+
  }  // end( SetAlg )
 
 /*-------------------------------------------------------------------------*/
@@ -537,7 +540,7 @@ void MCFSimplex::SetPar( int par , int val )
 
  default:
 
-  MCFClass::SetPar(par, val);
+  MCFClass::SetPar( par , val );
   }
  }  // end( SetPar( int ) )
 
@@ -565,23 +568,18 @@ void MCFSimplex::SolveMCF( void )
  if( MCFt )
   MCFt->Start();
 
- #if QUADRATICCOST
-  if( recomputeInitialBase )
+ if( status == kUnSolved ) {
+  #if( QUADRATICCOST )
    CreateInitialPrimalBase();
- #else
-  if( recomputeInitialBase ) {
+  #else
    if( usePrimalSimplex )
     CreateInitialPrimalBase();
    else
     CreateInitialDualBase();
-   }
- #endif
-  
- status = kUnSolved;
- newSession = false;
- recomputeInitialBase = true;
+  #endif
+  }
 
- #if QUADRATICCOST
+ #if( QUADRATICCOST )
   PrimalSimplex();
  #else
   if( usePrimalSimplex )
@@ -1496,89 +1494,89 @@ void MCFSimplex::CloseArc( Index name )
  if( name >= m )
   return;
 
+ #if( QUADRATICCOST )
+  throw( MCFException( "CloseArc not implemented if QUADRATICCOST == 1" ) );
+ #endif
+
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP + name;
-  #if( QUADRATICCOST )
-   if( arc->cost == Inf<CNumber>() )
-    return;
-  #else
-   if( arc->ident < BASIC )
-    return;
+  if( arc->ident < BASIC )  // either closed already or deleted
+   return;                  // nothing to do
 
-   arc->ident = CLOSED;
-  #endif
-
-  arc->cost = Inf<CNumber>();
+  arc->ident = CLOSED;
   arc->flow = 0;
 
-  if( Senstv && ( status != kUnSolved ) ) {
-   nodePType *node = NULL;
-   if( (arc->tail)->enteringTArc == arc )
-    node = arc->tail;
-
-   if( (arc->head)->enteringTArc == arc )
-    node = arc->head;
-
-   if( node ) {
-    node->enteringTArc = dummyArcsP + ( node - nodesP );
-    nodePType *last = CutAndUpdateSubtree( node , -node->subTreeLevel + 1 );
-    PasteSubtree( node , last , dummyRootP );
-    node->enteringTArc = dummyArcsP + ( node - nodesP );
-    }
-
-   CreateInitialPModifiedBalanceVector();
-   PostPVisit(dummyRootP);
-   BalanceFlow(dummyRootP);                
-   ComputePotential(dummyRootP);
-   }
-  else
+  if( ! Senstv )
    status = kUnSolved;
+
+  if( status == kUnSolved )
+   return;
+
+  nodePType *node = NULL;
+  if( (arc->tail)->enteringTArc == arc )
+   node = arc->tail;
+
+  if( (arc->head)->enteringTArc == arc )
+   node = arc->head;
+
+  if( node ) {
+   node->enteringTArc = dummyArcsP + ( node - nodesP );
+   nodePType *last = CutAndUpdateSubtree( node , -node->subTreeLevel + 1 );
+   PasteSubtree( node , last , dummyRootP );
+   node->enteringTArc = dummyArcsP + ( node - nodesP );
+   }
+
+  CreateInitialPModifiedBalanceVector();
+  PostPVisit( dummyRootP );
+  BalanceFlow( dummyRootP );                
+  ComputePotential( dummyRootP );
+  return;
   }
- else {
-  #if( QUADRATICCOST == 0 )
-   arcDType *arc = arcsD + name;
-   if( arc->ident < BASIC )
-    return;
 
-   arc->flow = 0;
-   arc->ident = CLOSED;
+ arcDType *arc = arcsD + name;
+ if( arc->ident < BASIC )  // either closed already or deleted
+  return;                  // nothing to do
 
-   if( Senstv && ( status != kUnSolved ) ) {
-    nodeDType *node = NULL;
-    if( ( arc->tail )->enteringTArc == arc)
-     node = arc->tail;
+ arc->ident = CLOSED;
+ arc->flow = 0;
 
-    if( ( arc->head )->enteringTArc == arc )
-     node = arc->head;
+ if( ! Senstv )
+  status = kUnSolved;
 
-    if( node ) {
-     node->enteringTArc = dummyArcsD + ( node - nodesD );
-     nodeDType *last = CutAndUpdateSubtree( node , -node->subTreeLevel + 1 );
-     PasteSubtree( node , last , dummyRootD );
-     node->enteringTArc = dummyArcsD + ( node - nodesD );
-     ComputePotential( dummyRootD );
+ if( status == kUnSolved )
+  return;
 
-     for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
-      if( a->ident > BASIC ) {
-       if( GTZ( ReductCost( a ) , EpsCst ) ) {
-	a->flow = 0;
-	a->ident = AT_LOWER;
-        }
-       else {
-	a->flow = a->upper; 
-	a->ident = AT_UPPER;
-        }
-       }
+ nodeDType *node = NULL;
+ if( ( arc->tail )->enteringTArc == arc)
+  node = arc->tail;
+
+ if( ( arc->head )->enteringTArc == arc )
+  node = arc->head;
+
+ if( node ) {
+  node->enteringTArc = dummyArcsD + ( node - nodesD );
+  nodeDType *last = CutAndUpdateSubtree( node , -node->subTreeLevel + 1 );
+  PasteSubtree( node , last , dummyRootD );
+  node->enteringTArc = dummyArcsD + ( node - nodesD );
+  ComputePotential( dummyRootD );
+
+  for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
+   if( a->ident > BASIC ) {
+    if( GTZ( ReductCost( a ) , EpsCst ) ) {
+     a->flow = 0;
+     a->ident = AT_LOWER;
      }
-
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit(dummyRootD);
-    ComputePotential(dummyRootD);
+    else {
+     a->flow = a->upper; 
+     a->ident = AT_UPPER;
+     }
     }
-   else
-    status = kUnSolved;
-  #endif
   }
+
+ CreateInitialDModifiedBalanceVector();
+ PostDVisit( dummyRootD );
+ ComputePotential( dummyRootD );
+
  }  // end( MCFSimplex::CloseArc )
 
 /*--------------------------------------------------------------------------*/
@@ -1608,7 +1606,7 @@ void MCFSimplex::DelNode( Index name )
    if( ( ( arc->tail ) == node) || ( ( arc->head ) == node ) ) {
     arc->flow = 0;
     #if( QUADRATICCOST )
-     arc->cost = Inf<CNumber>();
+     arc->cost = Inf< CNumber >();
     #else
      arc->ident = CLOSED;
     #endif
@@ -1619,7 +1617,7 @@ void MCFSimplex::DelNode( Index name )
    if( ( ( arc->tail ) == node ) || ( ( arc->head ) == node ) ) {
     arc->flow = 0;
     #if( QUADRATICCOST )
-     arc->cost = Inf<CNumber>();
+     arc->cost = Inf< CNumber >();
     #else
      arc->ident = CLOSED;
     #endif
@@ -1632,7 +1630,11 @@ void MCFSimplex::DelNode( Index name )
   ComputePotential( dummyRootP );
   }
  else {
-  #if( QUADRATICCOST == 0 )
+  #if( QUADRATICCOST )
+   throw( MCFException(
+       "DelNode not supported with dual simplex and QUADRATICCOST == 1" ) );
+
+  #else
    nodeDType *node = nodesD + name;
    nodeDType *last = CutAndUpdateSubtree( node , -node->subTreeLevel );
    nodeDType *n = node->nextInT;
@@ -1674,39 +1676,37 @@ void MCFSimplex::OpenArc( Index name )
  if( name >= m )
   return;
 
- if( usePrimalSimplex ) {
-  /* Quadratic case is not implemented for a theory bug.
-     Infact a closed arc in the quadratic case has its cost fixed to
-     infinity, and it's impossible to restore the old value. */
+ #if( QUADRATICCOST )
+  throw( MCFException( "OpenArc not implemented if QUADRATICCOST == 1" ) );
+ #endif
 
-  #if( QUADRATICCOST == 0 )
-   arcPType *arc = arcsP + name;
-   if( arc->ident == CLOSED ) {
-    arc->cost = 0;
-    arc->ident = AT_LOWER;
-    arc->flow = 0; 
-    }
-  #endif
+ if( usePrimalSimplex ) {
+  arcPType *arc = arcsP + name;
+  if( arc->ident < CLOSED )
+   throw( MCFException( "MCFSimplex::OpenArc: cannot open a deleted arc" ) );
+
+  if( arc->ident == CLOSED )  // if the arc was closed
+   arc->ident = AT_LOWER;     // it is now at the lower bound
+  return;  // else opening an open arc, which does nothing
   }
+
+ arcDType *arc = arcsD + name;
+ if( arc->ident < CLOSED )
+  throw( MCFException( "MCFSimplex::OpenArc: cannot open a deleted arc" ) );
+ if( arc->ident > CLOSED )  // arc is not closed
+  return;                   // nothing to do
+
+ if( GTZ( ReductCost( arc ) , EpsCst ) )
+  arc->ident = AT_LOWER;
  else {
-  #if( QUADRATICCOST == 0 )
-   arcDType *arc = arcsD + name;
-   if( arc->ident == CLOSED ) {
-    arc->cost = 0;
-    if( GTZ( ReductCost( arc ) , EpsCst ) )
-     arc->ident = AT_LOWER;
-    else {
-     arc->ident = AT_UPPER;
-     arc->flow = arc->upper;
-     if( Senstv && ( status != kUnSolved ) ) {
-      CreateInitialDModifiedBalanceVector();
-      PostDVisit( dummyRootD );
-      }
-     else
-      status = kUnSolved;
-     }
-    }
-  #endif
+  arc->ident = AT_UPPER;
+  arc->flow = arc->upper;
+  if( Senstv && ( status != kUnSolved ) ) {
+   CreateInitialDModifiedBalanceVector();
+   PostDVisit( dummyRootD );
+   }
+  else
+   status = kUnSolved;
   }
  }  // end( MCFSimplex:OpenArc )
 
@@ -1715,16 +1715,17 @@ void MCFSimplex::OpenArc( Index name )
 MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
 {
  if( n >= nmax )
-  return( Inf<Index>() );        
+  return( Inf< Index >() );        
 
  n++;
+
  if( usePrimalSimplex ) {
   nodePType *newNode = nodesP + n - 1;
   stopArcsP->tail = newNode;
   stopArcsP->head = dummyRootP;
-  stopArcsP->upper = Inf<FNumber>();
+  stopArcsP->upper = Inf< FNumber >();
   stopArcsP->flow = 0;
-  stopArcsP->cost = Inf<CNumber>();
+  stopArcsP->cost = Inf< CNumber >();
   #if( QUADRATICCOST )
    stopArcsP->quadraticCost = 0;
   #else
@@ -1738,7 +1739,7 @@ MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
   dummyRootP->nextInT = newNode;
   newNode->enteringTArc = stopArcsP--;
   newNode->potential = 0;
-  #if(QUADRATICCOST)
+  #if( QUADRATICCOST )
    newNode->sumQuadratic = 0;
   #endif
   }
@@ -1749,7 +1750,7 @@ MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
    stopArcsD->head = dummyRootD;
    stopArcsD->upper = 0;
    stopArcsD->flow = 0;
-   stopArcsD->cost = Inf<CNumber>();
+   stopArcsD->cost = Inf< CNumber >();
    stopArcsD->ident = BASIC;
    newNode->balance = aDfct;
    newNode->prevInT = dummyRootD;
@@ -1780,7 +1781,7 @@ void MCFSimplex::ChangeArc( Index name , Index nSN , Index nEN )
 
  CloseArc( name );
 
- #if QUADRATICCOST
+ #if( QUADRATICCOST )
   if( nSN <= n )
    (arcsP + name)->tail = (nodesP + nSN + USENAME0 - 1 );
   if( nEN <= n )
@@ -1811,17 +1812,17 @@ void MCFSimplex::DelArc( Index name )
  if( name >= m )
   return;
 
- #if QUADRATICCOST
+ #if( QUADRATICCOST )
   arcPType *arc = arcsP + name;
-  if( arc->upper == -Inf<FNumber>() )
+  if( arc->upper == -Inf< FNumber >() )
    return;
 
-  if( arc->cost < Inf<CNumber>() )
+  if( arc->cost < Inf< CNumber >() )
    CloseArc( name );
 
-  arc->upper = -Inf<FNumber>();
+  arc->upper = -Inf< FNumber >();
 
-  while( ( stopArcsP - 1 )->upper == -Inf<FNumber>() ) {
+  while( ( stopArcsP - 1 )->upper == -Inf< FNumber >() ) {
    --stopArcsP;
    if( ! --m )
     break;
@@ -1871,7 +1872,7 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP;
   #if( QUADRATICCOST )
-   while( ( arc != stopArcsP ) && ( arc->upper != -Inf<FNumber>() ) )
+   while( ( arc != stopArcsP ) && ( arc->upper != -Inf< FNumber >() ) )
   #else
    while( ( arc != stopArcsP ) && ( arc->ident > DELETED ) )
   #endif
@@ -1879,7 +1880,7 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
 
   if( arc == stopArcsP ) {
    if( m >= mmax )
-    return( Inf<Index>() );
+    return( Inf< Index >() );
 
    m++;
    stopArcsP++;
@@ -1899,62 +1900,56 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
   ComputePotential( dummyRootP );
   return( pos );
   }
- else {
-  #if( QUADRATICCOST == 0 )
-   arcDType *arc = arcsD;
-   while( ( arc->ident > DELETED ) && ( arc != stopArcsD ) )
-    arc++;
 
-   if( arc == stopArcsD ) {
-    if( m >= mmax )
-     return( Inf<Index>() );
+ #if( QUADRATICCOST == 0 )
+  arcDType *arc = arcsD;
+  while( ( arc->ident > DELETED ) && ( arc != stopArcsD ) )
+   arc++;
 
-    m++;
-    stopArcsD++;
+  if( arc == stopArcsD ) {
+   if( m >= mmax )
+    return( Inf< Index >() );
+
+   m++;
+   stopArcsD++;
+   }
+
+  Index pos = arc - arcsD;
+  arc->tail = nodesD + Start + USENAME0 - 1;
+  arc->head = nodesD + End + USENAME0 - 1;
+  arc->upper = aU;
+  arc->cost = aC;
+  if( GEZ( ReductCost( arc ) , EpsCst ) ) {
+   arc->flow = 0;
+   arc->ident = AT_LOWER;
+   if( Senstv && ( status != kUnSolved ) ) {
+    CreateInitialDModifiedBalanceVector();
+    PostDVisit( dummyRootD );
+    ComputePotential( dummyRootD );
     }
-
-   Index pos = arc - arcsD;
-   arc->tail = nodesD + Start + USENAME0 - 1;
-   arc->head = nodesD + End + USENAME0 - 1;
-   arc->upper = aU;
-   arc->cost = aC;
-   if( GEZ( ReductCost( arc ) , EpsCst ) ) {
-    arc->flow = 0;
-    arc->ident = AT_LOWER;
-    if( Senstv && ( status != kUnSolved ) ) {
-     CreateInitialDModifiedBalanceVector();
-     PostDVisit( dummyRootD );
-     ComputePotential( dummyRootD );
-     }
-    else
-     status = kUnSolved;
+   else
+    status = kUnSolved;
+   }
+  else {
+   arc->flow = arc->upper;
+   arc->ident = AT_UPPER;
+   if( Senstv && ( status != kUnSolved ) ) {
+    CreateInitialDModifiedBalanceVector();
+    PostDVisit( dummyRootD );
+    ComputePotential( dummyRootD );
     }
-   else {
-    arc->flow = arc->upper;
-    arc->ident = AT_UPPER;
-    if( Senstv && ( status != kUnSolved ) ) {
-     CreateInitialDModifiedBalanceVector();
-     PostDVisit( dummyRootD );
-     ComputePotential( dummyRootD );
-     }
-    else
-     status = kUnSolved;
-    }
+   else
+    status = kUnSolved;
+   }
 
-   ComputePotential( dummyRootD );
-   return( pos );
-  #endif
-  }
+  ComputePotential( dummyRootD );
+  return( pos );
+ #endif
+
  }  // end( MCFSimplex::AddArc )
 
 /*--------------------------------------------------------------------------*/
-
-void MCFSimplex::UsePastInformation( void )
-{
- recomputeInitialBase = false;
- ComputePotential( dummyRootP );
- }
-
+/*-------------------------- PRIVATE METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
 
 /*void MCFSimplex::LoadState( int *enterArcs, FNumber *flowEnterArcs,
@@ -2083,7 +2078,6 @@ if ( arcs[c].flow )
 c++;
 }
 #endif
-recomputeInitialBase = false;
 }*/
 
 /*--------------------------------------------------------------------------*/
@@ -2246,19 +2240,22 @@ void MCFSimplex::MemDeAllocCandidateList( void )
 
 void MCFSimplex::CreateInitialPrimalBase( void )
 {
- arcPType *arc;
- nodePType *node;
- for( arc = arcsP ; arc != stopArcsP ; arc++ ) {  // initialize real arcs
-  if ( arc->cost == Inf<CNumber>() )
-   continue;
-  arc->flow = 0;
-  #if( QUADRATICCOST == 0 )
-   arc->ident = AT_LOWER;
+ // initialize real arcs
+ for( arcPType * arc = arcsP ; arc != stopArcsP ; arc++ ) {
+  #if( QUADRATICCOST )
+  if( arc->cost == Inf< CNumber >() )  // deleted
+    continue;
+  #else
+   if( arc->ident < BASIC )  // closed or deleted
+    continue;
+  arc->ident = AT_LOWER;
   #endif
+  arc->flow = 0;
   }
 
- for( arc = dummyArcsP ; arc != stopDummyP ; arc++ ) {  // initialize dummy arcs
-  node = nodesP + ( arc - dummyArcsP );
+  // initialize dummy arcs
+ for( arcPType * arc = dummyArcsP ; arc != stopDummyP ; arc++ ) {
+  nodePType * node = nodesP + ( arc - dummyArcsP );
   if( node->balance > 0 ) {  // sink nodes 
    arc->tail = dummyRootP;
    arc->head = node;
@@ -2276,9 +2273,10 @@ void MCFSimplex::CreateInitialPrimalBase( void )
   #else
    arc->ident = BASIC;
   #endif
-  arc->upper = Inf<FNumber>();
+  arc->upper = Inf< FNumber >();
   }
 
+ // initialize dummy root node
  dummyRootP->balance = 0;
  dummyRootP->prevInT = NULL;
  dummyRootP->nextInT = nodesP;
@@ -2288,7 +2286,9 @@ void MCFSimplex::CreateInitialPrimalBase( void )
  #endif
  dummyRootP->potential = MAX_ART_COST;
  dummyRootP->subTreeLevel = 0;
- for( node = nodesP ; node != stopNodesP ; node++) {  // initialize nodes
+
+ // initialize other nodes
+ for( nodePType * node = nodesP ; node != stopNodesP ; node++) {
   node->prevInT = node - 1;
   node->nextInT = node + 1;
   node->enteringTArc = dummyArcsP + (node - nodesP);
@@ -2311,13 +2311,12 @@ void MCFSimplex::CreateInitialPrimalBase( void )
 
 void MCFSimplex::CreateInitialDualBase( void )
 {
- arcDType *arc;
- nodeDType *node;
- for( arc = dummyArcsD ; arc != stopDummyD ; arc++ ) {  // initialize dummy arcs
-  node = nodesD + ( arc - dummyArcsD );
+ // initialize dummy arcs
+ for( arcDType * arc = dummyArcsD ; arc != stopDummyD ; arc++ ) {
+  nodeDType * node = nodesD + ( arc - dummyArcsD );
   arc->tail = node;
   arc->head = dummyRootD;
-  arc->flow = -node->balance;
+  arc->flow = - node->balance;
   arc->cost = MAX_ART_COST;
   #if( QUADRATICCOST )
    arc->quadraticCost = 0;
@@ -2327,19 +2326,20 @@ void MCFSimplex::CreateInitialDualBase( void )
   arc->upper = 0;
   }
 
- for( arc = arcsD ; arc != stopArcsD ; arc++ ) {  // initialize real arcs
-  #if( QUADRATICCOST == 0 )
+ // initialize real arcs
+ for( arcDType * arc = arcsD ; arc != stopArcsD ; arc++ ) {
+  #if( ! QUADRATICCOST )
    if ( arc->ident < BASIC ) 
     continue;
   #endif
   if( GTZ( arc->cost , EpsCst ) ) {
    arc->flow = 0;
-   #if( QUADRATICCOST == 0 )
+   #if( ! QUADRATICCOST )
     arc->ident = AT_LOWER;
    #endif
    }
   else {
-   #if( QUADRATICCOST == 0 )
+   #if( ! QUADRATICCOST )
     arc->ident = AT_UPPER;
    #endif
    arc->flow = arc->upper;
@@ -2351,6 +2351,7 @@ void MCFSimplex::CreateInitialDualBase( void )
    }
   }
 
+ // initialize dummy root node
  dummyRootD->balance = 0;
  dummyRootD->prevInT = NULL;
  dummyRootD->nextInT = nodesD;
@@ -2360,7 +2361,9 @@ void MCFSimplex::CreateInitialDualBase( void )
  #endif
  dummyRootD->potential = MAX_ART_COST;
  dummyRootD->subTreeLevel = 0;
- for( node = nodesD ; node != stopNodesD ; node++ ) {  // initialize nodes
+
+ // initialize other nodes
+ for(  nodeDType *node = nodesD ; node != stopNodesD ; node++ ) {
   node->prevInT = node - 1;
   node->nextInT = node + 1;
   node->enteringTArc = dummyArcsD + ( node - nodesD );
@@ -2435,7 +2438,7 @@ void MCFSimplex::PrimalSimplex( void )
  if( pricingRule != kCandidateListPivot )
   arcToStartP = arcsP;
 
- iterator = 0;  // setting the initial arc for the Dantzig or First Elibigle Rule
+ iterator = 0;  // initial arc for the Dantzig or First Elibigle Rule
 
  arcPType *enteringArc = NULL;
  arcPType *leavingArc = NULL;
@@ -2446,16 +2449,10 @@ void MCFSimplex::PrimalSimplex( void )
   iterator++;
 
   switch( pricingRule ) {
-  case( kDantzig ):
-   enteringArc = RuleDantzig();
-   break;
-  case( kFirstEligibleArc ):
-   enteringArc = PRuleFirstEligibleArc();
-   break;
-  case( kCandidateListPivot ):
-   enteringArc = RulePrimalCandidateListPivot();
-   break;
-  }
+   case( kDantzig ):          enteringArc = RuleDantzig(); break;
+   case( kFirstEligibleArc ): enteringArc = PRuleFirstEligibleArc(); break;
+   default:                   enteringArc = RulePrimalCandidateListPivot();
+   }
 
  #if( QUADRATICCOST )
   #if( LIMITATEPRECISION )

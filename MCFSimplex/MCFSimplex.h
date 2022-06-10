@@ -74,11 +74,15 @@ namespace MCFClass_di_unipi_it
 /** The MCFSimplex class derives from the abstract base class MCFClass, thus
  *  sharing its (standard) interface, and implements both the Primal and
  *  Dual network simplex algorithms for solving (Linear and Quadratic) 
- *  Min Cost Flow problems */
+ *  Min Cost Flow problems.
+ *
+ * \note Unlike what it MCFClass declares as standard, Senstv is false by
+ *       default in MCFSimplex since reoptimization has some issues that
+ *       have not been ironed out yet. Set Senstv == true at your own risk.
+ */
 
 class MCFSimplex: public MCFClass 
 {
-
 /*--------------------------------------------------------------------------*/
 /*----------------------- PUBLIC PART OF THE CLASS -------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -353,10 +357,6 @@ class MCFSimplex: public MCFClass
 		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgUCap( Index arc , FNumber NCap ) override;
-
- /*--------------------------------------------------------------------------*/
-
- void UsePastInformation( void );
 
 /*--------------------------------------------------------------------------*/
 /*--------------- Modifying the structure of the graph ---------------------*/
@@ -646,8 +646,6 @@ class MCFSimplex: public MCFClass
  Index forcedHotListSize;       // used to force the number of candidate list
                                 // and hot list dimension
 
- bool newSession;               // true if algorithm is just started
-  
  CNumber MAX_ART_COST;          // large cost for artificial arcs
 
  FNumber *modifiedBalance;      // vector of balance used by the PostVisit
@@ -660,8 +658,6 @@ class MCFSimplex: public MCFClass
 				 * o.f. value */
 
  nodePType *prevN;
-
- bool recomputeInitialBase;
 
  #if( QUADRATICCOST )
   FONumber foValue;             // the temporary objective function value

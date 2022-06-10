@@ -1296,6 +1296,9 @@ void MCFCplex::OpenArc( Index name )
   if( ArcPos[ name ] < 0 )
    return;  // nothing to do
 
+  if( ArcPos[ name ] == FInf )  // the arc is deleted
+   throw( MCFException( "MCFCplex::OpenArc: cannot open a deleted arc" ) );
+
   int temp = name;
   double ub = ArcPos[ name ];
   ArcPos[ name ] = -1;
@@ -1308,7 +1311,7 @@ void MCFCplex::OpenArc( Index name )
 
  #else
   throw( MCFException(
-	   "MCFCplex::ChangeArc() not implemented if DYNMC_MCF_CPX == 0" ) );
+	     "MCFCplex::OpenArc() not implemented if DYNMC_MCF_CPX == 0" ) );
  #endif
 
  }  // end( MCFCplex::OpenArc )
@@ -1342,7 +1345,8 @@ void MCFCplex::DelArc( Index name )
  #if( DYNMC_MCF_CPX )
   if( ArcPos[ name ] == FInf )  // the arc is deleted already
    return;                      // nothing to do
- 
+
+  bool clsd = ( ArcPos[ name ] >= 0 );  // was it closed already?
   ArcPos[ name ] = FInf;        // position now is available for a new arc
   if( name < FreePos )
    FreePos = name;
@@ -1364,14 +1368,14 @@ void MCFCplex::DelArc( Index name )
    if( FreePos > m ) 
     FreePos = m; 
    }
-  else {               // just set the bound to 0- - - - - - - - - - - - - -
-   double cpct = 0; 
- 
-   if( net )
-    CPXNETchgbds( env , net , 1 , &which , "U" , &cpct );
-   else
-    CPXchgbds( env , qp , 1 , &which , "U" , &cpct );
-   }
+  else                 // just set the bound to 0- - - - - - - - - - - - - -
+   if( ! clsd ) {      // unless the arc wass closed, the bound is 0 already
+    double cpct = 0; 
+    if( net )
+     CPXNETchgbds( env , net , 1 , &which , "U" , &cpct );
+    else
+     CPXchgbds( env , qp , 1 , &which , "U" , &cpct );
+    }
  #else
   throw( MCFException(
 	     "MCFCplex::DelArc() not implemented if DYNMC_MCF_CPX == 0" ) );
