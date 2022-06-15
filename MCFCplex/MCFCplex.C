@@ -1389,22 +1389,20 @@ MCFCplex::Index MCFCplex::AddArc( Index Start , Index End , FNumber aU ,
 				  CNumber aC )
 {
  #if( DYNMC_MCF_CPX )
-  if( m >= mmax )
-   return( IInf );
-
   int strn = int( Start MINUSONE );
   int endn = int( End MINUSONE );
  
   double cst = aC;
   double cpct = aU;
 
-  ArcPos[ FreePos ] = -1;  // create a new arc in the first free position
-
   if( FreePos >= m ) {  // the first free position is at the end
+   if( m >= mmax )      // but there is no space left
+    return( IInf );     // operation failed
    FreePos = ++m;       // increase number of arcs
 
    int NewArc = m - 1;  // now physically create the new arc
-   
+   ArcPos[ NewArc ] = -1;  // mark the arc as existent
+
    if( net ) 
     CPXNETaddarcs( env , net , 1 , &strn , &endn , NULL , &cpct , &cst ,
 		   NULL );
@@ -1439,6 +1437,8 @@ MCFCplex::Index MCFCplex::AddArc( Index Start , Index End , FNumber aU ,
     Endn[ temp ] = endn;
     }
 
+   ArcPos[ FreePos ] = -1;  // mark the arc as existent
+   // look for the first non-existent one
    while( ( FreePos < mmax ) && ( ArcPos[ FreePos ] < FInf ) )
     FreePos++;
 
