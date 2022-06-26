@@ -1346,36 +1346,35 @@ void MCFCplex::DelArc( Index name )
   if( ArcPos[ name ] == FInf )  // the arc is deleted already
    return;                      // nothing to do
 
-  bool clsd = ( ArcPos[ name ] >= 0 );  // was it closed already?
-  ArcPos[ name ] = FInf;        // position now is available for a new arc
-  if( name < FreePos )
-   FreePos = name;
-
   int which = name;
 
   if( name == m - 1 ) {  // deleting the last arc(s) - - - - - - - - - - - -
-   do {
-    m--;                 // decrement number of arcs
- 
-    if( net )
-     CPXNETdelarcs( env , net , which , which );
-    else
-     CPXdelcols( env , qp , which , which );  // delete matching column in
-                                              // constraint matrix
+   do {                                  // while the last arc is deleted
+    m--;                                 // decrement number of arcs
+    } while( ( m > 0 ) && ( ArcPos[ m - 1 ] == FInf ) );
 
-    } while( ArcPos[ m - 1 ] == FInf );
-
+   if( net )                                 // delete the ...
+    CPXNETdelarcs( env , net , m , which );  // arcs [ m , previous m - 1 ]
+   else                                      // or
+    CPXdelcols( env , qp , m , which );      // matching columns in the
+                                             // constraint matrix
    if( FreePos > m ) 
     FreePos = m; 
    }
-  else                 // just set the bound to 0- - - - - - - - - - - - - -
-   if( ! clsd ) {      // unless the arc wass closed, the bound is 0 already
+  else {               // just set the bound to 0- - - - - - - - - - - - - -
+   bool clsd = ( ArcPos[ name ] >= 0 );  // was it closed already?
+   ArcPos[ name ] = FInf;        // position is now available for a new arc
+   if( name < FreePos )
+    FreePos = name;
+
+   if( ! clsd ) {      // unless the arc was closed, the bound is 0 already
     double cpct = 0; 
     if( net )
-     CPXNETchgbds( env , net , 1 , &which , "U" , &cpct );
+     CPXNETchgbds( env , net , 1 , & which , "U" , & cpct );
     else
-     CPXchgbds( env , qp , 1 , &which , "U" , &cpct );
+     CPXchgbds( env , qp , 1 , & which , "U" , & cpct );
     }
+   }
  #else
   throw( MCFException(
 	     "MCFCplex::DelArc() not implemented if DYNMC_MCF_CPX == 0" ) );

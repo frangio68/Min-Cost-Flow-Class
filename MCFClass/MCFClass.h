@@ -2135,53 +2135,52 @@ inline void MCFClass::CheckDSol( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-inline void MCFClass::WriteMCF( ostream &oStrm , int frmt ) const
+inline void MCFClass::WriteMCF( ostream & oStrm , int frmt ) const
 {
  if( ( ! numeric_limits<FNumber>::is_integer ) ||
      ( ! numeric_limits<CNumber>::is_integer ) )
-  oStrm.precision( 12 );
+  oStrm.precision( 16 );
 
  switch( frmt ) {
   case( kDimacs ):  // DIMACS standard format - - - - - - - - - - - - - - - -
                     //- - - - - - - - - - - - - - - - - - - - - - - - - - - -
   case( kQDimacs ):  // ... linear or quadratic
 
-   // compute and output preamble and size- - - - - - - - - - - - - - - - - -
+   // output preamble and size- - - - - - - - - - - - - - - - - - - - - - - -
 
-   oStrm << "p min " << MCFn() << " ";
-   {
-    Index tm = MCFm();
-    for(  Index i = MCFm() ; i-- ; )
-     if( IsClosedArc( i ) || IsDeletedArc( i ) )
-      tm--;
+   oStrm << "p min " << MCFn() << " " << MCFm() << endl;
 
-    oStrm << tm << endl;
+   // output node information - - - - - - - - - - - - - - - - - - - - - - - -
+
+   for( Index i = 0 ; i < MCFn() ; ) {
+    cFNumber Dfcti = MCFDfct( i++ );
+    if( Dfcti )
+     oStrm << "n\t" << i << "\t" << - Dfcti << endl;
     }
 
    // output arc information- - - - - - - - - - - - - - - - - - - - - - - - -
 
-   for(  Index i = 0 ; i < MCFm() ; i++ )
-    if( ( ! IsClosedArc( i ) ) && ( ! IsDeletedArc( i ) ) ) {
-     oStrm << "a\t";
-     #if( USENAME0 )
-      oStrm << MCFSNde( i ) + 1 << "\t" << MCFENde( i ) + 1 << "\t";
-     #else
-      oStrm << MCFSNde( i ) << "\t" << MCFENde( i ) << "\t";
-     #endif
-     oStrm << "0\t" << MCFUCap( i ) << "\t" << MCFCost( i );
+   for(  Index i = 0 ; i < MCFm() ; i++ ) {
+    #if( USENAME0 )
+     oStrm << "a\t" << MCFSNde( i ) + 1 << "\t" << MCFENde( i ) + 1 << "\t";
+    #else
+     oStrm << "a\t" << MCFSNde( i ) << "\t" << MCFENde( i ) << "\t";
+    #endif
 
-     if( frmt == kQDimacs )
-      oStrm << "\t" << MCFQCoef( i );
+    if( IsClosedArc( i ) || IsDeletedArc( i ) )
+     oStrm << "0\t0\t";
+    else
+     oStrm << "0\t" << MCFUCap( i ) << "\t";
 
-     oStrm << endl;
-     }
+    if( IsDeletedArc( i ) )
+     oStrm << "1000000";
+    else
+     oStrm << MCFCost( i );
 
-   // output node information - - - - - - - - - - - - - - - - - - - - - - - -
+    if( frmt == kQDimacs )
+     oStrm << "\t" << MCFQCoef( i );
 
-   for(  Index i = 0 ; i < MCFn() ; ) {
-    cFNumber Dfcti = MCFDfct( i++ );
-    if( Dfcti )
-     oStrm << "n\t" << i << "\t" << - Dfcti << endl;
+    oStrm << endl;
     }
 
    break;
