@@ -412,6 +412,9 @@ void MCFCplex::SolveMCF( void )
   MCFt->Start();
  
  if( net ) {
+  /*!!
+    CPXNETwriteprob( env , net , "MCFCplex.dmx" , "min" );
+    !!*/
   CPXNETprimopt( env , net );  // call the network simplex- - - - - - - - - - 
   status = CPXNETgetstat( env , net );
   }
@@ -1121,28 +1124,32 @@ void MCFCplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
  #else
   auto val = new double[ cnt ];
   #if( DYNMC_MCF_CPX )
-   // for all arcs that are closed, store the new value in ArcPos[] and
-   // leave the "new" capacity just being set to 0
+   // for all arcs that are closed (0 <= ArcPos < FInf, store the new
+   // value in ArcPos[] and set the "new" capacity to 0; for the arcs that
+   // are deleted (ArcPos == FInf), the "new" capacity is still 0 but
+   // ArcPos must not be changed
    auto tval = val;
    if( nms ) {
     auto tnms = nms;
-    for( Index i ; ( i = *(tnms++) ) < stp ; ) {
-     if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) ) {
-      ArcPos[ i ] = *(NCap++);
+    for( Index i ; ( i = *(tnms++) ) < stp ; ++NCap ) {
+     if( ArcPos[ i ] >= 0 ) {
+      if( ArcPos[ i ] < FInf )
+       ArcPos[ i ] = *NCap;
       *(tval++) = 0;
       }
      else
-      *(tval++) = *(NCap++);
+      *(tval++) = *NCap;
      }
     }
    else
-    for( Index i = strt ; i < stp ; ++i ) {
-     if( ( ArcPos[ i ] >= 0 ) && ( ArcPos[ i ] < FInf ) ) {
-      ArcPos[ i ] = *(NCap++);
+    for( Index i = strt ; i < stp ; ++i , ++NCap ) {
+     if( ArcPos[ i ] >= 0 ) {
+      if( ArcPos[ i ] < FInf )
+       ArcPos[ i ] = *NCap;
       *(tval++) = 0;
       }
      else
-      *(tval++) = *(NCap++);
+      *(tval++) = *NCap;
      }
   #else
    VectAssign( val , NCap , cnt );
@@ -1199,7 +1206,7 @@ void MCFCplex::ChgUCap( Index arc , FNumber NCap )
 
  #if( DYNMC_MCF_CPX )
   if( ArcPos[ arc ] == FInf )  // the arc is deleted
-   return;                   // silently return
+   return;                     // silently return
 
   // if the arc is closed, change the capacity stored in ArcPos but leave
   // it in its closed state
