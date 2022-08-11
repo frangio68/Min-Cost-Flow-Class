@@ -198,12 +198,6 @@ install(FILES
         ${CMAKE_CURRENT_LIST_DIR}/License.md
         DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName})
 
-# Install the README and LICENSE files for RelaxIV.
-install(FILES
-        ${CMAKE_CURRENT_LIST_DIR}/RelaxIV/ReadMe.txt
-        ${CMAKE_CURRENT_LIST_DIR}/RelaxIV/academicl.txt
-        DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName}/RelaxIV)
-
 # ----- Add the build tree to RPATH------------------------------------------ #
 # Add the binary directory to RPATH, so executables that use
 # dynamic loading will look into it.
