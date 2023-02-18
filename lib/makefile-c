@@ -1,31 +1,31 @@
 ##############################################################################
 ################################ makefile-c ##################################
 ##############################################################################
-#									     #
+#                                                                            #
 #   complete makefile of libMCF                                              #
-#									     #
+#                                                                            #
 #   The makefile defines internally all external libraries required by       #
 #   libMCFCl. Accordingly, all necessary OBJ, H, -I directives, and          #
 #   external libraries + -L<libdirs> are added to the corresponding          #
 #   libMCFCl* macros.                                                        #
-#									     #
-#   Input:  $(CC)          = compiler command				     #
+#                                                                            #
+#   Input:  $(CC)          = compiler command                                #
 #           $(SW)          = compiler options                                #
-#           $(libMCFClDIR) = the basic directory for the library	     #
-#									     #
-#   Output: $(libMCFClOBJ) = the library (that must be built)		     #
+#           $(libMCFClDIR) = the basic directory for the library             #
+#                                                                            #
+#   Output: $(libMCFClOBJ) = the library (that must be built)                #
 #           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
-#           $(libMCFClH)   = all the .h files of the MCF library	     #
+#           $(libMCFClH)   = all the .h files of the MCF library             #
 #           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
-#									     #
-#                                VERSION 3.00				     #
-#                	        12 - 11 - 2018				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#                                VERSION 3.00                                #
+#                               12 - 11 - 2018                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -

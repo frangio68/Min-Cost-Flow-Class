@@ -1,30 +1,30 @@
 ##############################################################################
 ################################## makefile ##################################
 ##############################################################################
-#									     #
-#   makefile of MCFCplex 						     #
+#                                                                            #
+#   makefile of MCFCplex                                                     #
 #   all modules are given in input                                           #
-#									     #
-#   Input:  $(CC)          = compiler command				     #
+#                                                                            #
+#   Input:  $(CC)          = compiler command                                #
 #           $(SW)          = compiler options                                #
-#           $(MCFClH)      = the include files for MCFClass		     #
-#           $(MCFClINC)    = the -I$(MCFClass.h directory)		     #
-#           $(libCPLEXINC) = the -I$(include directories) for libCPLEX	     #
-#           $(MCFCxDIR)    = the directory where the source is		     #
-#									     #
-#   Output: $(MCFCxOBJ)    = the final object(s) / library		     #
-#           $(MCFCxLIB)    = external libreries + -L<libdirs>		     #
-#           $(MCFCxH)      = the .h files to include			     #
-#           $(MCFCxINC)    = the -I$(include directories)		     #
-#									     #
-#                                VERSION 4.00				     #
-#                	        13 - 11 - 2018				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#           $(MCFClH)      = the include files for MCFClass                  #
+#           $(MCFClINC)    = the -I$(MCFClass.h directory)                   #
+#           $(libCPLEXINC) = the -I$(include directories) for libCPLEX       #
+#           $(MCFCxDIR)    = the directory where the source is               #
+#                                                                            #
+#   Output: $(MCFCxOBJ)    = the final object(s) / library                   #
+#           $(MCFCxLIB)    = external libreries + -L<libdirs>                #
+#           $(MCFCxH)      = the .h files to include                         #
+#           $(MCFCxINC)    = the -I$(include directories)                    #
+#                                                                            #
+#                                VERSION 4.00                                #
+#                               13 - 11 - 2018                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

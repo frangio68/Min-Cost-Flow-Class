@@ -1,24 +1,24 @@
 ##############################################################################
 ############################ makefile-libCPLEX ###############################
 ##############################################################################
-#									     #
-#   makefile of libCPLEX						     #
-#									     #
-#   Input:  none, this is a pre-built library				     #
-#									     #
+#                                                                            #
+#   makefile of libCPLEX                                                     #
+#                                                                            #
+#   Input:  none, this is a pre-built library                                #
+#                                                                            #
 #   Output: accordingly, there is no *H and *OBJ in output, since there is   #
 #           no need to check for changes in the .h and rebuild the .o / .a   #
 #           $(libCPLEXLIB) = external libreries + -L<libdirs> for libCPLEX   #
-#           $(libCPLEXINC) = the -I$(include directories) for libCPLEX	     #
-#									     #
-#                                VERSION 1.00				     #
-#                	        26 - 06 - 2018				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#           $(libCPLEXINC) = the -I$(include directories) for libCPLEX       #
+#                                                                            #
+#                                VERSION 1.00                                #
+#                               26 - 06 - 2018                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

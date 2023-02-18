@@ -1,22 +1,22 @@
 ##############################################################################
 ################################## makefile ##################################
 ##############################################################################
-#									     #
-#   makefile of MCFClone 						     #
-#									     #
+#                                                                            #
+#   makefile of MCFClone                                                     #
+#                                                                            #
 #   Input:  $(MCFCeDIR) = the directory where the source is                  #
-#									     #
-#   Output: $(MCFCeH)   = the .h files to include			     #
-#           $(MCFCeINC) = the -I$(MCFClone directory)			     #
-#									     #
-#                                VERSION 2.00				     #
-#                	        13 - 11 - 2018				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#   Output: $(MCFCeH)   = the .h files to include                            #
+#           $(MCFCeINC) = the -I$(MCFClone directory)                        #
+#                                                                            #
+#                                VERSION 2.00                                #
+#                               13 - 11 - 2018                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

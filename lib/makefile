@@ -1,29 +1,29 @@
 ##############################################################################
 ################################# makefile ###################################
 ##############################################################################
-#									     #
-#   makefile of libMCFCl						     #
+#                                                                            #
+#   makefile of libMCFCl                                                     #
 #   all modules are given in input                                           #
-#									     #
-#   Input:  $(CC)        = compiler command				     #
-#           $(SW)        = compiler options                                  #
-#           $(OPTH)      = the OPT****.h files to include		     #
-#           $(OPTINC)    = the -I$(OPT****.h directory)			     #
-#           $(libMCFClDIR) = the basic directory for the library	     #
-#									     #
-#   Output: $(libMCFClOBJ) = the library (that must be built)		     #
+#                                                                            #
+#   Input:  $(CC)          = compiler command                                #
+#           $(SW)          = compiler options                                #
+#           $(OPTH)        = the OPT****.h files to include                  #
+#           $(OPTINC)      = the -I$(OPT****.h directory)                    #
+#           $(libMCFClDIR) = the basic directory for the library             #
+#                                                                            #
+#   Output: $(libMCFClOBJ) = the library (that must be built)                #
 #           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
-#           $(libMCFClH)   = all the .h files of the MCF library	     #
+#           $(libMCFClH)   = all the .h files of the MCF library             #
 #           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
-#									     #
-#                                VERSION 2.10				     #
-#                	        24 - 04 - 2017				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#                                VERSION 2.10                                #
+#                               24 - 04 - 2017                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
