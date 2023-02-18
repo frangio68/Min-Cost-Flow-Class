@@ -60,7 +60,7 @@ This release comprises:
    you must not download the source or delete it immediately
 
 -  [`SPTree/`](SPTree): implements a MCF solver partly conforming to the MCFClass
-   interface, in the sense that is is only able to solve MCF instances that
+   interface, in the sense that is only able to solve MCF instances that
    are in fact Shortest Path Tree ones (that is, only one source node and
    no arc capacities), but then does so using SPT algorithms (both
    label-setting and label-correcting variants can be used) that are much
