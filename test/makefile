@@ -1,20 +1,20 @@
 ##############################################################################
 ################################# makefile ###################################
 ##############################################################################
-#									     #
+#                                                                            #
 #   makefile of MCFSolve						     #
-#									     #
+#                                                                            #
 #   'make clean' cleans up						     #
 #   'make' or 'make MCFSolve' builds the module				     #
-#									     #
-#                                VERSION 3.10				     #
-#                	        16 - 05 - 2012				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#                                VERSION 3.10                                #
+#                               16 - 05 - 2012                               #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Operations Research Group                         #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # basic directory
