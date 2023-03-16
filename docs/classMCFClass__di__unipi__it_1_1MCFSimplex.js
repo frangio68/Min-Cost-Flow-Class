@@ -13,16 +13,16 @@ var classMCFClass__di__unipi__it_1_1MCFSimplex =
       [ "kFirstEligibleArc", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a3ce86e708fc45ee9e7903a7f27e876c5a8b8805137aec5ff6e5a221b078b33256", null ],
       [ "kCandidateListPivot", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a3ce86e708fc45ee9e7903a7f27e876c5a2b1f99a477959d04541654d9cca7c0a1", null ]
     ] ],
-    [ "MCFSimplex", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#abff4293726e37f6e979cf7c156514e0f", null ],
-    [ "LoadNet", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#ac270d18d58fd6fe88164cde1f4c80aff", null ],
+    [ "MCFSimplex", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a0e49a249976c1ab8b692f2777f255910", null ],
+    [ "LoadNet", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a45b18001b8e3cea172e4bb102270ca94", null ],
     [ "SetAlg", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a1d66ff221305ac6731b32eaec7625a74", null ],
     [ "SetPar", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#aebda2a23b313bb3ab143e66137ada924", null ],
     [ "SetPar", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#ae6eb12cc8e2e124b236bf84ebeddab70", null ],
-    [ "MCFGetX", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a884f1180138ddf3df909347b1c85428c", null ],
-    [ "MCFGetX", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a4eb307e0707adaef99bb0e08c9e10eb8", null ],
-    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a361d84ae42041fdbf3824d45fc4c54aa", null ],
-    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#af027cee8179a876a4879c73820c380d1", null ],
-    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a7c103b582c910ccfda354032aae5722e", null ],
-    [ "MCFGetPi", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a8c573c04800332c86ea31aeb80bbd7b1", null ],
-    [ "MCFGetPi", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a8f1a95d5c707f83ffc6aecba1e7e0e10", null ]
+    [ "MCFGetX", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a6bc4ca3117e650f80114f077b40bbdd0", null ],
+    [ "MCFGetX", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a76b0e00ff4baafb00ff03e213ca83dbd", null ],
+    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a96089bb51433c37e3a61aea51ec799e8", null ],
+    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#aef9fe72baa305e432331d4f7e98f6b2c", null ],
+    [ "MCFGetRC", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a81ab0d98d3a6889baf9433964ccd5171", null ],
+    [ "MCFGetPi", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#aa1059f566333ac3a025751d6b1bdcbda", null ],
+    [ "MCFGetPi", "classMCFClass__di__unipi__it_1_1MCFSimplex.html#a9589c18168466325844bc8d43ab60518", null ]
 ];

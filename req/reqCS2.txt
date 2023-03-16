@@ -1,0 +1,12 @@
+Request Form for CS2
+--------------------Please fill in the following form and send it to	frangio@di.unipi.itin order to receive one copy of CS2, a C++ version of the Cost-Scaling,
+Push-Relabel algorithm by Andrew Goldberg.
+This code is provided free of charge under the "academic license"; you are
+eligible only as long as you are a part of an academic institution, such as
+a University. Please read the license information for the detailed
+conditions.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Full name:
+Institution:
+Department:E-mail:Street address:City:Zip Code:Country:Please send me one copy of the full source distribution of CS2.Certification:I certify that I have notified the terms of the license and that I accept it. 

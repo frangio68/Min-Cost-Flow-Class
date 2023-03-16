@@ -1,4 +1,4 @@
 var group__OPTUtils__FUNCTIONS =
 [
-    [ "DfltdSfInpt", "group__OPTUtils__FUNCTIONS.html#gaf4f201a8b54197416f25f062edc98ca6", null ]
+    [ "OPTtypes_di_unipi_it::DfltdSfInpt", "group__OPTUtils__FUNCTIONS.html#ga797f93c9ea2c57c5f7f7e528109886b3", null ]
 ];
