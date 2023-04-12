@@ -16,11 +16,7 @@
 #           $(MCFCxH)      = the .h files to include                         #
 #           $(MCFCxINC)    = the -I$(include directories)                    #
 #                                                                            #
-#                                VERSION 4.00                                #
-#                               13 - 11 - 2018                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

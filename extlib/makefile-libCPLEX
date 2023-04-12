@@ -11,11 +11,7 @@
 #           $(libCPLEXLIB) = external libreries + -L<libdirs> for libCPLEX   #
 #           $(libCPLEXINC) = the -I$(include directories) for libCPLEX       #
 #                                                                            #
-#                                VERSION 1.00                                #
-#                               26 - 06 - 2018                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

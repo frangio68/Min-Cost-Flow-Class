@@ -11,11 +11,7 @@
 #   Output: $(MCFClH)   = the .h files to include for MCFClass               #
 #           $(MCFClINC) = the -I$( include directories for MCFClass )        #
 #                                                                            #
-#                                VERSION 2.00                                #
-#                               13 - 11 - 2018                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

@@ -1,12 +1,11 @@
 /** @file
  * Configuration header for @modName@.
  *
- * \author Niccolò Iardella \n
- *         Operations Research Group \n
+ * \author Niccolo' Iardella \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * \copyright &copy; Niccolò Iardella
+ * \copyright &copy; Niccolo' Iardella
  */
 
 #ifndef __@modName@_CONFIG_H

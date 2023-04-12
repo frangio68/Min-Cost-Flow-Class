@@ -2,16 +2,12 @@
 ################################# makefile ###################################
 ##############################################################################
 #                                                                            #
-#   makefile of MCFSolve						     #
+#   makefile of MCFSolve                                                     #
 #                                                                            #
-#   'make clean' cleans up						     #
-#   'make' or 'make MCFSolve' builds the module				     #
-#                                                                            #
-#                                VERSION 3.10                                #
-#                               16 - 05 - 2012                               #
+#   'make clean' cleans up                                                   #
+#   'make' or 'make MCFSolve' builds the module                              #
 #                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

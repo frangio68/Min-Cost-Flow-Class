@@ -20,8 +20,7 @@ setup (name = 'pyMCFSimplex',
        long_description = 
 """
 pyMCFSimplex is a Python Wrapper for the Minimum Cost Flow Problem Solver 
-'MCFSimplex' coded and maintained at the 
-Operations Research Group of the University of Pisa.
+'MCFSimplex' coded and maintained at the University of Pisa.
 """,
        include_dirs = [np.get_include()], # Header for numpy
        ext_modules = [pyMCFSimplex_module],

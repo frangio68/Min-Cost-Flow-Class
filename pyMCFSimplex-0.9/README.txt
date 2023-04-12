@@ -23,8 +23,7 @@ faster - but I'm not a C/C++ guy! I want it in Python!
 3. Who?
 -------
 The authors of MCFSimplex are Alessandro Bertolini and Antonio Frangioni from
-the Operations Research Group at the Dipartimento di Informatica of the 
-University of Pisa.
+the Dipartimento di Informatica of the University of Pisa.
 http://www.di.unipi.it/optimize/Software/MCF.html#MCFSimplex
 
 pyMCFSimplex is brought to you by Johannes from the G#.Blog 

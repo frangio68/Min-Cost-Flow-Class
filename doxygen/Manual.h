@@ -13,7 +13,7 @@
  *  \author Alessandro Bertolini \n
  *          Dipartimento di Informatica \n
  *          Universita' di Pisa \n
- *  */
+ */
 
 /** \mainpage The MCFClass Project Documentation
 

@@ -13,12 +13,7 @@
  * Additionally, a function is provided for safely reading numbers out of a
  * istream.
  *
- * \version 3.20
- *
- * \date 22 - 04 - 2020
- *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *

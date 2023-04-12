@@ -6,17 +6,11 @@
  * interface for (linear or convex quadratic separable) Min Cost Flow Problem
  * solvers, to be implemented as derived classes.
  *
- * \version 3.07
- *
- * \date 27 - 02 - 2020
- *
  * \author Alessandro Bertolini \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
  * \author Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *

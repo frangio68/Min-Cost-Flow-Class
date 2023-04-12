@@ -8,8 +8,7 @@ Author-email: info@sommer-forst.de
 License: LGPL 2.1
 Description: 
         pyMCFSimplex is a Python Wrapper for the Minimum Cost Flow Problem Solver 
-        'MCFSimplex' coded and maintained at the 
-        Operations Research Group of the University of Pisa.
+        'MCFSimplex' coded and maintained at the University of Pisa.
         
 Platform: win32
 Platform: linux-x86_64

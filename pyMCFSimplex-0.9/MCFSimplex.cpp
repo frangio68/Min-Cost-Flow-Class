@@ -6,15 +6,8 @@
 /*-- (primal and dual) simplex algorithm. Conforms to the standard MCF    --*/
 /*-- interface defined in MCFClass.h.                                     --*/
 /*--                                                                      --*/
-/*--                            VERSION 1.13                              --*/
-/*--                           27 - 02 - 2020                             --*/
-/*--                                                                      --*/
-/*--                           Implementation:                            --*/
-/*--                                                                      --*/
 /*--                         Alessandro Bertolini                         --*/
 /*--                          Antonio Frangioni                           --*/
-/*--                                                                      --*/
-/*--                       Operations Research Group                      --*/
 /*--                      Dipartimento di Informatica                     --*/
 /*--                         Universita' di Pisa                          --*/
 /*--                                                                      --*/
@@ -2040,9 +2033,9 @@ void MCFSimplex::UsePastInformation()
 nodePType *node;
 arcPType *arc;
 
-// Per ora è solo contemplato la versione non quadratica del Primale,
-// nel senso che vi è solo una mera copia dello stato senza controllo 
-// d'ammissibilità della soluzione data
+// Per ora ï¿½ solo contemplato la versione non quadratica del Primale,
+// nel senso che vi ï¿½ solo una mera copia dello stato senza controllo 
+// d'ammissibilitï¿½ della soluzione data
 
 // Metti a MAX_ART_COST il costo e a 0 il flusso gli archi dummy
 	

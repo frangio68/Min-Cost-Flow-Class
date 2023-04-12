@@ -18,11 +18,7 @@
 #           $(libMCFClH)   = all the .h files of the MCF library             #
 #           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
 #                                                                            #
-#                                VERSION 3.00                                #
-#                               12 - 11 - 2018                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

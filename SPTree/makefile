@@ -15,11 +15,7 @@
 #           $(MCFSTH)   = the .h files to include                            #
 #           $(MCFSTINC) = the -I$(include directories)                       #
 #                                                                            #
-#                                VERSION 3.00                                #
-#                               07 - 05 - 2012                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #

@@ -1,28 +1,24 @@
 ##############################################################################
 ################################## makefile ##################################
 ##############################################################################
-#									     #
-#   makefile of MCFSimplex 						     #
-#									     #
-#   Input:  $(CC)       = compiler command				     #
+#                                                                            #
+#   makefile of MCFSimplex                                                   #
+#                                                                            #
+#   Input:  $(CC)       = compiler command                                   #
 #           $(SW)       = compiler options                                   #
-#           $(MCFClH)   = the include files for MCFClass		     #
-#           $(MCFClINC) = the -I$(MCFClass.h directory)			     #
-#           $(MCFSxDIR) = the directory where the source is		     #
-#									     #
-#   Output: $(MCFSxOBJ) = the final object(s) / library			     #
-#           $(MCFSxLIB) = external libreries + -L<libdirs>		     #
-#           $(MCFSxH)   = the .h files to include			     #
+#           $(MCFClH)   = the include files for MCFClass                     #
+#           $(MCFClINC) = the -I$(MCFClass.h directory)                      #
+#           $(MCFSxDIR) = the directory where the source is                  #
+#                                                                            #
+#   Output: $(MCFSxOBJ) = the final object(s) / library                      #
+#           $(MCFSxLIB) = external libreries + -L<libdirs>                   #
+#           $(MCFSxH)   = the .h files to include                            #
 #           $(MCFSxINC) = the -I$(include directories)                       #
-#									     #
-#                                VERSION 2.00				     #
-#                	        13 - 11 - 2018				     #
-#									     #
-#			      Antonio Frangioni				     #
-#   			   Operations Research Group			     #
-#			  Dipartimento di Informatica			     #
-#   			     Universita' di Pisa			     #
-#									     #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                          Dipartimento di Informatica                       #
+#                              Universita' di Pisa                           #
+#                                                                            #
 ##############################################################################
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

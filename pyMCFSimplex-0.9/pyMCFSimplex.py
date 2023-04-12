@@ -16,9 +16,7 @@
  *
  * author Alessandro Bertolini 
 
- *         Antonio Frangioni 
-
- *         Operations Research Group 
+ *         Antonio Frangioni
 
  *         Dipartimento di Informatica 
 

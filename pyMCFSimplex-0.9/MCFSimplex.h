@@ -6,13 +6,8 @@
  * dual) simplex algorithm. Conforms to the standard MCF interface defined in
  * MCFClass.h.
  *
- * \Version 1.21
- *
- * \date 27 - 02 - 2020
- *
  * \author Alessandro Bertolini \n
  *         Antonio Frangioni \n
- *         Operations Research Group \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
