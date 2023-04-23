@@ -779,7 +779,7 @@ MCFSimplex::FONumber MCFSimplex::MCFGetFO( void )
   return( (FONumber) GetFO() );
  else
   if( status == kUnbounded ) 
-   return( - Inf< FONumber >() );
+   return( -Inf< FONumber >() );
   else
    return( Inf< FONumber >() );
 
