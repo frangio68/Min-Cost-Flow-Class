@@ -353,7 +353,7 @@ class OPTrand {
 /*--------------------------------------------------------------------------*/
  /// Inf< T >() = infinity value for T
 
- template <typename T>
+ template< typename T >
  static constexpr T Inf( void ) noexcept {
   return( std::numeric_limits< T >::has_infinity ?
 	  std::numeric_limits< T >::infinity() :
@@ -363,7 +363,7 @@ class OPTrand {
 /*--------------------------------------------------------------------------*/
  /// Eps< T >() = "machine epsilon" for T
 
- template <typename T>
+ template< typename T >
  static constexpr T Eps( void ) noexcept {
   return( std::numeric_limits< T >::epsilon() );
   }

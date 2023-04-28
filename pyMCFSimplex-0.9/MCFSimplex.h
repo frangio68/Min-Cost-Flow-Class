@@ -1104,7 +1104,7 @@ inline MCFClass::FNumber MCFSimplex::MCFDfct( MCFClass::cIndex i )
 
 #if( QUADRATICCOST )
 
-template <class A>
+template< class A >
 inline MCFSimplex::FONumber MCFSimplex::ReductCost( A *a )
 {
  FONumber redc = (a->tail)->potential - (a->head)->potential;
@@ -1115,7 +1115,7 @@ inline MCFSimplex::FONumber MCFSimplex::ReductCost( A *a )
 
 #else
 
-template <class A>
+template< class A >
 inline MCFSimplex::CNumber MCFSimplex::ReductCost( A *a )
 {
  CNumber redc = (a->tail)->potential - (a->head)->potential;
