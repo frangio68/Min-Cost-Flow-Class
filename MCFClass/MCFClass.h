@@ -1751,7 +1751,7 @@ class MCFClass {
    template< class T >
    inline bool ETZ( T x , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x == 0 );
     else 
      return( (x <= eps ) && ( x >= -eps ) );
@@ -1763,7 +1763,7 @@ class MCFClass {
    template< class T >
    inline bool GTZ( T x , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x > 0 );
     else
      return( x > eps );
@@ -1776,7 +1776,7 @@ class MCFClass {
    template< class T >
    inline bool GEZ( T x , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x >= 0 );
     else
      return( x >= - eps );
@@ -1788,7 +1788,7 @@ class MCFClass {
    template< class T >
    inline bool LTZ( T x , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x < 0 );
     else
      return( x < - eps );
@@ -1801,7 +1801,7 @@ class MCFClass {
    template< class T >
    inline bool LEZ( T x , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x <= 0 );
     else
      return( x <= eps );
@@ -1814,7 +1814,7 @@ class MCFClass {
    template< class T >
    inline bool GT( T x , T y , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x > y );
     else
      return( x > y + eps );
@@ -1826,7 +1826,7 @@ class MCFClass {
    template< class T >
    inline bool LT( T x , T y , T eps ) const
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x < y );
     else
      return( x < y - eps );
@@ -2137,8 +2137,8 @@ inline void MCFClass::CheckDSol( void ) const
 
 inline void MCFClass::WriteMCF( ostream & oStrm , int frmt ) const
 {
- if( ( ! numeric_limits<FNumber>::is_integer ) ||
-     ( ! numeric_limits<CNumber>::is_integer ) )
+ if( ( ! numeric_limits< FNumber >::is_integer ) ||
+     ( ! numeric_limits< CNumber >::is_integer ) )
   oStrm.precision( 16 );
 
  switch( frmt ) {

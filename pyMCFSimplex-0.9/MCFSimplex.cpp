@@ -110,7 +110,7 @@ using namespace MCFClass_di_unipi_it;
 /*--------------------------- FUNCTIONS ------------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-template<class T>
+template< class T >
 inline T ABS( const T x )
 {
  return( x >= T( 0 ) ? x : - x );
@@ -118,7 +118,7 @@ inline T ABS( const T x )
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
+template< class T >
 inline void Swap( T &v1 , T &v2 )
 {
  T temp = v1;
@@ -169,10 +169,10 @@ MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
             MCFClass( nmx , mmx )
 {
  #if( QUADRATICCOST )
-  if( numeric_limits<FNumber>::is_integer )
+  if( numeric_limits< FNumber >::is_integer )
    throw( MCFException( "FNumber must be float if QUADRATICCOST == 1" ) );
 
-  if( numeric_limits<CNumber>::is_integer )
+  if( numeric_limits< CNumber >::is_integer )
    throw( MCFException( "CNumber must be float if QUADRATICCOST == 1" ) );
 
   recomputeFOLimits = 100;
@@ -197,7 +197,7 @@ MCFSimplex::MCFSimplex( cIndex nmx , cIndex mmx )
 
  modifiedBalance = NULL;
 
- if( numeric_limits<CNumber>::is_integer )
+ if( numeric_limits< CNumber >::is_integer )
   MAX_ART_COST = CNumber( 1e7 );
  else
   MAX_ART_COST = CNumber( 1e7 );
@@ -3356,7 +3356,7 @@ void MCFSimplex::DualSimplex( void )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class A>
+template< class N , class A >
 void MCFSimplex::UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 )
 {
  /* In subtree T2 there is a path from node h2 (deepest node of the leaving
@@ -3421,7 +3421,7 @@ void MCFSimplex::UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 N* MCFSimplex::CutAndUpdateSubtree( N *root , int delta )
 {
  int level = root->subTreeLevel;
@@ -3447,7 +3447,7 @@ N* MCFSimplex::CutAndUpdateSubtree( N *root , int delta )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 void MCFSimplex::PasteSubtree( N *root , N *lastNode , N *previousNode )
 {
  /* The method inserts subtree ("root" and "lastNode" are the extremity of the
@@ -3940,7 +3940,7 @@ inline void MCFSimplex::SortDualCandidateList(Index min, Index max)
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class RCT>
+template< class N , class RCT >
 inline void MCFSimplex::AddPotential( N *r , RCT delta )
 {
  int level = r->subTreeLevel;
@@ -3954,7 +3954,7 @@ inline void MCFSimplex::AddPotential( N *r , RCT delta )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 inline void MCFSimplex::ComputePotential( N *r )
 {
  N *n = r;
@@ -4294,7 +4294,7 @@ inline void MCFSimplex::ResetWhenInT2( void )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class A>
+template< class N , class A >
 inline N* MCFSimplex::Father( N *n , A *a )
 {
  if( a == NULL )

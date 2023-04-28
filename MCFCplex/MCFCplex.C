@@ -74,7 +74,7 @@ static constexpr CNumber CInf = Inf< CNumber >();
 
 #if( ( ! FNUMBER_IS_DOUBLE ) || ( ! CNUMBER_IS_DOUBLE ) )
 
-template<class T>
+template< class T >
 static Index_Set SparseAssign( T* g1 , const double *g2 , Index_Set nms ,
 			       Index n , Index Bs = 0 )
 {
@@ -236,7 +236,7 @@ static Index_Set SparsifyT( T* g , Index_Set B , Index n , T eps ,
 
 /*--------------------------------------------------------------------------*/
 
-template<class T>
+template< class T >
 static void VectSum( T *const g , const T x , cIndex n )
 {
  // g[ i ] += x for each i = 0 .. n - 1

@@ -1694,10 +1694,10 @@ class MCFClass {
 /*--------------------------------------------------------------------------*/
 /** true if flow x is equal to zero (possibly considering tolerances). */
         
-   template<class T>
+   template< class T >
    inline bool ETZ( T x , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x == 0 );
     else 
      return( (x <= eps ) && ( x >= -eps ) );
@@ -1706,10 +1706,10 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is greater than zero (possibly considering tolerances). */
 
-   template<class T>
+   template< class T >
    inline bool GTZ( T x , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x > 0 );
     else
      return( x > eps );
@@ -1719,10 +1719,10 @@ class MCFClass {
 /** true if flow x is greater than or equal to zero (possibly considering
     tolerances). */
 
-   template<class T>
+   template< class T >
    inline bool GEZ( T x , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x >= 0 );
     else
      return( x >= - eps );
@@ -1731,10 +1731,10 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is less than zero (possibly considering tolerances). */
 
-   template<class T>
+   template< class T >
    inline bool LTZ( T x , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x < 0 );
     else
      return( x < - eps );
@@ -1744,10 +1744,10 @@ class MCFClass {
 /** true if flow x is less than or equal to zero (possibly considering
     tolerances). */
 
-   template<class T>
+   template< class T >
    inline bool LEZ( T x , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x <= 0 );
     else
      return( x <= eps );
@@ -1757,10 +1757,10 @@ class MCFClass {
 /** true if flow x is greater than flow y (possibly considering tolerances).
  */
 
-   template<class T>
+   template< class T >
    inline bool GT( T x , T y , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x > y );
     else
      return( x > y + eps );
@@ -1769,10 +1769,10 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** true if flow x is less than flow y (possibly considering tolerances). */
 
-   template<class T>
+   template< class T >
    inline bool LT( T x , T y , const T eps )
    {
-    if( numeric_limits<T>::is_integer )
+    if( numeric_limits< T >::is_integer )
      return( x < y );
     else
      return( x < y - eps );
@@ -2137,8 +2137,8 @@ inline void MCFClass::CheckDSol( void )
 
 inline void MCFClass::WriteMCF( ostream &oStrm , int frmt )
 {
- if( ( ! numeric_limits<FNumber>::is_integer ) ||
-     ( ! numeric_limits<CNumber>::is_integer ) )
+ if( ( ! numeric_limits< FNumber >::is_integer ) ||
+     ( ! numeric_limits< CNumber >::is_integer ) )
   oStrm.precision( 12 );
 
  switch( frmt ) {

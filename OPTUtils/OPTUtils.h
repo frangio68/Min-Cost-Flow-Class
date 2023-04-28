@@ -355,9 +355,9 @@ class OPTrand {
 
  template <typename T>
  static constexpr T Inf( void ) noexcept {
-  return( std::numeric_limits<T>::has_infinity ?
-	  std::numeric_limits<T>::infinity() :
-	  std::numeric_limits<T>::max() );
+  return( std::numeric_limits< T >::has_infinity ?
+	  std::numeric_limits< T >::infinity() :
+	  std::numeric_limits< T >::max() );
   }
 
 /*--------------------------------------------------------------------------*/
@@ -365,7 +365,7 @@ class OPTrand {
 
  template <typename T>
  static constexpr T Eps( void ) noexcept {
-  return( std::numeric_limits<T>::epsilon() );
+  return( std::numeric_limits< T >::epsilon() );
   }
 
 /** @} end( group( OPTUtils_CLASSES ) ) */
@@ -380,15 +380,15 @@ class OPTrand {
    enough or contains erroneous things.
 
    Given a &istream (possibly NULL), DfltdSfInpt() attempts to read Param out
-   of it, skipping any line that begins with the comment carachter (defaulted
+   of it, skipping any line that begins with the comment characters (defaulted
    to '#'), any blank line and any line starting with anything that can not
    be interpreted as a 'T'. If, for any reason, the read operation fails,
    then the parameter is given the default value 'Dflt'. Otherwise, all the
-   rest of the line up to the nearest newline ('\n') carachter is flushed.
+   rest of the line up to the nearest newline ('\n') characters is flushed.
 
-   \note lines should not be longer than 1023 carachters. */
+   \note lines should not be longer than 1023 characters. */
 
-template<class T>
+template< class T >
 inline void DfltdSfInpt( istream *iStrm , T &Param , const T Dflt ,
                          const char cmntc = '#' )
 {

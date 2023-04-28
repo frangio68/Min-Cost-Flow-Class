@@ -709,7 +709,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class A>
+  template< class N , class A >
   void UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 );
 
   /**< Method to update the spanning tree T every iteration.
@@ -739,7 +739,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
+  template< class N >
   N* CutAndUpdateSubtree( N *root, int delta );
 
 /**< This method cuts a generic subtree from the spanning tree T. Then it
@@ -748,7 +748,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
+  template< class N >
   void PasteSubtree( N *root , N *lastNode , N *previousNode );
 
 /**< This method inserts a generic subtree with root passed by parameter into
@@ -840,7 +840,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class RCT>
+  template< class N , class RCT >
   inline void AddPotential( N *r , RCT delta );
 
 /**< Method to quickly update the dual solutions. During the change of the
@@ -854,7 +854,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N>
+  template< class N >
   inline void ComputePotential( N *r );
 
 /**< Method to update the dual solutions. It computes all the potential of the
@@ -923,7 +923,7 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
-  template<class N, class A>
+  template< class N , class A >
   inline N* Father( N *n, A *a );
 
 /**< Method to find the predecessor of the node in the tree. */
@@ -931,10 +931,10 @@ class MCFSimplex: public MCFClass
 /*--------------------------------------------------------------------------*/
 
  #if(QUADRATICCOST)
-  template<class A>
+  template< class A >
   inline FONumber ReductCost( A *a );
  #else
-  template<class A>
+  template< class A >
   inline CNumber ReductCost( A *a );
  #endif
 

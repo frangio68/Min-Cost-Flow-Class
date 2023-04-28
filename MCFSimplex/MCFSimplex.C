@@ -172,7 +172,7 @@ MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
 
  modifiedBalance = NULL;
 
- if( numeric_limits<CNumber>::is_integer )
+ if( numeric_limits< CNumber >::is_integer )
   MAX_ART_COST = CNumber( 1e7 );
  else
   MAX_ART_COST = CNumber( 1e7 );
@@ -3294,7 +3294,7 @@ void MCFSimplex::DualSimplex( void )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class A>
+template< class N , class A >
 void MCFSimplex::UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 )
 {
  /* In subtree T2 there is a path from node h2 (deepest node of the leaving
@@ -3359,7 +3359,7 @@ void MCFSimplex::UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 N* MCFSimplex::CutAndUpdateSubtree( N *root , int delta )
 {
  int level = root->subTreeLevel;
@@ -3385,7 +3385,7 @@ N* MCFSimplex::CutAndUpdateSubtree( N *root , int delta )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 void MCFSimplex::PasteSubtree( N *root , N *lastNode , N *previousNode )
 {
  /* The method inserts subtree ("root" and "lastNode" are the extremity of the
@@ -3878,7 +3878,7 @@ void MCFSimplex::SortDualCandidateList(Index min, Index max)
 
 /*--------------------------------------------------------------------------*/
 
-template<class N, class RCT>
+template< class N , class RCT >
 void MCFSimplex::AddPotential( N *r , RCT delta )
 {
  int level = r->subTreeLevel;
@@ -3892,7 +3892,7 @@ void MCFSimplex::AddPotential( N *r , RCT delta )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N>
+template< class N >
 void MCFSimplex::ComputePotential( N *r )
 {
  N *n = r;
@@ -4232,7 +4232,7 @@ void MCFSimplex::ResetWhenInT2( void )
 
 /*--------------------------------------------------------------------------*/
 
-template<class N , class A >
+template< class N , class A >
 N* MCFSimplex::Father( N *n , A *a )
 {
  if( a == NULL )

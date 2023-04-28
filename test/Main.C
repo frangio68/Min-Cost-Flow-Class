@@ -62,7 +62,7 @@ using namespace MCFClass_di_unipi_it;
 /*------------------------------- FUNCTIONS --------------------------------*/
 /*--------------------------------------------------------------------------*/
 
-template<class T>
+template< class T >
 inline T ABS( const T x )
 {
  return( x >= T( 0 ) ? x : -x );
@@ -72,7 +72,7 @@ inline T ABS( const T x )
 // This function reads the first part of a string (before white spaces) and
 // copy T value in the variable sthg (of T type)
 
-template<class T>
+template< class T >
 static inline void str2val( const char* const str , T &sthg )
 {
  istringstream( str ) >> sthg;
@@ -177,7 +177,7 @@ int main( int argc , char **argv )
   // set "reasonable" values for the epsilons, if any - - - - - - - - - - - -
   // ... that is, only if FNumber/CNumber is float
 
-  if( ! numeric_limits<MCFClass::FNumber>::is_integer ) {
+  if( ! numeric_limits< MCFClass::FNumber >::is_integer ) {
    MCFClass::FNumber eF = 1;
    for( MCFClass::Index i = mcf->MCFm() ; i-- ; )
     eF = max( eF , ABS( mcf->MCFUCap( i ) ) );
@@ -189,7 +189,7 @@ int main( int argc , char **argv )
 		double( Eps< MCFClass::FNumber >() * eF * mcf->MCFm() * 10 ) );
    }
 
-  if( ! numeric_limits<MCFClass::CNumber>::is_integer ) {
+  if( ! numeric_limits< MCFClass::CNumber >::is_integer ) {
    MCFClass::CNumber eC = 1;
    for( MCFClass::Index i = mcf->MCFm() ; i-- ; )
     eC = max( eC , ABS( mcf->MCFCost( i ) ) );
@@ -219,8 +219,8 @@ int main( int argc , char **argv )
 
     #if( PRINT_RESULTS )
     {
-     if( ( ! numeric_limits<MCFClass::FNumber>::is_integer ) ||
-	 ( ! numeric_limits<MCFClass::CNumber>::is_integer ) ) {
+     if( ( ! numeric_limits< MCFClass::FNumber >::is_integer ) ||
+	 ( ! numeric_limits< MCFClass::CNumber >::is_integer ) ) {
       cout.setf( ios::scientific, ios::floatfield );
       cout.precision( 12 );
       }
