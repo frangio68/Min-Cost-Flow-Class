@@ -351,7 +351,7 @@ class OPTrand {
 /*--------------------------------------------------------------------------*/
 /*--------------------------- Inf() and Eps() ------------------------------*/
 /*--------------------------------------------------------------------------*/
- /// Inf<T>() = infinity value for T
+ /// Inf< T >() = infinity value for T
 
  template <typename T>
  static constexpr T Inf( void ) noexcept {
@@ -361,7 +361,7 @@ class OPTrand {
   }
 
 /*--------------------------------------------------------------------------*/
- /// Eps<T>() = "machine epsilon" for T
+ /// Eps< T >() = "machine epsilon" for T
 
  template <typename T>
  static constexpr T Eps( void ) noexcept {

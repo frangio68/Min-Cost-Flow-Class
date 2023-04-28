@@ -186,7 +186,7 @@ int main( int argc , char **argv )
     eF = max( eF , ABS( mcf->MCFDfct( i ) ) );
 
    mcf->SetPar( MCFSOLVER::kEpsFlw ,
-		double( Eps<MCFClass::FNumber>() * eF * mcf->MCFm() * 10 ) );
+		double( Eps< MCFClass::FNumber >() * eF * mcf->MCFm() * 10 ) );
    }
 
   if( ! numeric_limits<MCFClass::CNumber>::is_integer ) {
@@ -195,7 +195,7 @@ int main( int argc , char **argv )
     eC = max( eC , ABS( mcf->MCFCost( i ) ) );
 
    mcf->SetPar( MCFSOLVER::kEpsCst ,
-		double( Eps<MCFClass::CNumber>() * eC * mcf->MCFm() * 10 ) );
+		double( Eps< MCFClass::CNumber >() * eC * mcf->MCFm() * 10 ) );
    }
 
   // set other parameters from configuration file (if any)- - - - - - - - - -

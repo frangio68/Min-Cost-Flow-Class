@@ -196,7 +196,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
  if( pU ) {  // copy the capacities - - - - - - - - - - - - - - - - - - - - -
   FRow tCap = Cap + m;
   for( pU += m ; tCap > Cap ; )
-   if( ( (*tCap--) = *(--pU) ) == Inf<FNumber>() ) {
+   if( ( (*tCap--) = *(--pU) ) == Inf< FNumber >() ) {
     InfCap = true;
     break;
     }
@@ -207,7 +207,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
  else {    // capacities are all-INF
   InfCap = true;
   for( FRow tCap = Cap + m ; tCap > Cap ; )
-   (*tCap--) = Inf<FNumber>();
+   (*tCap--) = Inf< FNumber >();
   }
 
  if( pC ) {  // copy the costs- - - - - - - - - - - - - - - - - - - - - - - -
@@ -215,7 +215,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
   CRow tRC = RC + m;
   for( pC += m ; tC > C ; ) {
    cCNumber ttC = *(--pC);
-   if( ( *(tRC--) = ttC ) < Inf<CNumber>() )
+   if( ( *(tRC--) = ttC ) < Inf< CNumber >() )
     *(tC--) = ttC;
    else
     *(tC--) = 0;
@@ -236,7 +236,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
   FRow tCap = Cap + m;
   for( CRow tC = C + m ; tC > C ; tCap-- )
    if( *(tC--) < 0 ) {
-    if( *tCap == Inf<FNumber>() )
+    if( *tCap == Inf< FNumber >() )
      throw(
       MCFException( "RelaxIV::LoadNet(): C[ i , j ] < 0 and U[ i , j ] = INF"
                     ) );
@@ -245,7 +245,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
     }
 
   for( tCap = Cap + m ; tCap > Cap ; tCap-- )
-   if( *tCap == Inf<FNumber>() )
+   if( *tCap == Inf< FNumber >() )
     *tCap = maxcap;
   }
 
@@ -477,7 +477,7 @@ void RelaxIV::SolveMCF( void )
     CNumber delprc = nxtbrkpt( FIn + node , NxtIn , FOu + node , NxtOu );
 
     for(;;) {
-     if( GTZ( deficit - delx , EpsDfct ) && ( delprc == Inf<CNumber>() ) ) {
+     if( GTZ( deficit - delx , EpsDfct ) && ( delprc == Inf< CNumber >() ) ) {
       error_node = node;
       error_info = 5;
       status = MCFClass::kUnfeasible;
@@ -528,7 +528,7 @@ void RelaxIV::SolveMCF( void )
 
       }  // end if( delx == 0 )
 
-     if( delprc == Inf<CNumber>() ) {
+     if( delprc == Inf< CNumber >() ) {
       quit = true;
       cond1 = false;
       break;
@@ -651,7 +651,7 @@ void RelaxIV::SolveMCF( void )
     CNumber delprc = nxtbrkpt( FOu + node , NxtOu , FIn + node , NxtIn );
 
     for(;;) {
-     if( GTZ( deficit - delx , EpsDfct ) && ( delprc == Inf<CNumber>() ) ) {
+     if( GTZ( deficit - delx , EpsDfct ) && ( delprc == Inf< CNumber >() ) ) {
       error_node = node;
       error_info = 6;
       status = MCFClass::kUnfeasible;
@@ -701,7 +701,7 @@ void RelaxIV::SolveMCF( void )
       deficit -= delx;
       }
 
-     if( delprc == Inf<CNumber>() ) {
+     if( delprc == Inf< CNumber >() ) {
       quit = true;
       cond1 = false;
       break;
@@ -1294,7 +1294,7 @@ void RelaxIV::MCFPutState( MCFClass::MCFStatePtr S )
   FNumber ttCap = *(tCap--);
   cFNumber ttSF = *(--tSF);
   cCNumber ttSRC = *(--tSRC);
-  if( ttSRC == Inf<CNumber>() )
+  if( ttSRC == Inf< CNumber >() )
    continue;
 
   ttCap -= ttSF;
@@ -1481,7 +1481,7 @@ void RelaxIV::WriteMCF( ostream &oStrm , int frmt ) const
     short chrcnt = 0;
     for( Index i = 0 ; i < m ; i++ ) {
      CNumber ttC = *(++tC);
-     if( *(++tRC) == Inf<CNumber>() )
+     if( *(++tRC) == Inf< CNumber >() )
       continue;
 
      if( chrcnt > 230 ) {
@@ -1550,7 +1550,7 @@ void RelaxIV::WriteMCF( ostream &oStrm , int frmt ) const
     FRow tCap = Cap;
     for( Index i = 0 ; i < m ; tCap++ , i++ ) {
      cFNumber ttC = *(++tCap);
-     if( *(++tRC) == Inf<CNumber>() )
+     if( *(++tRC) == Inf< CNumber >() )
       oStrm << "0 <= x" << i << " <= " << ttC << endl;
      }
     }
@@ -1567,7 +1567,7 @@ void RelaxIV::WriteMCF( ostream &oStrm , int frmt ) const
    for( i = 0 ; i++ < m ; ) {
     oStrm << Startn[ i ] << "\t" << Endn[ i ] << "\t" << U[ i ] << "\t";
 
-    if( RC[ i ] < Inf<CNumber>() )
+    if( RC[ i ] < Inf< CNumber >() )
      oStrm << RC[ i ] << endl;
     else
      oStrm << "+INF" << endl;
@@ -1856,10 +1856,10 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
    if( status || ( ! Senstv ) ) {  // no need to reoptimize - - - - - - - - -
     delarci( arc );
 
-    if( nSN < Inf<Index>() )
+    if( nSN < Inf< Index >() )
      Startn[ arc ] = nSN + USENAME0;
 
-    if( nEN < Inf<Index>() )
+    if( nEN < Inf< Index >() )
      Endn[ arc ] =  nEN + USENAME0;
 
     addarci( arc );
@@ -1868,7 +1868,7 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
     cCNumber RCa = RC[ arc ] = C[ arc ] + Pi[ nSN ] - Pi[ nEN ];
     cFNumber Ua = Cap[ arc ];
 
-    if( nSN < Inf<Index>() ) {  // the start node changes
+    if( nSN < Inf< Index >() ) {  // the start node changes
      Dfct[ Startn[ arc ] ] -= X[ arc ];  // update the deficit
 
      Index arc1 = FOu[ Startn[ arc ] ];  // update the FS
@@ -1914,7 +1914,7 @@ void RelaxIV::ChangeArc( Index name , Index nSN , Index nEN )
       }
      }
 
-    if( nEN < Inf<Index>() ) {  // the end node changes
+    if( nEN < Inf< Index >() ) {  // the end node changes
      Dfct[ Endn[ arc ] ] += X[ arc ];  // update the deficit
 
      Index arc1 = FIn[ Endn[ arc ] ];
@@ -2193,11 +2193,11 @@ void RelaxIV::init_standard( void )
 
      CNumber delprc = nxtbrkpt( tFOu , NxtOu , tFIn , NxtIn );
 
-     if( delprc == Inf<CNumber>() ) {           // if no breakpoint is left
-      if( ETZ( *tDDPos , EpsDfct ) )  // and dual ascent is still possible
-       continue;                       // try another dual ascent
+     if( delprc == Inf< CNumber >() ) {  // if no breakpoint is left
+      if( ETZ( *tDDPos , EpsDfct ) )     // and dual ascent is still possible
+       continue;                         // try another dual ascent
 
-      status = MCFClass::kUnfeasible;  // else the problem is unfeasible
+      status = MCFClass::kUnfeasible;    // else the problem is unfeasible
       error_node = tDfct - Dfct;
       error_info = 3;
       return;
@@ -2207,7 +2207,7 @@ void RelaxIV::init_standard( void )
       // delprc is the stepsize to next breakpoint: increase price of node
       // by delprc and compute the stepsize to the next breakpoint
 
-      CNumber nxtbrk = Inf<CNumber>();
+      CNumber nxtbrk = Inf< CNumber >();
 
       Index arc = *tFOu;
       while( arc ) {  // look at all arcs out of the current node
@@ -2231,7 +2231,7 @@ void RelaxIV::init_standard( void )
       // the dual cost (even if dual cost doesn't increase ), do another
       // iteration to increase the price
 
-      if( LEZ( *tDDPos , EpsDfct ) && ( nxtbrk < Inf<CNumber>() ) )
+      if( LEZ( *tDDPos , EpsDfct ) && ( nxtbrk < Inf< CNumber >() ) )
        delprc = nxtbrk;
       else
        break;
@@ -2248,11 +2248,11 @@ void RelaxIV::init_standard( void )
 
       CNumber delprc = nxtbrkpt( tFIn , NxtIn , tFOu , NxtOu );
 
-      if( delprc == Inf<CNumber>() ) {           // if no breakpoint is left
-       if( ETZ( *tDDNeg , EpsDfct ) )  // and dual ascent is still possible
-        continue;                       // try another dual ascent
+      if( delprc == Inf< CNumber >() ) {  // if no breakpoint is left
+       if( ETZ( *tDDNeg , EpsDfct ) )     // and dual ascent is still possible
+        continue;                         // try another dual ascent
 
-       status = MCFClass::kUnfeasible;  // else the problem is unfeasible
+       status = MCFClass::kUnfeasible;    // else the problem is unfeasible
        error_node = tDfct - Dfct;
        error_info = 4;
        return;
@@ -2262,7 +2262,7 @@ void RelaxIV::init_standard( void )
        // delprc is the stepsize to next breakpoint: decrease price of node
        // by delprc and compute the stepsize to the next breakpoint
 
-       CNumber nxtbrk = Inf<CNumber>();
+       CNumber nxtbrk = Inf< CNumber >();
 
        Index arc = *tFOu;
        while( arc ) {  // look at all arcs out of the current node
@@ -2286,7 +2286,7 @@ void RelaxIV::init_standard( void )
        // decreasing the dual cost (even if dual cost doesn't increase),
        // do another iteration to decrease the price
 
-       if( LEZ( *tDDNeg , EpsDfct ) && ( nxtbrk < Inf<CNumber>() ) )
+       if( LEZ( *tDDNeg , EpsDfct ) && ( nxtbrk < Inf< CNumber >() ) )
         delprc = nxtbrk;
        else
         break;
@@ -2344,7 +2344,7 @@ MCFClass::FNumber RelaxIV::dascnt( Index node , CNumber &delprc ,
  nb_pos = 0;
  nb_neg = m;
  CNumber dp = delprc;
- delprc = Inf<CNumber>();
+ delprc = Inf< CNumber >();
  FNumber delx = 0;
  Index arc = F1[ node ];
 
@@ -2542,7 +2542,7 @@ bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
  FNumber dlx = 0;
  Index nsave_pos = 0;
  Index nsave_neg = m;
- CNumber delprc = Inf<CNumber>();
+ CNumber delprc = Inf< CNumber >();
 
  if( nscan <= n / 2 ) {  // - - - - - - - - - - - - - - - - - - - - - - - - -
   Index_Set t_label = label;
@@ -2647,8 +2647,8 @@ bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
  do {
-  if( delprc == Inf<CNumber>() )  // can increase the dual cost indefinitely
-   return( false );               // the primal problem is infeasible
+  if( delprc == Inf< CNumber >() )  // can increase the dual cost indefinitely
+   return( false );                 // the primal problem is infeasible
 
   if( Switch ) {  //- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    // decrease (increase when deficit is negative) the prices of the scanned
@@ -2808,7 +2808,7 @@ bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
 
    Index i = nsave_pos;
    Index_Set t_save = save;
-   for( delprc = Inf<CNumber>() ; i-- ; ) {
+   for( delprc = Inf< CNumber >() ; i-- ; ) {
     CNumber rdcost = -RC[ *(t_save++) ];
 
     if( GTZ( rdcost , EpsCst ) && ( rdcost < delprc ) )
@@ -2823,7 +2823,7 @@ bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
     }
    }
   } while( GEZ( sdm - delx , EpsDfct ) &&
-           ( ( delprc < Inf<CNumber>() ) || GTZ( sdm - delx , EpsDfct ) ) );
+           ( ( delprc < Inf< CNumber >() ) || GTZ( sdm - delx , EpsDfct ) ) );
 
  return( true );
 
@@ -2834,7 +2834,7 @@ bool RelaxIV::Ascnt( FNumber sdm , FNumber delx , Index &nlabel ,
 MCFClass::CNumber RelaxIV::nxtbrkpt( cIndex_Set tSt1 , cIndex_Set NSt1 ,
 				     cIndex_Set tSt2 , cIndex_Set NSt2 )
 {
- CNumber delprc = Inf<CNumber>();
+ CNumber delprc = Inf< CNumber >();
  Index arc = *tSt1;
  while( arc ) {
   CNumber trc = RC[ arc ];
@@ -2962,7 +2962,7 @@ void RelaxIV::chgcsti( Index i , CNumber NCost )
  cCNumber DCst = NCost - C[ i ];
  C[ i ] = NCost;
 
- if( RCi < Inf<CNumber>() ) {
+ if( RCi < Inf< CNumber >() ) {
   RC[ i ] = ( RCi += DCst );
 
   if( GTZ( RCi , EpsCst ) ) {  // RC[ i ] > 0 - - - - - - - - - - - - - - -
@@ -3209,7 +3209,7 @@ void RelaxIV::cmptprices( void )
    while( arc ) {                     // scan FS( start )
     if( RC[ arc ] < Inf< CNumber >() ) {
      cIndex end = Endn[ arc ];
-     if( Pi[ end ] == Inf<CNumber>() ) {
+     if( Pi[ end ] == Inf< CNumber >() ) {
       Pi[ *(++tq) = end ] = C[ arc ] - RC[ arc ] + Pstart;
       pcnt--;
       }
@@ -3224,7 +3224,7 @@ void RelaxIV::cmptprices( void )
    for( arc = FIn[ start ] ; arc ; ) {  // scan BS( start )
     if( RC[ arc ] < Inf< CNumber >() ) {
      cIndex end = Startn[ arc ];
-     if( Pi[ end ] == Inf<CNumber>() ) {
+     if( Pi[ end ] == Inf< CNumber >() ) {
       Pi[ *(++tq) = end ] = RC[ arc ] + Pstart - C[ arc ];
       pcnt--;
       }
@@ -3273,7 +3273,7 @@ void RelaxIV::auction( void )
   CRow tRC = RC + m;
   cFRow tCap = Cap + m;
   for( ; tC > C ; tX-- , tU-- , tC-- , tRC-- , tCap-- ) {
-   if( *tRC == Inf<CNumber>() )
+   if( *tRC == Inf< CNumber >() )
     continue;
 
    cCNumber RCi = *tRC = *tC;

@@ -375,10 +375,10 @@ int main( int argc , char **argv )
  // compute min/max cost & max deficit- - - - - - - - - - - - - - - - - - - -
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
- MCFClass::CNumber c_max = -Inf<MCFClass::CNumber>();    // max cost
- MCFClass::CNumber c_min = Inf<MCFClass::CNumber>();     // min cost
- MCFClass::FNumber cap_max = 0;                          // max capacity
- MCFClass::CNumber cap_min = Inf<MCFClass::FNumber>();   // min capacity
+ MCFClass::CNumber c_max = -Inf< MCFClass::CNumber>();    // max cost
+ MCFClass::CNumber c_min = Inf< MCFClass::CNumber>();     // min cost
+ MCFClass::FNumber cap_max = 0;                           // max capacity
+ MCFClass::CNumber cap_min = Inf< MCFClass::FNumber>();   // min capacity
 
  for( MCFClass::Index i = 0 ; i < m ; i++ )
   #if( DYNMC_MCF )
@@ -473,7 +473,7 @@ int main( int argc , char **argv )
    }
 
   #if( NMS_IS_USED )
-   nms[ i ] = Inf<MCFClass::Index>();
+   nms[ i ] = Inf< MCFClass::Index >();
   #else
    strt = MCFClass::Index( drand48() * ( m - n_change ) );
    stp = strt + n_change;
@@ -514,7 +514,7 @@ int main( int argc , char **argv )
    }
 
   #if( NMS_IS_USED )
-   nms[ i ] = Inf<MCFClass::Index>();
+   nms[ i ] = Inf< MCFClass::Index >();
   #else
    strt = MCFClass::Index( drand48() * ( m - n_change ) );
    stp = strt + n_change;
@@ -572,7 +572,7 @@ int main( int argc , char **argv )
 
    newcaps[ 1 ] = oldcaps[ i ];
    nms[ 1 ] = i;
-   nms[ 2 ] = Inf<MCFClass::Index>();
+   nms[ 2 ] = Inf< MCFClass::Index >();
 
    // remember the old values of the deficit in oldcaps[]
    oldcaps[ 0 ] = newcaps[ 0 ];
@@ -622,7 +622,7 @@ int main( int argc , char **argv )
      }
     }
 
-   nms[ i ] = Inf<MCFClass::Index>();
+   nms[ i ] = Inf< MCFClass::Index >();
 
    // re-solve the problems - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -631,7 +631,7 @@ int main( int argc , char **argv )
 
    // re-opening arcs - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-   for( i = 0 ; nms[ i ] < Inf<MCFClass::Index>() ; i++ ) {
+   for( i = 0 ; nms[ i ] < Inf< MCFClass::Index >() ; i++ ) {
     mcf1->OpenArc( nms[ i ] );
     mcf2->OpenArc( nms[ i ] );
     }

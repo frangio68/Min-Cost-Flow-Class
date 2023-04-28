@@ -203,7 +203,7 @@ class RelaxIV : public MCFClass {
 
 /**< Inputs a new network, as in MCFClass::LoadNet().
 
-   Arcs with pC[ i ] == Inf<CNumber>() do not "exist". If DYNMC_MCF_RIV > 0,
+   Arcs with pC[ i ] == Inf< CNumber >() do not "exist". If DYNMC_MCF_RIV > 0,
    these arcs are "closed".
 
    If DYNMC_MCF_RIV == 0, these arcs are just removed from the formulation.

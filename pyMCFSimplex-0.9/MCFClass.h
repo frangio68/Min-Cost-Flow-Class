@@ -281,7 +281,7 @@ class MCFClass {
  public:
   MCFException( const char *const msg = 0 ) { errmsg = msg; }
 
-  const char* what( void ) const throw () { return( errmsg ); }
+  const char* what( void ) const throw() { return( errmsg ); }
  private:
   const char *errmsg;
   };
@@ -376,8 +376,8 @@ class MCFClass {
   status = kUnSolved;
   Senstv = true;
 
-  EpsFlw = Eps<FNumber>() * 100;
-  EpsCst = Eps<CNumber>() * 100;
+  EpsFlw = Eps< FNumber >() * 100;
+  EpsCst = Eps< CNumber >() * 100;
   EpsDfct = EpsFlw * ( nmax ? nmax : 100 );
 
   MaxTime = 0;
@@ -723,7 +723,7 @@ class MCFClass {
     will be in "dense" format, i.e., the flow relative to arc `i'
     (i in 0 .. m - 1) is written in F[ i ]. If nms != 0, F[] will be in 
     "sparse" format, i.e., the indices of the nonzero elements in the flow
-    solution are written in nms (that is then Inf<Index>()-terminated) and
+    solution are written in nms (that is then Inf< Index >()-terminated) and
     the flow value of arc nms[ i ] is written in F[ i ]. Note that nms is
     *not* guaranteed to be ordered. Also, note that, unlike MCFGetRC() and
     MCFGetPi() [see below], nms is an *output* of the method.
@@ -732,7 +732,7 @@ class MCFClass {
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). */
 
  virtual void MCFGetX( FRow F ,  Index_Set nms = 0 ,
-		       cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+		       cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the flow solution
@@ -773,7 +773,7 @@ class MCFClass {
     the node potential of node `i' (i in 0 .. n - 1) is written in P[ i ]
     (note that here node names always start from zero, regardless to the value
     of USENAME0). If nms != 0, it must point to a vector of indices in
-    0 .. n - 1 (ordered in increasing sense and Inf<Index>()-terminated), and
+    0 .. n - 1 (ordered in increasing sense and Inf< Index >()-terminated), and
     the node potential of nms[ i ] is written in P[ i ]. Note that, unlike
     MCFGetX() above, nms is an *input* of the method.
 
@@ -784,7 +784,7 @@ class MCFClass {
     in the correct range are returned. */
 
  virtual void MCFGetPi( CRow P ,  cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the node potentials
@@ -821,7 +821,7 @@ class MCFClass {
 /** Write the reduced costs corresponding to the current dual solution in
    RC[]. If nms == 0, the reduced cost of arc `i' (i in 0 .. m - 1) is
    written in RC[ i ]; if nms != 0, it must point to a vector of indices
-   in 0 .. m - 1 (ordered in increasing sense and Inf<Index>()-terminated),
+   in 0 .. m - 1 (ordered in increasing sense and Inf< Index >()-terminated),
    and the reduced cost of arc nms[ i ] is written in RC[ i ]. Note that,
    unlike MCFGetX() above, nms is an *input* of the method.
 
@@ -835,7 +835,7 @@ class MCFClass {
          [see above] which returns true. */
 
  virtual void MCFGetRC(  CRow CR ,  cIndex_Set nms = 0 ,
-			 cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			 cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to an the reduced costs 
@@ -871,8 +871,8 @@ class MCFClass {
     If MCFGetStatus() == kOK, this is guaranteed to be the optimal objective
     function value of the problem (to within the optimality tolerances), but
     only prior to any call to HaveNewX() that returns true. MCFGetFO()
-    typically returns Inf<FONumber>() if MCFGetStatus() == kUnfeasible and
-    - Inf<FONumber>() if MCFGetStatus() == kUnbounded. If MCFGetStatus() ==
+    typically returns Inf< FONumber >() if MCFGetStatus() == kUnfeasible and
+    - Inf< FONumber >() if MCFGetStatus() == kUnbounded. If MCFGetStatus() ==
     kStopped and MCFGetFO() returns a finite value, it must be an upper bound
     on the optimal objective function value (typically, the objective function
     value of one primal feasible solution). */
@@ -898,7 +898,7 @@ class MCFClass {
   switch( MCFGetStatus() ) {
    case( kUnSolved ):
    case( kStopped ):
-   case( kError ):    return( -Inf<FONumber>() );
+   case( kError ):    return( -Inf< FONumber >() );
    default:           return( MCFGetFO() );
    }
   }
@@ -929,7 +929,7 @@ class MCFClass {
    the forward/backward arcs of the cut -, and this method is provided for
    getting it. It can be called only if MCFGetStatus() == kUnfeasible, and
    should write in Cut the set of names of nodes in the unfeasible cut (note
-   that node names depend on USENAME0), Inf<Index>()-terminated, returning the
+   that node names depend on USENAME0), Inf< Index >()-terminated, returning the
    deficit of the cut (which allows to distinguish which of the two cases
    above hold). In general, no special properties can be expected from the
    returned cut, but solvers should be able to provide e.g. "small" cuts.
@@ -940,7 +940,7 @@ class MCFClass {
 
  virtual FNumber MCFGetUnfCut( Index_Set Cut )
  {
-  *Cut = Inf<Index>();
+  *Cut = Inf< Index >();
   return( 0 );
   }
 
@@ -966,12 +966,12 @@ class MCFClass {
     with "large negative" cost.
 
     However, not all solvers may be (easily) capable of providing this
-    information; thus, returning Inf<Index>() is allowed, as in the base class
+    information; thus, returning Inf< Index >() is allowed, as in the base class
     implementation, to signify that this information is not available. */
 
  virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
  {
-  return( Inf<Index>() );
+  return( Inf< Index >() );
   }
 
 /**@} ----------------------------------------------------------------------*/
@@ -1136,7 +1136,7 @@ class MCFClass {
     and Endv[]. If nms == 0, then the information relative to all arcs is
     written into Startv[] and Endv[], otherwise Startv[ i ] and Endv[ i ]
     contain the information relative to arc nms[ i ] (nms[] must be
-    Inf<Index>()-terminated).
+    Inf< Index >()-terminated).
 
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
@@ -1156,7 +1156,7 @@ class MCFClass {
 
  virtual void MCFArcs( Index_Set Startv ,  Index_Set Endv ,
 		       cIndex_Set nms = 0 , cIndex strt = 0 ,
-		       Index stp = Inf<Index>() ) = 0;
+		       Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the starting (tail) node of the arc `i'
@@ -1205,7 +1205,7 @@ class MCFClass {
 /// write the arc costs into a vector
 /** Write the arc costs into Costv[]. If nms == 0, then all the costs are
     written, otherwise Costv[ i ] contains the information relative to arc
-    nms[ i ] (nms[] must be Inf<Index>()-terminated).
+    nms[ i ] (nms[] must be Inf< Index >()-terminated).
 
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
@@ -1214,7 +1214,7 @@ class MCFClass {
     the correct range are returned. */
 
  virtual void MCFCosts( CRow Costv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the cost of the i-th arc
@@ -1236,7 +1236,7 @@ class MCFClass {
 /** Write the quadratic coefficients of the arc costs into Qv[]. If
     nms == 0, then all the costs are written, otherwise Costv[ i ] contains
     the information relative to arc nms[ i ] (nms[] must be
-    Inf<Index>()-terminated).
+    Inf< Index >()-terminated).
 
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
@@ -1249,7 +1249,7 @@ class MCFClass {
     coefficients. */
 
  virtual void MCFQCoef( CRow Qv , cIndex_Set nms = 0 ,
-                          cIndex strt = 0 , Index stp = Inf<Index>() )
+                          cIndex strt = 0 , Index stp = Inf< Index >() )
  {
   if( nms ) {
    while( *nms < strt )
@@ -1292,7 +1292,7 @@ class MCFClass {
 /// write the arc capacities into a vector
 /** Write the arc capacities into UCapv[]. If nms == 0, then all the
     capacities are written, otherwise UCapv[ i ] contains the information
-    relative to arc nms[ i ] (nms[] must be Inf<Index>()-terminated).
+    relative to arc nms[ i ] (nms[] must be Inf< Index >()-terminated).
 
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the arcs `i' with strt <= i < min( MCFm() , stp ). `strt'
@@ -1301,7 +1301,7 @@ class MCFClass {
     the correct range are returned. */
 
  virtual void MCFUCaps( FRow UCapv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the capacity of the i-th arc
@@ -1325,7 +1325,7 @@ class MCFClass {
 /// write the node deficits into a vector
 /** Write the node deficits into Dfctv[]. If nms == 0, then all the
     defcits are written, otherwise Dfctvv[ i ] contains the information
-    relative to node nms[ i ] (nms[] must be Inf<Index>()-terminated).
+    relative to node nms[ i ] (nms[] must be Inf< Index >()-terminated).
 
     The parameters `strt' and `stp' allow to restrict the output of the method
     to all and only the nodes `i' with strt <= i < min( MCFn() , stp ). `strt'
@@ -1339,7 +1339,7 @@ class MCFClass {
 	  but its deficit is returned by MCFDfcts( Dfctv , 0 , 0 , 1 ). */
 
  virtual void MCFDfcts( FRow Dfctv , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return the deficit of the i-th node
@@ -1411,7 +1411,7 @@ class MCFClass {
 /** Change the arc costs. In particular, change the costs that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing
-     sense and Inf<Index>()-terminated),
+     sense and Inf< Index >()-terminated),
 
    - *and* whose name belongs to the interval [`strt', `stp').
 
@@ -1426,7 +1426,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgCosts( cCRow NCost , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the cost of the i-th arc
@@ -1445,7 +1445,7 @@ class MCFClass {
    change the coefficients that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing
-     sense and Inf<Index>()-terminated),
+     sense and Inf< Index >()-terminated),
 
    - *and* whose name belongs to the interval [`strt', `stp').
 
@@ -1465,7 +1465,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() )
+			cIndex strt = 0 , Index stp = Inf< Index >() )
  {
   if( NQCoef )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
@@ -1495,7 +1495,7 @@ class MCFClass {
 /** Change the arc capacities. In particular, change the capacities that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing sense
-     and Inf<Index>()-terminated),
+     and Inf< Index >()-terminated),
 
    - *and* whose name belongs to the interval [`strt', `stp').
 
@@ -1510,7 +1510,7 @@ class MCFClass {
          touched with these methods. */
 
  virtual void ChgUCaps( cFRow NCap , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the capacity of the i-th arc
@@ -1531,7 +1531,7 @@ class MCFClass {
 /** Change the node deficits. In particular, change the deficits that are:
 
    - listed in into the vector of indices `nms' (ordered in increasing sense
-     and Inf<Index>()-terminated),
+     and Inf< Index >()-terminated),
 
    - *and* whose name belongs to the interval [`strt', `stp').
 
@@ -1550,7 +1550,7 @@ class MCFClass {
 	 touched with these methods. */
 
  virtual void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-			cIndex strt = 0 , Index stp = Inf<Index>() ) = 0;
+			cIndex strt = 0 , Index stp = Inf< Index >() ) = 0;
 
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -1610,7 +1610,7 @@ class MCFClass {
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// adds a ned node
-/** Add a new node with deficit aDfct, returning its name. Inf<Index>() is
+/** Add a new node with deficit aDfct, returning its name. Inf< Index >() is
     returned if there is no room for a new node. Remember that the node names
     are either { 0 .. nmax - 1 } or { 1 .. nmax }, depending on the value of
     USENAME0. */
@@ -1620,14 +1620,14 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// change the starting and/or ending node of one arc
 /** Change the starting and/or ending node of arc `name' to nSN and nEN.
-    Each parameter being Inf<Index>() means to leave the previous starting or
+    Each parameter being Inf< Index >() means to leave the previous starting or
     ending node untouched. When this method is called `name' can be either the
     name of a "normal" arc or that of a "closed" arc [see CloseArc() above]:
     in the latter case, at the end of ChangeArc() the arc is *still closed*,
     and it remains so until OpenArc( name ) [see above] is called. */
 
- virtual void ChangeArc( cIndex name , cIndex nSN = Inf<Index>() ,
-			 cIndex nEN = Inf<Index>() ) = 0;
+ virtual void ChangeArc( cIndex name , cIndex nSN = Inf< Index >() ,
+			 cIndex nEN = Inf< Index >() ) = 0;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// deletes one arc
@@ -1652,7 +1652,7 @@ class MCFClass {
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// adds a new arc
 /** Add the new arc ( Start , End ) with cost aC and capacity aU, returning
-    its name. Inf<Index>() is returned if there is no room for a new arc.
+    its name. Inf< Index >() is returned if there is no room for a new arc.
     Remember that arc names go from 0 to mmax - 1. */
 
  virtual Index AddArc( cIndex Start , cIndex End , cFNumber aU ,

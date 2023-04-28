@@ -52,7 +52,7 @@ namespace MCFClass_di_unipi_it
    Furthermore, the field "ident" is not created because the solver doesn't
    use the classical TLU tripartition. Instead, closed arcs and deleted arcs
    are characterized as follows:
-   - closed arcs have the field "cost" to INFINITY (Inf<FNumber>());
+   - closed arcs have the field "cost" to INFINITY (Inf< FNumber >());
    - deleted arcs have the field "upper" to INFINITY and the "tail" and
      "head" field are NULL.
    Furthermore, the solver needs the variables "ignoredEnteringArc" and
@@ -347,7 +347,7 @@ class MCFSimplex: public MCFClass
 /*--------------------------------------------------------------------------*/
 
  void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-		Index strt = 0 , Index stp = Inf<Index>() ) override;
+		Index strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgDfct( Index nod , FNumber NDfct ) override;
 
@@ -385,7 +385,7 @@ class MCFSimplex: public MCFClass
  Index AddNode( FNumber aDfct ) override;
 
  void ChangeArc( Index name , Index nSS = Inf< Index >() ,
-		              Index nEN = Inf<Index>() ) override;
+		              Index nEN = Inf< Index >() ) override;
 
  void DelArc( Index name ) override;
 

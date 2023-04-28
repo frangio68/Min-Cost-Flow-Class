@@ -52,7 +52,7 @@ namespace MCFClass_di_unipi_it
    Furthermore, the field "ident" is not created because the solver doesn't
    use the classical TLU tripartition. Instead, closed arcs and deleted arcs
    are characterized as follows:
-   - closed arcs have the field "cost" to INFINITY (Inf<FNumber>());
+   - closed arcs have the field "cost" to INFINITY (Inf< FNumber >());
    - deleted arcs have the field "upper" to INFINITY and the "tail" and
      "head" field are NULL.
    Furthermore, the solver needs the variables "ignoredEnteringArc" and
@@ -240,14 +240,14 @@ class MCFSimplex: public MCFClass
  using MCFClass::MCFGetX;  // the ( void ) method, which is otherwise hidden
 
  void MCFGetX( FRow F , Index_Set nms = NULL ,
-	       cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+	       cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
 /*--------------------------------------------------------------------------*/
 
  using MCFClass::MCFGetRC;  // the ( void ) method, which is otherwise hidden
 
  void MCFGetRC( CRow CR , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  CNumber MCFGetRC( cIndex i ) override;
 
@@ -256,7 +256,7 @@ class MCFSimplex: public MCFClass
  using MCFClass::MCFGetPi;  // the ( void ) method, which is otherwise hidden
 
  void MCFGetPi( CRow P , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
 /*--------------------------------------------------------------------------*/
 
@@ -268,7 +268,7 @@ class MCFSimplex: public MCFClass
 
  virtual void MCFArcs( Index_Set Startv , Index_Set Endv ,
 		       cIndex_Set nms = NULL , cIndex strt = 0 ,
-		       Index stp = Inf<Index>() ) override;
+		       Index stp = Inf< Index >() ) override;
 
  inline Index MCFSNde( cIndex i ) override;
 
@@ -277,28 +277,28 @@ class MCFSimplex: public MCFClass
 /*--------------------------------------------------------------------------*/
   
  void MCFCosts( CRow Costv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  inline CNumber MCFCost( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFQCoef( CRow Qv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  inline CNumber MCFQCoef( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFUCaps( FRow UCapv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  inline FNumber MCFUCap( cIndex i ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void MCFDfcts( FRow Dfctv , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  inline FNumber MCFDfct( cIndex i ) override;
 
@@ -309,28 +309,28 @@ class MCFSimplex: public MCFClass
 /*--------------------------------------------------------------------------*/
 
  void ChgCosts( cCRow NCost , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgCost( Index arc , cCNumber NCost ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgQCoef( cCRow NQCoef = NULL , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgQCoef( Index arc , cCNumber NQCoef ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgDfcts( cFRow NDfct , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgDfct( Index nod , cFNumber NDfct ) override;
 
 /*--------------------------------------------------------------------------*/
 
  void ChgUCaps( cFRow NCap , cIndex_Set nms = NULL ,
-		cIndex strt = 0 , Index stp = Inf<Index>() ) override;
+		cIndex strt = 0 , Index stp = Inf< Index >() ) override;
 
  void ChgUCap( Index arc , cFNumber NCap ) override;
 
@@ -352,8 +352,8 @@ class MCFSimplex: public MCFClass
 
  Index AddNode( cFNumber aDfct ) override;
 
- void ChangeArc( cIndex name , cIndex nSS = Inf<Index>() ,
-		 cIndex nEN = Inf<Index>() ) override;
+ void ChangeArc( cIndex name , cIndex nSS = Inf< Index >() ,
+		 cIndex nEN = Inf< Index >() ) override;
 
  void DelArc( cIndex name ) override;
 

@@ -244,7 +244,7 @@ void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
     #if( QUADRATICCOST )
      arc->quadraticCost = 0; 
     #endif
-    arc->upper = pU ? pU[ arc - arcsP ] : Inf<FNumber>();
+    arc->upper = pU ? pU[ arc - arcsP ] : Inf< FNumber >();
     arc->tail = nodesP + pSn[ arc - arcsP ] - 1 + USENAME0;
     arc->head = nodesP + pEn[ arc - arcsP ] - 1 + USENAME0;
     arc->flow = 0;
@@ -269,7 +269,7 @@ void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
     // initialize real arcs
     for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
      arc->cost = pC ? pC[ arc - arcsD ] : CNumber( 0 );
-     arc->upper = pU ? pU[ arc - arcsD ] : Inf<FNumber>();
+     arc->upper = pU ? pU[ arc - arcsD ] : Inf< FNumber >();
      arc->tail = nodesD + pSn[ arc - arcsD ] - 1 + USENAME0;
      arc->head = nodesD + pEn[ arc - arcsD ] - 1 + USENAME0;
      arc->flow = 0;
@@ -388,7 +388,7 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
    if( ( ETZ(aP->flow , EpsFlw) ) && ( aP->ident == AT_UPPER ) )
     aP->ident = AT_LOWER;
 
-   aP->upper = Inf<FNumber>();
+   aP->upper = Inf< FNumber >();
    aP++;
    aD++;
    }
@@ -638,7 +638,7 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms ,
       }
      }
 
-   *nms = Inf<Index>();
+   *nms = Inf< Index >();
    }        
   else
    if( usePrimalSimplex )
@@ -990,7 +990,7 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
   cIndex_Set tnms = nms;  // nms may be needed below
   #if QUADRATICCOST
    for( Index h ; ( h = *(tnms++) ) < stp ; ) {
-    if( arcsP[ h ].cost < Inf<CNumber>() ) 
+    if( arcsP[ h ].cost < Inf< CNumber >() )
      arcsP[ h ].cost = *(NCost++);
     else
      NCost++;
@@ -998,14 +998,14 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
   #else
    if( usePrimalSimplex ) 
     for( Index h ; ( h = *(tnms++) ) < stp ; ) {
-     if( arcsP[ h ].cost < Inf<CNumber>() ) 
+     if( arcsP[ h ].cost < Inf< CNumber >() )
       arcsP[ h ].cost = *(NCost++);
      else
       NCost++;
      }
    else { 
     for( Index h ; ( h = *(tnms++) ) < stp ; )
-     if( arcsD[ h ].cost < Inf<CNumber>() )
+     if( arcsD[ h ].cost < Inf< CNumber >() )
       arcsD[ h ].cost = *(NCost++);
      else
       NCost++;
@@ -1015,7 +1015,7 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
  else
   #if QUADRATICCOST
    for( arcPType *arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
-    if( arc->cost < Inf<CNumber>() )
+    if( arc->cost < Inf< CNumber >() )
      arc->cost = *(NCost++); 
     else
      NCost++;
@@ -1023,14 +1023,14 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
   #else
    if( usePrimalSimplex )
     for( arcPType *arc = arcsP + strt ; arc < (arcsP + stp) ; arc++ ) {
-     if( arc->cost < Inf<CNumber>() )
+     if( arc->cost < Inf< CNumber >() )
       arc->cost = *(NCost++); 
      else
       NCost++;
      }
    else
     for( arcDType *arc = arcsD + strt ; arc < (arcsD + stp) ; arc++ ) {
-     if( arc->cost < Inf<CNumber>() )
+     if( arc->cost < Inf< CNumber >() )
       arc->cost = *(NCost++); 
      else
       NCost++;
@@ -1080,13 +1080,13 @@ void MCFSimplex::ChgCost( Index arc , CNumber NCost )
   ( arcsP + arc )->cost = NCost;
  #else
   if( usePrimalSimplex ) {
-   if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+   if( ( arcsP + arc )->cost == Inf< CNumber >() )
     return;
 
    ( arcsP + arc )->cost = NCost;
    }
   else {
-   if( ( arcsD + arc )->cost == Inf<CNumber>() )
+   if( ( arcsD + arc )->cost == Inf< CNumber >() )
     return;
 
    ( arcsD + arc )->cost = NCost;
@@ -1153,14 +1153,14 @@ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
 
    cIndex_Set tnms = nms;  // nms may be needed below
    for( Index h ; ( h = *(tnms++) ) < stp ; )
-    if( arcsP[ h ].quadraticCost == Inf<CNumber>() )
+    if( arcsP[ h ].quadraticCost == Inf< CNumber >() )
      NQCoef++;
     else
      arcsP[ h ].quadraticCost = *(NQCoef++);
    }
   else
    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-    if( arc->quadraticCost == Inf<CNumber>() )
+    if( arc->quadraticCost == Inf< CNumber >() )
      NQCoef++;
     else
      arc->quadraticCost = *(NQCoef++);
@@ -1184,7 +1184,7 @@ void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
   if( arc >= m )
    return;
 
-  if( ( arcsP + arc )->quadraticCost == Inf<CNumber>() ) 
+  if( ( arcsP + arc )->quadraticCost == Inf< CNumber >() )
    return;
 
   ( arcsP + arc )->quadraticCost = NQCoef;
@@ -1329,20 +1329,20 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
   cIndex_Set tnms = nms;  // nms may be needed below
   #if QUADRATICCOST
    for( Index h ; ( h = *(tnms++) ) < stp ; )
-    if ( arcsP[ h ].cost < Inf<CNumber>() )
+    if ( arcsP[ h ].cost < Inf< CNumber >() )
      arcsP[ h ].upper = *(NCap++);
     else
      NCap++;
   #else
    if( usePrimalSimplex )
     for( Index h ; ( h = *(tnms++) ) < stp ; )
-     if ( arcsP[ h ].cost < Inf<CNumber>() )
+     if ( arcsP[ h ].cost < Inf< CNumber >() )
       arcsP[ h ].upper = *(NCap++);
      else
       NCap++;
    else
     for( Index h ; ( h = *(tnms++) ) < stp ; )
-     if ( arcsD[ h ].cost < Inf<CNumber>() )
+     if ( arcsD[ h ].cost < Inf< CNumber >() )
       arcsD[ h ].upper = *(NCap++);
      else
       NCap++;
@@ -1351,20 +1351,20 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
  else
   #if QUADRATICCOST
    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-    if ( arc->cost < Inf<CNumber>() )
+    if ( arc->cost < Inf< CNumber >() )
      arc->upper = *(NCap++);
     else
      NCap++;
   #else
    if( usePrimalSimplex )
     for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-     if ( arc->cost < Inf<CNumber>() )
+     if ( arc->cost < Inf< CNumber >() )
       arc->upper = *(NCap++);
      else
       NCap++;
    else
     for( arcDType *arc = arcsD + strt ; arc < ( arcsD + stp ) ; arc++ )
-     if ( arc->cost < Inf<CNumber>() )
+     if ( arc->cost < Inf< CNumber >() )
       arc->upper = *(NCap++);
      else
       NCap++;
@@ -1426,19 +1426,19 @@ void MCFSimplex::ChgUCap( Index arc , FNumber NCap )
   return;
 
  #if QUADRATICCOST
-  if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+  if( ( arcsP + arc )->cost == Inf< CNumber >() )
    return;
   
   ( arcsP + arc )->upper = NCap;
  #else
   if( usePrimalSimplex ) {
-   if( ( arcsP + arc )->cost == Inf<CNumber>() ) 
+   if( ( arcsP + arc )->cost == Inf< CNumber >() )
     return;
   
    ( arcsP + arc )->upper = NCap;
    }
   else {
-   if( ( arcsD + arc )->cost == Inf<CNumber>() )
+   if( ( arcsD + arc )->cost == Inf< CNumber >() )
     return;
 
    ( arcsD + arc )->upper = NCap;
@@ -1969,9 +1969,9 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
 nodePType *node;
 arcPType *arc;
 
-// Per ora è solo contemplato la versione non quadratica del Primale,
-// nel senso che vi è solo una mera copia dello stato senza controllo 
-// d'ammissibilità della soluzione data
+// Per ora ï¿½ solo contemplato la versione non quadratica del Primale,
+// nel senso che vi ï¿½ solo una mera copia dello stato senza controllo 
+// d'ammissibilitï¿½ della soluzione data
 
 // Metti a MAX_ART_COST il costo e a 0 il flusso gli archi dummy
 	
@@ -2010,7 +2010,7 @@ arc->head = dummyRootP;
 //arc->flow = -node->balance;
 }
 arc->flow = 0;
-arc->upper = Inf<FNumber>();
+arc->upper = Inf< FNumber >();
 arc->ident = AT_LOWER;
 arc->cost = MAX_ART_COST;
 }
@@ -2041,7 +2041,7 @@ c++;
 if ( S.UArcs != NULL )
 {
 c = 0;
-Index inf = Inf<Index>();
+Index inf = Inf< Index >();
 while ( S.UArcs[c] != inf )
 {
 ( arcsP + ( Index )( S.enterArcs[c] ) )->ident = AT_UPPER;
@@ -2511,7 +2511,7 @@ void MCFSimplex::PrimalSimplex( void )
    // and entering arc.
    FONumber rc = ReductCost( enteringArc );
    if( ETZ( Q, EpsCst ) )
-    theta = Inf<FNumber>();  // This value will be certainly decreased 
+    theta = Inf< FNumber >();  // This value will be certainly decreased
    else
     theta = std::abs( rc / Q );
     // This is the best theta value (with best f.o. value decrease) 
@@ -2621,7 +2621,7 @@ void MCFSimplex::PrimalSimplex( void )
    if( leavingArc == NULL )
     leavingArc = enteringArc;
 
-   if( theta >= Inf<FNumber>() ) {
+   if( theta >= Inf< FNumber >() ) {
     status = kUnbounded;
     break;
     }
@@ -2876,7 +2876,7 @@ void MCFSimplex::DualSimplex( void )
  status = kUnSolved;
  while( status == kUnSolved ) {
   iterator++;
-  if( iterator == Inf<iteratorType>() ) {
+  if( iterator == Inf< iteratorType >() ) {
    ResetWhenInT2(); // Restore to 0 every nodes' field "whenInT2"
    iterator = 1;
    }
@@ -2944,7 +2944,7 @@ void MCFSimplex::DualSimplex( void )
       minor number of entering/outgoing arcs from its nodes. */
    enteringArc = NULL;
    bool lv = ( leavingArcFromT1toT2 == leavingArcInL );
-   CNumber maxRc = Inf<CNumber>();
+   CNumber maxRc = Inf< CNumber >();
    //Search arc in the Forward Star and Backward Star of nodes of T1
    if( numOfT2Arcs > m ) {
     // Dual Simplex starts from the node which follows the dummy root.

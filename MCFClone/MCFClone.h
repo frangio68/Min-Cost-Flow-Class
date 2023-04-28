@@ -189,7 +189,7 @@ class MCFClone : public Master {
 /*--------------------------------------------------------------------------*/
 
    void ChgDfcts( cFRow NDfct , cIndex_Set nms = 0 ,
-		  Index strt = 0 , Index stp = Inf<Index>() ) override {
+		  Index strt = 0 , Index stp = Inf< Index >() ) override {
     Master::ChgDfcts( NDfct , nms , strt , stp );
     SlvMCF->ChgDfcts( NDfct , nms , strt , stp );
     }

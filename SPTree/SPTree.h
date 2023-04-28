@@ -222,7 +222,7 @@ class SPTree : public MCFClass
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 /** Same meaning as MCFClass::MCFGetPi().
 
-   \note Some of the potentials may be + Inf<CNumber>(): this means that
+   \note Some of the potentials may be + Inf< CNumber >(): this means that
 
    - the node is *not* a destination and it cannot be reached from the Origin
      (however, this does *not* mean that the problem is unfeasible);
@@ -245,7 +245,7 @@ class SPTree : public MCFClass
 /*--------------------------------------------------------------------------*/
 
    void MCFArcs( Index_Set Startv , Index_Set Endv , cIndex_Set nms = 0  ,
-		 Index strt = 0 , Index stp = Inf<Index>() ) const override;
+		 Index strt = 0 , Index stp = Inf< Index >() ) const override;
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
@@ -398,7 +398,7 @@ class SPTree : public MCFClass
    (specified in the constructor or by SetOrigin(), see below)
 
    If LABEL_SETTING == 0, or if no Destination is speficied (Dst ==
-   Inf<Index>() in SetDest() [see below]), the whole Shortest Path Tree (at
+   Inf< Index >() in SetDest() [see below]), the whole Shortest Path Tree (at
    least, the SPT of the component of the graph connected with Origin) is
    computed, otherwise the code stops as soon as the shortest path between
    Origin and Dest is computed.
@@ -430,7 +430,7 @@ class SPTree : public MCFClass
    below). If this is not the case, ShortestPathTree() can be invoked again
    with one of the unreached nodes, until they are all visited.
 
-   If no Dest is given, or if Dest is set to Inf<Index>(), the whole Shortest
+   If no Dest is given, or if Dest is set to Inf< Index >(), the whole Shortest
    Path Tree (at least, the SPT of the component of the graph connected with
    Origin) is computed. */
 
@@ -472,7 +472,7 @@ class SPTree : public MCFClass
    calculation of the shortest path between Origin and some other Dest. */
 
    bool Reached( Index i ) const {
-    return( ( Pi[ i ] < Inf<CNumber>() ) && ( Q[ i ] == Inf<Index>() ) );
+    return( ( Pi[ i ] < Inf< CNumber >() ) && ( Q[ i ] == Inf< Index >() ) );
     }
 
 /*--------------------------------------------------------------------------*/
@@ -494,7 +494,7 @@ class SPTree : public MCFClass
    ( p[ i ] , i ), being p[] the vector returned by the above method, and
    with the same structure. If p[ i ] == 0, then a[ i ] is not significative:
    for the Origin (that has p[ Origin ] == 0), however, it is guaranteed that
-   a[ Origin ] == Inf<Index>(). */
+   a[ Origin ] == Inf< Index >(). */
 
    cIndex_Set ArcPredecessors( void );
 
