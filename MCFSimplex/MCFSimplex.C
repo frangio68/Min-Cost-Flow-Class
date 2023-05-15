@@ -2809,11 +2809,11 @@ void MCFSimplex::PrimalSimplex( void )
     }
 
    if( ( status == kUnSolved ) && MaxIter)
-    if( MaxIter < (int) iterator )
+    if( MaxIter < ( int ) iterator )
      status = kStopped;
 
    #if( UNIPI_PRIMAL_ITER_SHOW )
-    int it = (int) iterator;
+    int it = ( int ) iterator;
     if( it % UNIPI_PRIMAL_ITER_SHOW == 0 ) {        
      cout << endl;
      for( int t = 0; t < 3; t++ )
@@ -2821,7 +2821,7 @@ void MCFSimplex::PrimalSimplex( void )
      cout << "PRIMALE MCFSimplex: ARCHI E NODI ALLA " << it << " ITERAZIONE" << endl;
      ShowSituation( 3 );
      #if( FOSHOW )
-      if( (int) iterator % FOSHOW == 0 ) 
+      if( ( int ) iterator % FOSHOW == 0 )
        clog << "Iteration = " << iterator << " of = "
         #if( LIMITATEPRECISION && QUADRATICCOST )
 	    << foValue
@@ -3258,11 +3258,11 @@ void MCFSimplex::DualSimplex( void )
    }
 
   if( ( status == kUnSolved ) && MaxIter && MCFt )
-   if( MaxIter < (int) iterator )
+   if( MaxIter < ( int ) iterator )
     status = kStopped;
 
   #if( UNIPI_DUAL_ITER_SHOW )
-   if( (int) iterator % UNIPI_DUAL_ITER_SHOW == 0 ) {
+   if( ( int ) iterator % UNIPI_DUAL_ITER_SHOW == 0 ) {
     cout << endl;
     for( int t = 0; t < 3; t++ )
      cout << "\t";
@@ -3277,7 +3277,7 @@ void MCFSimplex::DualSimplex( void )
   }
 
  #if( UNIPI_DUAL_ITER_SHOW )
-  int it = (int) iterator;
+  int it = ( int ) iterator;
   if( it % UNIPI_DUAL_ITER_SHOW == 0 ) {        
    cout << endl;
    for( int t = 0; t < 3; t++ )
