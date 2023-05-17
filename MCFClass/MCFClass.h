@@ -18,7 +18,7 @@
  *         Istituto di Analisi di Sistemi e Informatica \n
  *         Consiglio Nazionale delle Ricerche \n
  *
- * Copyright &copy by Antonio Frangioni, Claudio Gentile
+ * \copyright &copy; by Antonio Frangioni, Claudio Gentile
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/

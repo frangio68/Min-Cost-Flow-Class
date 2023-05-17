@@ -10,7 +10,7 @@
  * dual) simplex algorithm. Conforms to the standard MCF interface defined in
  * MCFClass.h.
  *
- * Version 1.00
+ * version 1.00
  *
  * date 29 - 08 - 2011
  *
@@ -23,7 +23,7 @@
  *         Universita' di Pisa 
 
  *
- * Copyright &copy 2008 - 2011 by Alessandro Bertolini, Antonio Frangioni
+ * copyright &copy by Alessandro Bertolini, Antonio Frangioni
  *
  * Made available through SWIG: 
  * 		Johannes Sommer, 2013

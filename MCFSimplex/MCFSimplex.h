@@ -7,11 +7,14 @@
  * defined in MCFClass.h.
  *
  * \author Alessandro Bertolini \n
- *         Antonio Frangioni \n
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy by Alessandro Bertolini, Antonio Frangioni
+ * \author Antonio Frangioni \n
+ *         Dipartimento di Informatica \n
+ *         Universita' di Pisa \n
+ *
+ * \copyright &copy; by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/

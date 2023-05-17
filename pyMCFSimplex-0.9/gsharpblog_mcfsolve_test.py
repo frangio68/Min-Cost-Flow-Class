@@ -13,7 +13,7 @@
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2008 - 2011 by Alessandro Bertolini, Antonio Frangioni
+ * \copyright &copy; by Alessandro Bertolini, Antonio Frangioni
  *
  * Made available through SWIG: 
  * 		Johannes Sommer, 2013

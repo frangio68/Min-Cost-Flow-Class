@@ -11,7 +11,7 @@
  *         Dipartimento di Informatica \n
  *         Universita' di Pisa \n
  *
- * Copyright &copy 2008 - 2020 by Alessandro Bertolini, Antonio Frangioni
+ * \copyright &copy; by Alessandro Bertolini, Antonio Frangioni
  */
 /*--------------------------------------------------------------------------*/
 /*----------------------------- DEFINITIONS --------------------------------*/
