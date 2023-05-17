@@ -193,8 +193,8 @@ install(FILES ${findMods}
 
 # Install the README and LICENSE files.
 install(FILES
-        ${CMAKE_CURRENT_LIST_DIR}/ReadMe.md
-        ${CMAKE_CURRENT_LIST_DIR}/License.md
+        ${CMAKE_CURRENT_LIST_DIR}/README.md
+        ${CMAKE_CURRENT_LIST_DIR}/LICENSE
         DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName})
 
 # ----- Add the build tree to RPATH------------------------------------------ #
