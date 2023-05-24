@@ -28,7 +28,7 @@
 clean::
 	rm -f $(MCFCxDIR)*.o $(MCFCxDIR)*~
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 MCFCxOBJ = $(MCFCxDIR)MCFCplex.o
 MCFCxLIB = 

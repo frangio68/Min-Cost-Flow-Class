@@ -63,7 +63,7 @@ include $(MCFR4DIR)makefile
 MCFSTDIR = $(libMCFClDIR)SPTree/
 include $(MCFSTDIR)makefile
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # object files (this is local)
 libMCFClOBJ =	$(MCFC2OBJ)\

@@ -26,7 +26,7 @@
 clean::
 	rm -f $(MCFR4DIR)*.o $(MCFR4DIR)*~
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 MCFR4OBJ = $(MCFR4DIR)RelaxIV.o
 MCFR4LIB =

@@ -32,7 +32,7 @@ libCPLEXBSCDIR = /Users/frangio/Applications/CPLEX_Studio1210/cplex/
 #libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_sles10_4.1/static_pic/
 libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 libCPLEXLIB = -L$(libCPLEXINCDIR) -lilocplex -lcplex $(libCPLEXEXTLIB)
 libCPLEXINC = -I$(libCPLEXBSCDIR)include/

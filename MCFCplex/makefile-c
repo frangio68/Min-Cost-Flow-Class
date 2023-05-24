@@ -42,7 +42,7 @@ include $(MCFCxDIR)../extlib/makefile-libCPLEX
 # MCFCplex (the makefile requiring all external modules in input)
 include $(MCFCxDIR)makefile
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # append external libreries to MCFCplex as defined in the makefile, thus
 # the := assignment has to be used (hope you have GNU make)
 

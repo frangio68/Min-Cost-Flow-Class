@@ -20,7 +20,7 @@
 clean::
 	rm -f $(MCFCeDIR)*~
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 MCFCeH   = $(MCFCeDIR)MCFClone.h
 MCFCeINC = -I$(MCFCeDIR)

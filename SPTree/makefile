@@ -26,7 +26,7 @@
 clean::
 	rm -f $(MCFSTDIR)*.o $(MCFSTDIR)*~
 
-# macroes to be exported- - - - - - - - - - - - - - - - - - - - - - - - - - -
+# macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 MCFSTOBJ = $(MCFSTDIR)SPTree.o
 MCFSTLIB =

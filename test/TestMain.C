@@ -105,7 +105,7 @@ static void Str2Sthg( const char* const str , T &sthg )
 static MCFClass *CreateProb( int wSlvr , int Optns )
 {
  MCFClass *mcf = NULL;  // unknown solver, or the required solver is not
-                        // available due to the macroes settings
+                        // available due to the macros settings
  switch( wSlvr ) {
   #if( HAVE_RELAX )  // - - - - - - - - - - - - - - - - - - - - - - - - - - -
    case( 0 ): {
