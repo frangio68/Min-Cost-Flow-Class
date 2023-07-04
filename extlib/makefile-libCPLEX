@@ -20,17 +20,21 @@
 # internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # external libreries that Cplex needs
-# Linux
-#libCPLEXEXTLIB = -lpthread
-# Mac OSX
-libCPLEXEXTLIB = -framework CoreFoundation -framework IOKit
+ifeq ($(UNAME_S),Linux)
+    libCPLEXEXTLIB = -lpthread
+else # macOS
+    libCPLEXEXTLIB = -framework CoreFoundation -framework IOKit
+endif
 
-# basic Cplex directory
-libCPLEXBSCDIR = /Users/frangio/Applications/CPLEX_Studio1210/cplex/
+# basic CPLEX directory
+libCPLEXBSCDIR = $(CPLEX_STUDIO_DIR)/cplex/
 
 # lib Cplex directory
-#libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_sles10_4.1/static_pic/
-libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
+ifeq ($(UNAME_S),Linux)
+    libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_linux/static_pic/
+else # macOS
+    libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
+endif
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
