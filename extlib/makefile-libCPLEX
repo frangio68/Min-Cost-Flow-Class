@@ -22,7 +22,8 @@
 # external libreries that Cplex needs
 ifeq ($(UNAME_S),Linux)
     libCPLEXEXTLIB = -lpthread
-else # macOS
+endif
+ifeq ($(UNAME_S),Darwin)
     libCPLEXEXTLIB = -framework CoreFoundation -framework IOKit
 endif
 
@@ -32,7 +33,8 @@ libCPLEXBSCDIR = $(CPLEX_STUDIO_DIR)/cplex/
 # lib Cplex directory
 ifeq ($(UNAME_S),Linux)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_linux/static_pic/
-else # macOS
+endif
+ifeq ($(UNAME_S),Darwin)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
 endif
 
