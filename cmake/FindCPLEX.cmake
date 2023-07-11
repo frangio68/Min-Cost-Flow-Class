@@ -67,42 +67,6 @@ else ()
         set(CPLEX_ILOG_DIRS
             "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
     endif ()
-
-    # Amended for VS and its various toolsets
-    # https://cmake.org/cmake/help/v3.11/variable/MSVC_VERSION.html
-    # Can use GREATER_EQUAL instead of the mess below if cmake version >= 3.7
-    if (NOT (MSVC_VERSION LESS 1910))
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2017/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2017/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1900))
-        # to support VS2015 with 2013 libraries change below
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2015/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2015/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1800))
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2013/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2013/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1700))
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2012/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2012/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1600))
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2010/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2010/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1500))
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_windows_vs2008/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-            lib/${CPLEX_ARCH}_windows_vs2008/stat_mdd)
-    endif ()
 endif ()
 
 # ----- Find the path to CPLEX Studio --------------------------------------- #
