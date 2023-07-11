@@ -35,38 +35,18 @@ include(FindPackageHandleStandardArgs)
 # - a list of possible ILOG directories
 # - a list of possible lib suffixes to find the library
 
-if (UNIX)
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(CPLEX_ARCH x86-64)
-    else ()
-        set(CPLEX_ARCH x86)
-    endif ()
-
-    if (APPLE)
-        # macOS (usually /Applications)
-        set(CPLEX_ILOG_DIRS /Applications)
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_darwin9_gcc4.0/static_pic
-            lib/${CPLEX_ARCH}_osx/static_pic)
-    else ()
-        # Other Unix-based systems (usually /opt/ibm/ILOG)
-        set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG)
-        set(CPLEX_LIB_PATH_SUFFIXES
-            lib/${CPLEX_ARCH}_sles10_4.1/static_pic
-            lib/${CPLEX_ARCH}_linux/static_pic)
-    endif ()
-
+if (APPLE)
+    # macOS (usually /Applications)
+    set(CPLEX_ILOG_DIRS /Applications)
+    set(CPLEX_LIB_PATH_SUFFIXES
+            lib/${ARCH}_darwin9_gcc4.0/static_pic
+            lib/${ARCH}_osx/static_pic)
 else ()
-    # Windows (usually C:/Program Files/IBM/ILOG)
-    set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
-
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(CPLEX_ARCH x64)
-    else ()
-        set(CPLEX_ARCH x86)
-        set(CPLEX_ILOG_DIRS
-            "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
-    endif ()
+    # Other Unix-based systems (usually /opt/ibm/ILOG)
+    set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG)
+    set(CPLEX_LIB_PATH_SUFFIXES
+            lib/${ARCH}_sles10_4.1/static_pic
+            lib/${ARCH}_linux/static_pic)
 endif ()
 
 # ----- Find the path to CPLEX Studio --------------------------------------- #
