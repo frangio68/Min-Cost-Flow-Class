@@ -90,48 +90,14 @@ else ()
               PATHS ${CPLEX_DIR}/include
               DOC "CPLEX include directory.")
 
-    # ----- Macro: find_win_cplex_library ----------------------------------- #
-    # On Windows the version is appended to the library name which cannot be
-    # handled by find_library, so here a macro to search manually.
-    macro(find_win_cplex_library var path_suffixes)
-        foreach (s ${path_suffixes})
-            file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
-            if (CPLEX_LIBRARY_CANDIDATES)
-                list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
-                break()
-            endif ()
-        endforeach ()
-        if (NOT ${var})
-            set(${var} NOTFOUND)
-        endif ()
-    endmacro()
-
     # ----- Find the CPLEX library ------------------------------------------ #
-    if (UNIX)
-        # Note that find_library() creates a cache entry
-        find_library(CPLEX_LIBRARY
-                     NAMES cplex
-                     PATHS ${CPLEX_DIR}
-                     PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
-                     DOC "CPLEX library.")
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY} CACHE FILEPATH "Debug CPLEX library.")
-
-    elseif (NOT CPLEX_LIBRARY)
-        # Library
-        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
-        set(CPLEX_LIBRARY ${CPLEX_LIB} CACHE FILEPATH "CPLEX library.")
-
-        # Debug library
-        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB} CACHE FILEPATH "Debug CPLEX library.")
-
-        # DLL
-        if (CPLEX_LIBRARY MATCHES ".*/(cplex.*)\\.lib")
-            file(GLOB CPLEX_DLL_ "${CPLEX_DIR}/bin/*/${CMAKE_MATCH_1}.dll")
-            set(CPLEX_DLL ${CPLEX_DLL_} CACHE PATH "CPLEX DLL.")
-        endif ()
-
-    endif ()
+    # Note that find_library() creates a cache entry
+    find_library(CPLEX_LIBRARY
+                 NAMES cplex
+                 PATHS ${CPLEX_DIR}
+                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
+                 DOC "CPLEX library.")
+    set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY} CACHE FILEPATH "Debug CPLEX library.")
 
     # ----- Parse the version ----------------------------------------------- #
     if (CPLEX_INCLUDE_DIR)
