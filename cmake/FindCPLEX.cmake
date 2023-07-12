@@ -69,8 +69,7 @@ if (NOT CPLEX_STUDIO_DIR)
         set(CPLEX_STUDIO_DIR_ CPLEX_STUDIO_DIR-NOTFOUND)
     endif ()
     # Set the path in the cache
-    set(CPLEX_STUDIO_DIR ${CPLEX_STUDIO_DIR_} CACHE PATH
-        "Path to the CPLEX Studio directory.")
+    set(CPLEX_STUDIO_DIR ${CPLEX_STUDIO_DIR_})
 endif ()
 
 # ----- Requirements -------------------------------------------------------- #
