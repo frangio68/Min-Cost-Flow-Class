@@ -96,7 +96,7 @@ else ()
                  PATHS ${CPLEX_DIR}
                  PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
                  DOC "CPLEX library.")
-    set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY} CACHE FILEPATH "Debug CPLEX library.")
+    set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
 
     # ----- Parse the version ----------------------------------------------- #
     if (CPLEX_INCLUDE_DIR)
