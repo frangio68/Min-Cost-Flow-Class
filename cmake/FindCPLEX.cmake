@@ -85,7 +85,8 @@ else ()
     # ----- Find the CPLEX include directory -------------------------------- #
     set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
     # Note that find_path() creates a cache entry
-    find_path(CPLEX_INCLUDE_DIR ilcplex/cplex.h
+    find_path(CPLEX_INCLUDE_DIR
+              NAMES ilcplex/cplex.h
               PATHS ${CPLEX_DIR}/include
               DOC "CPLEX include directory.")
 
