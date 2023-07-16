@@ -28,19 +28,19 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 # basic CPLEX directory
-libCPLEXBSCDIR = $(CPLEX_STUDIO_DIR)/cplex/
+libCPLEXBSCDIR = $(CPLEX_STUDIO_DIR)/cplex
 
 # lib Cplex directory
 ifeq ($(UNAME_S),Linux)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_linux/static_pic/
+    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_linux/static_pic
 endif
 ifeq ($(UNAME_S),Darwin)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)lib/x86-64_osx/static_pic/
+    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
 endif
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 libCPLEXLIB = -L$(libCPLEXINCDIR) -lilocplex -lcplex $(libCPLEXEXTLIB)
-libCPLEXINC = -I$(libCPLEXBSCDIR)include/
+libCPLEXINC = -I$(libCPLEXBSCDIR)/include
 
 ############################# End of makefile ################################

@@ -51,26 +51,24 @@ endif ()
 
 # ----- Find the path to CPLEX Studio --------------------------------------- #
 # This takes the greatest CPLEX_Studio* found in the ILOG directories
-# TODO: Sort properly, now 129 is considered > than 1210
 
-if (NOT CPLEX_STUDIO_DIR)
-    foreach (dir ${CPLEX_ILOG_DIRS})
-        file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
+foreach (dir ${CPLEX_ILOG_DIRS})
+    file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
+    if (NOT CPLEX_STUDIO_DIR IN_LIST CPLEX_STUDIO_DIRS)
+        message(STATUS "Specified CPLEX Studio: ${CPLEX_STUDIO_DIR} not found")
         list(SORT CPLEX_STUDIO_DIRS)
         list(REVERSE CPLEX_STUDIO_DIRS)
         if (CPLEX_STUDIO_DIRS)
-            list(GET CPLEX_STUDIO_DIRS 0 CPLEX_STUDIO_DIR_)
-            message(STATUS "Found CPLEX Studio: ${CPLEX_STUDIO_DIR_}")
+            list(GET CPLEX_STUDIO_DIRS 0 CPLEX_STUDIO_DIR)
+            message(STATUS "Using CPLEX Studio: ${CPLEX_STUDIO_DIR}")
             break()
+        else ()
+            set(CPLEX_STUDIO_DIR CPLEX_STUDIO_DIR-NOTFOUND)
         endif ()
-    endforeach ()
-
-    if (NOT CPLEX_STUDIO_DIR_)
-        set(CPLEX_STUDIO_DIR_ CPLEX_STUDIO_DIR-NOTFOUND)
+    else ()
+        break()
     endif ()
-    # Set the path in the cache
-    set(CPLEX_STUDIO_DIR ${CPLEX_STUDIO_DIR_})
-endif ()
+endforeach ()
 
 # ----- Requirements -------------------------------------------------------- #
 # This sets the variable CMAKE_THREAD_LIBS_INIT, see:
