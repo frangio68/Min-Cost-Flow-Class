@@ -56,7 +56,7 @@ if (UNIX)
 else ()
     # Windows (usually C:/Program Files/IBM/ILOG)
     set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
-    if (ARCH EQUAL x86)
+    if (ARCH MATCHES x86)
         set(CPLEX_ILOG_DIRS
                 "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
     endif ()
@@ -147,33 +147,33 @@ else ()
               PATHS ${CPLEX_DIR}/include
               DOC "CPLEX include directory.")
 
-    # ----- Macro: find_win_cplex_library ----------------------------------- #
-    # On Windows the version is appended to the library name which cannot be
-    # handled by find_library, so here a macro to search manually.
-    macro(find_win_cplex_library var path_suffixes)
-        foreach (s ${path_suffixes})
-            file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
-            if (CPLEX_LIBRARY_CANDIDATES)
-                list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
-                break()
-            endif ()
-        endforeach ()
-        if (NOT ${var})
-            set(${var} NOTFOUND)
-        endif ()
-    endmacro()
-
     if (UNIX)
         # ----- Find the CPLEX library ------------------------------------------ #
         # Note that find_library() creates a cache entry
         find_library(CPLEX_LIBRARY
-                NAMES cplex
-                PATHS ${CPLEX_DIR}
-                PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
-                DOC "CPLEX library.")
+                     NAMES cplex
+                     PATHS ${CPLEX_DIR}
+                     PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
+                     DOC "CPLEX library.")
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
 
     elseif (NOT CPLEX_LIBRARY)
+
+        # ----- Macro: find_win_cplex_library ----------------------------------- #
+        # On Windows the version is appended to the library name which cannot be
+        # handled by find_library, so here a macro to search manually.
+        macro(find_win_cplex_library var path_suffixes)
+            foreach (s ${path_suffixes})
+                file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
+                if (CPLEX_LIBRARY_CANDIDATES)
+                    list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
+                    break()
+                endif ()
+            endforeach ()
+            if (NOT ${var})
+                set(${var} NOTFOUND)
+            endif ()
+        endmacro()
 
         # Library
         find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
