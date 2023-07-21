@@ -113,7 +113,7 @@ endif ()
 
 foreach (dir ${CPLEX_ILOG_DIRS})
     file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
-    if (NOT CPLEX_STUDIO_DIR IN_LIST CPLEX_STUDIO_DIRS)
+    if (NOT IS_DIRECTORY "${CPLEX_STUDIO_DIR}")
         message(STATUS "Specified CPLEX Studio: ${CPLEX_STUDIO_DIR} not found")
         list(SORT CPLEX_STUDIO_DIRS)
         list(REVERSE CPLEX_STUDIO_DIRS)
