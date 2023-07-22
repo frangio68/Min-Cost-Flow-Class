@@ -56,7 +56,7 @@ if (UNIX)
 else ()
     # Windows (usually C:/Program Files/IBM/ILOG)
     set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
-    if (ARCH MATCHES x86)
+    if (WIN32)
         set(CPLEX_ILOG_DIRS
                 "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
     endif ()
