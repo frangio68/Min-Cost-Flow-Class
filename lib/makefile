@@ -32,36 +32,36 @@
 # *INC is the -I<include directories>
 
 # MCFClass
-MCFClDIR = $(libMCFClDIR)MCFClass/
-include $(MCFClDIR)makefile
+MCFClDIR = $(libMCFClDIR)/MCFClass/
+include $(MCFClDIR)/makefile
 
 # CS2
-#MCFC2DIR = $(libMCFClDIR)CS2/
-#include $(MCFC2DIR)makefile
+#MCFC2DIR = $(libMCFClDIR)/CS2/
+#include $(MCFC2DIR)/makefile
 
 # MCFClone
-#MCFCeDIR = $(libMCFClDIR)MCFClone/
-#include $(MCFCeDIR)makefile
+#MCFCeDIR = $(libMCFClDIR)/MCFClone/
+#include $(MCFCeDIR)/makefile
 
 # MCFCplex
-MCFCxDIR = $(libMCFClDIR)MCFCplex/
-include $(MCFCxDIR)makefile
+MCFCxDIR = $(libMCFClDIR)/MCFCplex/
+include $(MCFCxDIR)/makefile
 
 # MCFSimplex
-MCFSxDIR = $(libMCFClDIR)MCFSimplex/
-include $(MCFSxDIR)makefile
+MCFSxDIR = $(libMCFClDIR)/MCFSimplex/
+include $(MCFSxDIR)/makefile
 
 # MCFZIB
-#MCFZBDIR = $(libMCFClDIR)MCFZIB/
-#include $(MCFZBDIR)makefile
+#MCFZBDIR = $(libMCFClDIR)/MCFZIB/
+#include $(MCFZBDIR)/makefile
 
 # RelaxIV
-MCFR4DIR = $(libMCFClDIR)RelaxIV/
-include $(MCFR4DIR)makefile
+MCFR4DIR = $(libMCFClDIR)/RelaxIV/
+include $(MCFR4DIR)/makefile
 
 # SPTree
-MCFSTDIR = $(libMCFClDIR)SPTree/
-include $(MCFSTDIR)makefile
+MCFSTDIR = $(libMCFClDIR)/SPTree/
+include $(MCFSTDIR)/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

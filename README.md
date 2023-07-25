@@ -89,7 +89,24 @@ getting hold of the code. Request forms are available in the [`req/`](req) folde
 ## Build and install
 
 You can either use [CMake](https://cmake.org) or plain makefiles to build the
-library, your choice.
+library, your choice. CMake compiles off-dource and it is therefore perhaps
+better suited to one-off, compile-and-forget installations, whereby the
+provided makefiles compile on-source and we find that they are better suited
+while developing and testing the code (if that's your cup of tea, it is ours).
+
+In both cases, all external dependencies should be automatically dealt with if
+they are installed in their default paths, as specified in
+[`extlib/makefile-default-paths`](extlib/makefile-default-paths). If not, the
+suggested way to change them is to copy the file into
+[`extlib/makefile-paths`](extlib/makefile-paths) and edit it. The file (if
+present) is automatically read and the values found there replace the
+corresponding non-default definitions. The rationale for not changing
+makefile-default-paths is that makefile-paths file is .gitignore-d. Hence, it
+should not be necessary to re-change the makefiles (or stash/restore the
+changes) each time the project is pulled, or manually ignore the changes when
+it is pushed, which is very convenient for anyone who actually develops
+MCFClass components (anyone there?)
+
 
 ### Using CMake
 
@@ -102,17 +119,7 @@ cmake ..
 make
 ```
 
-If CPLEX is not installed in a default directory, you can specify its path with:
-
-```sh
-cmake <source-path> -DCPLEX_STUDIO_DIR=/path/to/CPLEX/Studio
-```
-
-Or can also avoid the search (and disable MCFCplex) with:
-
-```sh
-cmake <source-path> -DMCFClass_USE_CPLEX=OFF
-```
+If CPLEX is not available or you are not interested in `MCFCplex`, run
 
 - Optionally, you can install the library with:
 
@@ -136,17 +143,17 @@ make -f makefile-lib
 
 - To test the library, go into `test` and type `make`.
 
-- If you want to use the MCFCplex class, which comes commented out by default,
+- If you want to use the MCFCplex class, which comes excluded by default,
   uncomment the two lines in `lib/makefile`:
+
 ```makefile
 MCFCxDIR = $(libMCFClDIR)MCFCplex/
 include $(MCFCxDIR)makefile
 ```
 
-  Then edit `extlib/makefile-libCPLEX` to insert the right Cplex
-  path libraries. You can similarly enable (or disable) any solver, both the
-  LGPL ones and those under the academic license, if you have obtained them,
-  by commenting out (or commenting) the corresponding two lines in `lib/makefile`.
+You can similarly enable (or disable) any solver, both the LGPL ones and
+those under the academic license, if you have obtained them, by commenting
+out (or commenting) the corresponding two lines in `lib/makefile`.
 
 
 ## Other stuff
@@ -156,8 +163,8 @@ More information about (some of) the implemented algorithms can be found at
   http://pages.di.unipi.it/frangio/abstracts.html#JOC06
 
 A further solver, MCFIntPnt (based on Interior-Point algorithms) has been
-developed, but it has not yet reached a sufficient maturuty to be distributed;
-its principles are discussed at
+developed, but it has not yet reached a sufficient maturuty to be
+distributed; its principles are discussed at
 
   http://pages.di.unipi.it/frangio/abstracts.html#SIOPT04
   http://pages.di.unipi.it/frangio/abstracts.html#COAP06

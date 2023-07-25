@@ -40,11 +40,7 @@
 #   to have the library built, "forwarding" it $(CC) and $(SW) if they have  #
 #   been provided by the including makefile.                                 #
 #                                                                            #
-#                                VERSION 2.00                                #
-#                               28 - 07 - 2020                               #
-#                                                                            #
 #                              Antonio Frangioni                             #
-#                          Operations Research Group                         #
 #                         Dipartimento di Informatica                        #
 #                             Universita' di Pisa                            #
 #									     #
@@ -52,11 +48,11 @@
 
 # include the libMCFCl makefile internally defining all external modules - - - -
 
-include $(libMCFClDIR)lib/makefile-c
+include $(libMCFClDIR)/lib/makefile-c
 
 # re-define the OBJ as the library- - - - - - - - - - - - - - - - - - - - - -
 
-libMCFClOBJ = $(libMCFClDIR)lib/libMCFCl.a
+libMCFClOBJ = $(libMCFClDIR)/lib/libMCFCl.a
 
 # ensure that the library is properly constructed - - - - - - - - - - - - - -
 # force the make to be always executed
@@ -64,17 +60,17 @@ libMCFClOBJ = $(libMCFClDIR)lib/libMCFCl.a
 $(libMCFClOBJ): FORCE
 ifndef CC
 ifndef SW
-	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR)
+	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR)
 else
-	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
 	SW='$(SW)'
 endif
 else
 ifndef SW
-	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
 	CC=$(CC)
 else
-	make -f $(libMCFClDIR)lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
+	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
 	CC=$(CC) SW='$(SW)'
 endif
 endif
@@ -87,6 +83,7 @@ libMCFClH =
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	make -f $(libMCFClDIR)lib/makefile-lib clean libMCFClDIR=$(libMCFClDIR) 
+	make -f $(libMCFClDIR)/lib/makefile-lib clean \
+		libMCFClDIR=$(libMCFClDIR) 
 
 ########################## End of makefile-inc ###############################

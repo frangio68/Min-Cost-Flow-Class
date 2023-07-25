@@ -14,7 +14,7 @@
 ##############################################################################
 
 # basic directory
-DIR = ./
+DIR = .
 
 # basic libreries
 LIB = -lm
@@ -41,8 +41,8 @@ default: MCFSolve TestMCF
 # *INC is the -I<include directories>
 
 # the whole libMCF, with all required external libreries
-libMCFClDIR = ../
-include $(libMCFClDIR)lib/makefile-inc
+libMCFClDIR = ..
+include $(libMCFClDIR)/lib/makefile-inc
 
 # main module (linking phase) - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -54,10 +54,10 @@ TestMCF: TestMain.o $(libMCFOBJ)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(DIR)Main.o: $(DIR)Main.C $(libMCFClH)
+$(DIR)/Main.o: $(DIR)/Main.C $(libMCFClH)
 	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
-$(DIR)TestMain.o: $(DIR)TestMain.C $(libMCFClH)
+$(DIR)/TestMain.o: $(DIR)/TestMain.C $(libMCFClH)
 	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

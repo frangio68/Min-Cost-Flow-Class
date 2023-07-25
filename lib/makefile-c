@@ -24,6 +24,28 @@
 #                                                                            #
 ##############################################################################
 
+# OS-specific settings
+# defines some general values, like UNAME_S, which identify the type of
+# OS and architecture for which the project is being compiled, so that
+# other makefiles can rely on these to automatically adapt without a need
+# for the user to manually edit them
+include $(libMCFClDIR)/lib/makefile-OS
+
+# default paths
+# include a makefile that should define all the paths needed by every other
+# makefile (possibly after automatic OS adaptation, see above) relatively
+# to the places where all external libraries are to be found
+include $(libMCFClDIR)/extlib/makefile-default-paths
+
+# non-default settings
+# Optionally include (note the "-" in front) a makefile that should
+# define all the paths needed by every other makefile (possibly after
+# automatic OS adaptation, see above) to cater for external libraries being
+# located in non-standard locations. This file is .gitignore-d, so that
+# its values are not lost when pulling any part of the project anew or
+# need be manually ignored when pushing changes.
+-include $(libMCFClDIR)/extlib/makefile-paths
+
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
 # corresponding include line
@@ -34,15 +56,15 @@
 # *INC is the -I<include directories>
 
 # OPTUtils.h
-OPTUxH   = $(libMCFClDIR)OPTUtils/OPTUtils.h
-OPTUxINC = -I$(libMCFClDIR)OPTUtils
+OPTUxH   = $(libMCFClDIR)/OPTUtils/OPTUtils.h
+OPTUxINC = -I$(libMCFClDIR)/OPTUtils
 
 # cplex external libreries (comment out if MCFCplex is not compiled, or if
 # the makefile-c of MCFCplex is included rather than the "plain" one)
-include $(libMCFClDIR)extlib/makefile-libCPLEX
+include $(libMCFClDIR)/extlib/makefile-libCPLEX
 
 # libMCFCl (the makefile requiring all external modules in input)
-include $(libMCFClDIR)lib/makefile
+include $(libMCFClDIR)/lib/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # append external libreries to libMCFClLIB as defined in the makefile, thus
