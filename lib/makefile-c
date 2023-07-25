@@ -37,6 +37,9 @@
 OPTUxH   = $(libMCFClDIR)OPTUtils/OPTUtils.h
 OPTUxINC = -I$(libMCFClDIR)OPTUtils
 
+# OS-specific settings
+include $(libMCFClDIR)extlib/makefile-OS
+
 # cplex external libreries (comment out if MCFCplex is not compiled, or if
 # the makefile-c of MCFCplex is included rather than the "plain" one)
 include $(libMCFClDIR)extlib/makefile-libCPLEX
