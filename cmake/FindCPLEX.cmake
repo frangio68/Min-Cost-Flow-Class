@@ -148,7 +148,7 @@ else ()
               DOC "CPLEX include directory.")
 
     if (UNIX)
-        # ----- Find the CPLEX library ------------------------------------------ #
+        # ----- Find the CPLEX library -------------------------------------- #
         # Note that find_library() creates a cache entry
         find_library(CPLEX_LIBRARY
                      NAMES cplex
@@ -159,7 +159,7 @@ else ()
 
     elseif (NOT CPLEX_LIBRARY)
 
-        # ----- Macro: find_win_cplex_library ----------------------------------- #
+        # ----- Macro: find_win_cplex_library ------------------------------- #
         # On Windows the version is appended to the library name which cannot be
         # handled by find_library, so here a macro to search manually.
         macro(find_win_cplex_library var path_suffixes)
