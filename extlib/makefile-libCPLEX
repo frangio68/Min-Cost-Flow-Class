@@ -4,8 +4,8 @@
 #                                                                            #
 #   makefile of libCPLEX                                                     #
 #                                                                            #
-#   Input:  $(CPLEX_STUDIO_ROOT), the directory where Cplex Studio is         #
-#           installed                                                        #                                                                            #                                                                            #
+#   Input:  $(CPLEX_ROOT), the directory where Cplex is installed            #
+#                                                                            #                                                                            #
 #   Output: accordingly, there is no *H and *OBJ in output, since there is   #
 #           no need to check for changes in the .h and rebuild the .o / .a   #
 #                                                                            #
@@ -29,7 +29,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 # basic CPLEX directory
-libCPLEXBSCDIR = $(CPLEX_STUDIO_ROOT)/cplex
+libCPLEXBSCDIR = $(CPLEX_ROOT)/cplex
 
 # lib Cplex directory
 ifeq ($(UNAME_S),Linux)

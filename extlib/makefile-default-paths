@@ -37,7 +37,7 @@
 
 # define the macros to be exported- - - - - - - - - - - - - - - - - - - - - -
 
-CPLEX_STUDIO_ROOT = /opt/ibm/ILOG/CPLEX_Studio2211
+CPLEX_ROOT = /opt/ibm/ILOG/CPLEX_Studio2211
 # C:/Program Files/IBM/ILOG/CPLEX_Studio2211
 
 ###################### End of makefile-default-paths #########################
