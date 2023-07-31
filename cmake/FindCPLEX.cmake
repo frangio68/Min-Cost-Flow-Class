@@ -15,7 +15,7 @@
 #                                                                             #
 #    This module reads hints about search locations from variables:           #
 #                                                                             #
-#        CPLEX_STUDIO_DIR    - Custom path to CPLEX Studio                    #
+#        CPLEX_STUDIO_ROOT   - Custom path to CPLEX Studio                    #
 #                                                                             #
 #    The following IMPORTED target is also defined:                           #
 #                                                                             #
@@ -113,16 +113,16 @@ endif ()
 
 foreach (dir ${CPLEX_ILOG_DIRS})
     file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
-    if (NOT IS_DIRECTORY "${CPLEX_STUDIO_DIR}")
-        message(STATUS "Specified CPLEX Studio: ${CPLEX_STUDIO_DIR} not found")
+    if (NOT IS_DIRECTORY "${CPLEX_STUDIO_ROOT}")
+        message(STATUS "Specified CPLEX Studio: ${CPLEX_STUDIO_ROOT} not found")
         list(SORT CPLEX_STUDIO_DIRS)
         list(REVERSE CPLEX_STUDIO_DIRS)
         if (CPLEX_STUDIO_DIRS)
-            list(GET CPLEX_STUDIO_DIRS 0 CPLEX_STUDIO_DIR)
-            message(STATUS "Using CPLEX Studio: ${CPLEX_STUDIO_DIR}")
+            list(GET CPLEX_STUDIO_DIRS 0 CPLEX_STUDIO_ROOT)
+            message(STATUS "Using CPLEX Studio: ${CPLEX_STUDIO_ROOT}")
             break()
         else ()
-            set(CPLEX_STUDIO_DIR CPLEX_STUDIO_DIR-NOTFOUND)
+            set(CPLEX_STUDIO_ROOT CPLEX_STUDIO_ROOT-NOTFOUND)
         endif ()
     else ()
         break()
@@ -140,7 +140,7 @@ if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)
 else ()
 
     # ----- Find the CPLEX include directory -------------------------------- #
-    set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
+    set(CPLEX_DIR ${CPLEX_STUDIO_ROOT}/cplex)
     # Note that find_path() creates a cache entry
     find_path(CPLEX_INCLUDE_DIR
               NAMES ilcplex/cplex.h
