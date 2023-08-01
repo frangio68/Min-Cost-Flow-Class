@@ -139,8 +139,9 @@ if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)
     set(CPLEX_FOUND TRUE)
 else ()
 
-    # ----- Find the CPLEX include directory -------------------------------- #
     set(CPLEX_DIR ${CPLEX_ROOT}/cplex)
+
+    # ----- Find the CPLEX include directory -------------------------------- #
     # Note that find_path() creates a cache entry
     find_path(CPLEX_INCLUDE_DIR
               NAMES ilcplex/cplex.h
