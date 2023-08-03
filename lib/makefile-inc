@@ -6,39 +6,37 @@
 #                                                                            #
 #   This makefile is thought to be included by the makefile of some code     #
 #   using the libMCFCl library. However, this makefile treats libMCFCl as    #
-#   a pre-built library, in the sense that it ensures that it is built (by   #
-#   a separate make process) and then returns as $(libMCFClOBJ) the          #
-#   complete libMCFCl library together with macros $(libMCFClINC) and        #
-#   $(libMCFClLIB) for includes and external libreries. It is therefore a    #
-#   way to keep the make process of libMCFCl separate from the make process  #
-#   of the code using it, as opposed to directly including makefile-c that   #
-#   "entirely merges the two make processes°. However, note that if $(CC)    #
-#   and $(SW) are defined by the including makefile, they will be            #
-#   "forwarded" to the makefile of libMCFCl so as to ensure that the         #
-#   compiler/options are consistent between the two make processes.          #
+#   a pre-built library, in the sense that it ensures that it is built and   #
+#   then returns as $(libMCFClOBJ) the complete libMCFCl library together    #
+#   with macros $(libMCFClINC) and $(libMCFClLIB) for includes and external  #
+#   libraries, but not $(libMCFClH).                                         #
 #                                                                            #
 #   Input:  $(libMCFClDIR) = the directory where the libMCFCl source is      #
 #                                                                            #
-#           optional: $(CC) = the C++ compiler command                       #
-#                                                                            #
-#           optional: $(SW) = the compiler options (optimization, debug,     #
-#                     required C++ standard, ...)                            #
+#           MCFC_NO_PATHS    if the macro is defined (irrespectively from    #
+#                            the value it has) then the two files            #
+#                            $(libMCFClDIR)/extlib/makefile-default-paths    #
+#                            and $(libMCFClDIR)/extlib/makefile-paths are    #
+#                            *not* read (the second one, optionally) to      #
+#                            define the *_ROOT macros that contain the       #
+#                            install locations of the external libraries     #
+#                            needed by MCFClass, which means that they are   #
+#                            either not needed or defined already by         #
+#                            whichever "main" makefile is including this     #
 #                                                                            #
 #   Output: there is no $(libMCFClH) output, since the calling makefile has  #
 #           no need to check for changes in the .h and rebuild the .a: this  #
 #           is all done here inside. However, the following macros are       #
 #           provided because the code using libMCFCl need to know where to   #
-#           find the .h files to include, which external libreries and       #
-#            -L<libdirs> need be used in the linking phase, and of course    #
+#           find the .h files to include, which external libraries and       #
+#            -L< libdirs > need be used in the linking phase, and of course  #
 #           libMCFCl.a need be linked against.                               #
-#           $(libMCFClINC) = the -I$(include directories) for libMCFCl       #
-#           $(libMCFClLIB) = external libreries + -L<libdirs> for libMCFCl   #
+#           $(libMCFClINC) = the -I$( include directories ) for libMCFCl     #
+#           $(libMCFClLIB) = external libraries + -L< libdirs > for libMCFCl #
 #           $(libMCFClOBJ) = the libMCFCl.a library itself                   #
 #                                                                            #
 #   Internally, the makefile calls makefile-c, strips away the *H macro and  #  
-#   redefines the *OBJ one. It then uses the standard front-end makefile-lib #
-#   to have the library built, "forwarding" it $(CC) and $(SW) if they have  #
-#   been provided by the including makefile.                                 #
+#   redefines the *OBJ one.                                                  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                         Dipartimento di Informatica                        #
@@ -50,40 +48,34 @@
 
 include $(libMCFClDIR)/lib/makefile-c
 
-# re-define the OBJ as the library- - - - - - - - - - - - - - - - - - - - - -
+# copy the list of object files, using ":=" to ensure it remains the same
+# even after that libMCFClOBJ is redefined later on
+libMCFCl_LOCAL_OBJ := $(libMCFClOBJ)
 
-libMCFClOBJ = $(libMCFClDIR)/lib/libMCFCl.a
+# define the local name for the library - - - - - - - - - - - - - - - - - - -
 
-# ensure that the library is properly constructed - - - - - - - - - - - - - -
-# force the make to be always executed
+libMCFCl_LOCAL_LIB = $(libMCFClDIR)/lib/libMCFCl.a
 
-$(libMCFClOBJ): FORCE
-ifndef CC
-ifndef SW
-	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR)
-else
-	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
-	SW='$(SW)'
-endif
-else
-ifndef SW
-	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
-	CC=$(CC)
-else
-	make -f $(libMCFClDIR)/lib/makefile-lib libMCFClDIR=$(libMCFClDIR) \
-	CC=$(CC) SW='$(SW)'
-endif
-endif
-FORCE:
+# default target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# clean-up unrequired things- - - - - - - - - - - - - - - - - - - - - - - - -
-
-libMCFClH =
+default: $(libMCFCl_LOCAL_LIB)
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	make -f $(libMCFClDIR)/lib/makefile-lib clean \
-		libMCFClDIR=$(libMCFClDIR) 
+	rm -f $(libMCFCl_LOCAL_LIB)
+
+# archive the library - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+$(libMCFCl_LOCAL_LIB): $(libMCFCl_LOCAL_OBJ)
+	ar -ruv $(libMCFCl_LOCAL_LIB) $(libMCFCl_LOCAL_OBJ)
+
+# re-define the OBJ as the library- - - - - - - - - - - - - - - - - - - - - -
+
+libMCFClOBJ = $(libMCFCl_LOCAL_LIB)
+
+# clean-up unrequired things- - - - - - - - - - - - - - - - - - - - - - - - -
+
+libMCFClH =
 
 ########################## End of makefile-inc ###############################

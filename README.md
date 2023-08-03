@@ -95,9 +95,9 @@ provided makefiles compile on-source and we find that they are better suited
 while developing and testing the code (if that's your cup of tea, it is ours).
 
 In both cases, all external dependencies should be automatically dealt with if
-they are installed in their default paths, as specified in
-[`extlib/makefile-default-paths`](extlib/makefile-default-paths). If not, the
-suggested way to change them is to copy the file into
+they are installed in their default paths, as specified in the `*_ROOT` values
+of [`extlib/makefile-default-paths`](extlib/makefile-default-paths). If not,
+the suggested way to change them is to copy the file into
 [`extlib/makefile-paths`](extlib/makefile-paths) and edit it. The file (if
 present) is automatically read and the values found there replace the
 corresponding non-default definitions. The rationale for not changing
@@ -105,7 +105,11 @@ makefile-default-paths is that makefile-paths file is .gitignore-d. Hence, it
 should not be necessary to re-change the makefiles (or stash/restore the
 changes) each time the project is pulled, or manually ignore the changes when
 it is pushed, which is very convenient for anyone who actually develops
-MCFClass components (anyone there?)
+`MCFClass` components (anyone there?). However, note that the reading of both
+[`extlib/makefile-default-paths`](extlib/makefile-default-paths) and
+[`extlib/makefile-paths`](extlib/makefile-paths) can be disabled; see the
+`MCFClass_READ_PATHS` option in the CMake section and the `MCFC_NO_PATHS` macro
+in the makefile section below.
 
 
 ### Using CMake
@@ -121,6 +125,10 @@ make
 
 If CPLEX is not available or you are not interested in `MCFCplex`, run
 
+```sh
+cmake -DMCFClass_USE_CPLEX=OFF ..
+```
+
 - Optionally, you can install the library with:
 
 ```sh
@@ -133,6 +141,19 @@ sudo make install
 find_package(MCFClass)
 target_link_libraries(<my_target> MCFClass::MCFClass)
 ```
+
+- If you use the `MCFClass` project inside some other project that already
+  properly defines the `*_ROOT` values, you can avoid them being read by
+  setting the option `MCFClass_READ_PATHS` to `OFF`, e.g., by adding
+
+```cmake
+set(MCFClass_READ_PATHS OFF CACHE BOOL
+		                "Whether MCFClass will read locations for
+		                dependencies or not." FORCE)
+```
+
+  in your CMake project.
+
 
 ### Using makefiles
 
@@ -147,13 +168,25 @@ make -f makefile-lib
   uncomment the two lines in `lib/makefile`:
 
 ```makefile
-MCFCxDIR = $(libMCFClDIR)MCFCplex/
+MCFCxDIR = $(libMCFClDIR)/MCFCplex
 include $(MCFCxDIR)makefile
 ```
 
 You can similarly enable (or disable) any solver, both the LGPL ones and
 those under the academic license, if you have obtained them, by commenting
 out (or commenting) the corresponding two lines in `lib/makefile`.
+
+- If you want to use `MCFClass` as a part of some larger project you can
+  just include [`lib/makefile-c`](lib/makefile-c) or
+  [`lib/makefile-inc`](lib/makefile-inc) in the "main" makefile, provided that
+  you have properly defined all the necessary input macros; see, e.g.,
+  [`test/makefile`](test/makefile) for an example.
+
+- If you use the `MCFClass` project inside some other project that already
+  properly defines the `*_ROOT` values, you can avoid them being read by
+  defining the macro `MCFC_NO_PATHS` in your "main" makefiles prior to
+  including [`lib/makefile-c`](lib/makefile-c) or
+  [`lib/makefile-inc`](lib/makefile-inc)
 
 
 ## Other stuff

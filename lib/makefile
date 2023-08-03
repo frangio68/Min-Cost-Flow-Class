@@ -8,13 +8,13 @@
 #   Input:  $(CC)          = compiler command                                #
 #           $(SW)          = compiler options                                #
 #           $(OPTH)        = the OPT****.h files to include                  #
-#           $(OPTINC)      = the -I$(OPT****.h directory)                    #
+#           $(OPTINC)      = the -I$( OPT****.h directory )                  #
 #           $(libMCFClDIR) = the basic directory for the library             #
 #                                                                            #
 #   Output: $(libMCFClOBJ) = the library (that must be built)                #
-#           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
+#           $(libMCFClLIB) = the external libreries + -L< libdirs >          #
 #           $(libMCFClH)   = all the .h files of the MCF library             #
-#           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
+#           $(libMCFClINC) = all the -I$( include dirs ) of the MCF library  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                          Dipartimento di Informatica                       #
@@ -27,40 +27,40 @@
 # corresponding include line
 # each module outputs some macros to be used here:
 # *OBJ is the final object/library
-# *LIB external libreries + -L<libdirs>
+# *LIB external libreries + -L< libdirs >
 # *H   is the list of all include files
-# *INC is the -I<include directories>
+# *INC is the -I< include directories >
 
 # MCFClass
-MCFClDIR = $(libMCFClDIR)/MCFClass/
+MCFClDIR = $(libMCFClDIR)/MCFClass
 include $(MCFClDIR)/makefile
 
 # CS2
-#MCFC2DIR = $(libMCFClDIR)/CS2/
+#MCFC2DIR = $(libMCFClDIR)/CS2
 #include $(MCFC2DIR)/makefile
 
 # MCFClone
-#MCFCeDIR = $(libMCFClDIR)/MCFClone/
+#MCFCeDIR = $(libMCFClDIR)/MCFClone
 #include $(MCFCeDIR)/makefile
 
 # MCFCplex
-MCFCxDIR = $(libMCFClDIR)/MCFCplex/
+MCFCxDIR = $(libMCFClDIR)/MCFCplex
 include $(MCFCxDIR)/makefile
 
 # MCFSimplex
-MCFSxDIR = $(libMCFClDIR)/MCFSimplex/
+MCFSxDIR = $(libMCFClDIR)/MCFSimplex
 include $(MCFSxDIR)/makefile
 
 # MCFZIB
-#MCFZBDIR = $(libMCFClDIR)/MCFZIB/
+#MCFZBDIR = $(libMCFClDIR)/MCFZIB
 #include $(MCFZBDIR)/makefile
 
 # RelaxIV
-MCFR4DIR = $(libMCFClDIR)/RelaxIV/
+MCFR4DIR = $(libMCFClDIR)/RelaxIV
 include $(MCFR4DIR)/makefile
 
 # SPTree
-MCFSTDIR = $(libMCFClDIR)/SPTree/
+MCFSTDIR = $(libMCFClDIR)/SPTree
 include $(MCFSTDIR)/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -

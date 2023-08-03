@@ -7,13 +7,13 @@
 #   Input:  $(CC)       = compiler command                                   #
 #           $(SW)       = compiler options                                   #
 #           $(MCFClH)   = the include files for MCFClass                     #
-#           $(MCFClINC) = the -I$(MCFClass.h directory)                      #
+#           $(MCFClINC) = the -I$( MCFClass.h directory )                    #
 #           $(MCFSxDIR) = the directory where the source is                  #
 #                                                                            #
 #   Output: $(MCFSxOBJ) = the final object(s) / library                      #
-#           $(MCFSxLIB) = external libreries + -L<libdirs>                   #
+#           $(MCFSxLIB) = external libreries + -L< libdirs >                 #
 #           $(MCFSxH)   = the .h files to include                            #
-#           $(MCFSxINC) = the -I$(include directories)                       #
+#           $(MCFSxINC) = the -I$( include directories )                     #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                          Dipartimento di Informatica                       #
@@ -24,18 +24,18 @@
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(MCFSxDIR)*.o $(MCFSxDIR)*~
+	rm -f $(MCFSxDIR)/*.o $(MCFSxDIR)/*~
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCFSxOBJ = $(MCFSxDIR)MCFSimplex.o
+MCFSxOBJ = $(MCFSxDIR)/MCFSimplex.o
 MCFSxLIB =
-MCFSxH   = $(MCFSxDIR)MCFSimplex.h
+MCFSxH   = $(MCFSxDIR)/MCFSimplex.h
 MCFSxINC = -I$(MCFSxDIR)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(MCFSxOBJ): $(MCFSxDIR)MCFSimplex.C $(MCFSxH) $(MCFClH)
+$(MCFSxOBJ): $(MCFSxDIR)/MCFSimplex.C $(MCFSxH) $(MCFClH)
 	$(CC) -c $*.C -o $@ $(MCFClINC) $(SW)
 
 ############################# End of makefile ################################
