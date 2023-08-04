@@ -1,0 +1,44 @@
+##############################################################################
+########################### makefile-default-paths ###########################
+##############################################################################
+#                                                                            #
+#   makefile with the default locations for dependencies                     #
+#                                                                            #
+#   Input: in principle none, as the external libraries usually have some    #
+#          absolute path; however, $(libMCFClDIR) = the directory where the  #
+#          MCFClass source is should always be available (this is assumed    #
+#          to be included by $(libMCFClDIR)/lib/makefile-c where the value   #
+#          must be defined) in case some of the external libraries happen to #
+#          rather be located at a relative path from there.                  #
+#                                                                            #
+#   Output: whatever macro is required by the external libraries makefiles,  #
+#           to be found in $(libMCFClDIR)/extlib.                            #
+#                                                                            #
+#   The usefulness of packing all these definitions here lies in the fact    #
+#   that one can then copy this file into                                    #
+#                                                                            #
+#        $(libMCFClDIR)/extlib/makefile-paths                                #
+#                                                                            #
+#   and change in there any path that is not in the default location that    #
+#   this file specifies. Hopefully it should be enough to edit this one file #
+#   to obtain a working installation, both for makefile (save minor issues   #
+#   like compiler options) and Cmake, for the whole of the MCFClass project. #
+#   The point is that makefile-paths file is .gitignore-d. Hence, it should  #
+#   not be necessary to re-change the makefiles (or stash/restore the        #
+#   changes) each time the project is pulled, or manually ignore the changes #
+#   when it is pushed, which is very convenient for anyone who actually      #
+#   develops MCFClass components (anyone there?)                             #
+#                                                                            #
+#                             Antonio Frangioni                              #
+#                         Dipartimento di Informatica                        #
+#                             Universita' di Pisa                            #
+#                                                                            #
+##############################################################################
+
+# define the macros to be exported- - - - - - - - - - - - - - - - - - - - - -
+
+CPLEX_ROOT = /opt/ibm/ILOG/CPLEX_Studio2211
+#CPLEX_ROOT = /Applications/CPLEX_Studio2211
+#CPLEX_ROOT = C:/Program Files/IBM/ILOG/CPLEX_Studio2211
+
+####################### End of makefile-default-paths ########################

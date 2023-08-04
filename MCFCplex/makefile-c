@@ -8,13 +8,13 @@
 #   Input:  $(CC)          = compiler command                                #
 #           $(SW)          = compiler options                                #
 #           $(MCFClH)      = the include files for MCFClass                  #
-#           $(MCFClINC)    = the -I$(MCFClass.h directory)                   #
+#           $(MCFClINC)    = the -I$( MCFClass.h directory )                 #
 #           $(MCFCxDIR)    = the directory where the source is               #
 #                                                                            #
 #   Output: $(MCFCxOBJ)    = the final object(s) / library                   #
-#           $(MCFCxLIB)    = external libreries + -L<libdirs>                #
+#           $(MCFCxLIB)    = external libreries + -L< libdirs >              #
 #           $(MCFCxH)      = the .h files to include                         #
-#           $(MCFCxINC)    = the -I$(include directories)                    #
+#           $(MCFCxINC)    = the -I$( include directories )                  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                          Dipartimento di Informatica                       #
@@ -25,7 +25,7 @@
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(MCFCxDIR)*.o $(MCFCxDIR)*~
+	rm -f $(MCFCxDIR)/*.o $(MCFCxDIR)/*~
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
@@ -37,10 +37,10 @@ clean::
 # *INC is the -I<include directories>
 
 # cplex external libreries
-include $(MCFCxDIR)../extlib/makefile-libCPLEX
+include $(MCFCxDIR)/../extlib/makefile-libCPLEX
 
 # MCFCplex (the makefile requiring all external modules in input)
-include $(MCFCxDIR)makefile
+include $(MCFCxDIR)/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # append external libreries to MCFCplex as defined in the makefile, thus

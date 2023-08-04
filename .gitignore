@@ -1,3 +1,6 @@
+### possible local definitions of external libraries, not to be seen outside
+extlib/makefile-paths
+
 CS2
 MCFZIB
 **/*~

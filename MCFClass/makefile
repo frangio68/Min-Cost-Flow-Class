@@ -17,7 +17,7 @@
 #                                                                            #
 ##############################################################################
 
-MCFClH = $(MCFClDIR)MCFClass.h $(OPTUxH)
+MCFClH = $(MCFClDIR)/MCFClass.h $(OPTUxH)
 MCFClINC = -I$(MCFClDIR) $(OPTUxINC)
 
 ############################ End of makefile #################################

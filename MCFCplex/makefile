@@ -26,18 +26,18 @@
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(MCFCxDIR)*.o $(MCFCxDIR)*~
+	rm -f $(MCFCxDIR)/*.o $(MCFCxDIR)/*~
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCFCxOBJ = $(MCFCxDIR)MCFCplex.o
+MCFCxOBJ = $(MCFCxDIR)/MCFCplex.o
 MCFCxLIB = 
-MCFCxH   = $(MCFCxDIR)MCFCplex.h
+MCFCxH   = $(MCFCxDIR)/MCFCplex.h
 MCFCxINC = -I$(MCFCxDIR)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(MCFCxOBJ): $(MCFCxDIR)MCFCplex.C $(MCFCxH) $(MCFClH)
+$(MCFCxOBJ): $(MCFCxDIR)/MCFCplex.C $(MCFCxH) $(MCFClH)
 	$(CC) -c $*.C -o $@ $(MCFClINC) $(libCPLEXINC) $(SW)
 
 ############################# End of makefile ################################

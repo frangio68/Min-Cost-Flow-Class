@@ -17,10 +17,13 @@
 #                              Niccolo' Iardella                              #
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
+#                                                                             #
+#                                 Donato Meoli                                #
+#                         Dipartimento di Informatica                         #
+#                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(VERSION 3.12)
-# TODO: set proper version
 project(MCFClass
         VERSION 1.0.0
         DESCRIPTION "C++ solvers for MCF problems"
@@ -30,9 +33,6 @@ project(MCFClass
 # These variables make the code harder to read but easier to change.
 set(modName ${PROJECT_NAME})
 set(modNamespace "MCFClass")
-
-# Find out if it's being called by the umbrella.
-get_directory_property(hasParent PARENT_DIRECTORY)
 
 # This adds the cmake directory to the module search paths,
 # allowing us to use our modules.
@@ -51,7 +51,77 @@ include(BuildType)
 # An option is an ON/OFF user-settable cache variable
 option(MCFClass_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
 
+option(MCFClass_READ_PATHS "Whether ${modName} will read locations for
+                            dependencies or not." ON)
+
 # ----- Requirements -------------------------------------------------------- #
+if (MCFClass_READ_PATHS)
+    # Read the dependencies default location from a file written in a
+    # bash-style syntax since it is shared with the other hand-written Makefiles,
+    # so we define a function to convert these macros written as `lhs = rhs` into
+    # their equivalent cmake variants, i.e., `set(lhs rhs)`, avoiding comments.
+    macro(makefile_macros_to_cmake file)
+        FILE(STRINGS ${file} paths)
+        foreach (path IN LISTS paths)
+            if (path) # ignore empty lines, i.e., \n
+                # makes empty the comment lines, i.e. those start with #...
+                string(REGEX REPLACE "^[ \t]*[#].*" "" path ${path})
+                if (path) # ... and then ignore them
+
+                    string(REGEX MATCH ".*[=]" lhs "${path}") # retrieve the lhs
+                    string(REGEX REPLACE "=" "" lhs ${lhs}) # remove =
+                    # remove tab or white spaces from head
+                    string(STRIP "${lhs}" lhs)
+
+                    # if it's not already defined before in custom makefile-paths...
+                    if (NOT DEFINED ${lhs})
+                        # then read its rhs...
+                        string(REGEX MATCH "[=].*" rhs "${path}") # retrieve the rhs
+                        # remove comments starting with # from tails, if any
+                        string(REGEX REPLACE "[#].*" "" rhs ${rhs})
+                        string(REGEX REPLACE "=" "" rhs ${rhs}) # remove =
+                        string(REGEX REPLACE "\"" "" rhs ${rhs}) # remove ", if any
+                        # remove tab or white space from head or tail
+                        string(STRIP "${rhs}" rhs)
+
+                        # ... and if it is not a default path in Unix...
+                        if (NOT (rhs STREQUAL /usr OR
+                                 rhs STREQUAL /usr/local))
+                            # ... then set the one defined in makefile-default-paths
+                            set("${lhs}" ${rhs})
+                            message(STATUS "Specify ${lhs}: " ${rhs})
+                        endif ()
+                    endif ()
+
+                    unset(lhs)
+                    unset(rhs)
+                endif ()
+            endif ()
+        endforeach ()
+
+        unset(path)
+        unset(paths)
+    endmacro()
+
+    # firstly, set the custom makefile-paths, if any...
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/extlib/makefile-paths")
+        makefile_macros_to_cmake(extlib/makefile-paths)
+    endif ()
+    # ... then set the default other ones ignoring those already previously set
+    makefile_macros_to_cmake(extlib/makefile-default-paths)
+
+    # Retrieve the system architecture
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+        if (UNIX)
+            set(ARCH x86-64)
+        else () # Windows
+            set(ARCH x64)
+        endif ()
+    else ()
+        set(ARCH x86)
+    endif ()
+endif ()
+
 if (MCFClass_USE_CPLEX)
     # Needed for MCFCplex
     find_package(CPLEX)
@@ -196,15 +266,6 @@ install(FILES
         ${CMAKE_CURRENT_LIST_DIR}/README.md
         ${CMAKE_CURRENT_LIST_DIR}/LICENSE
         DESTINATION ${CMAKE_INSTALL_DATADIR}/${modName})
-
-# ----- Add the build tree to RPATH------------------------------------------ #
-# Add the binary directory to RPATH, so executables that use
-# dynamic loading will look into it.
-if (hasParent)
-    set(SMSPP_BUILD_RPATH
-        "${SMSPP_BUILD_RPATH};${CMAKE_CURRENT_BINARY_DIR}"
-        PARENT_SCOPE)
-endif ()
 
 # --------------------------------------------------------------------------- #
 # Remove from the search paths the cmake directory we added at the beginning.

@@ -14,9 +14,9 @@
 ##############################################################################
 
 # basic directory
-DIR = ./
+DIR = .
 
-# basic libreries
+# basic libraries
 LIB = -lm
 
 # debug switches
@@ -29,40 +29,43 @@ CC = clang++
 
 # default target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-default: MCFSolve TestMCF
+default: $(DIR)/MCFSolve $(DIR)/TestMCF
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
 # corresponding include line
 # each module outputs some macros to be used here:
 # *OBJ is the final object/library
-# *LIB external libreries + -L<libdirs>
+# *LIB external libraries + -L< libdirs >
 # *H   is the list of all include files
-# *INC is the -I<include directories>
+# *INC is the -I< include directories >
 
-# the whole libMCF, with all required external libreries
-libMCFClDIR = ../
-include $(libMCFClDIR)lib/makefile-inc
+# the whole libMCF, with all required external libraries
+libMCFClDIR = ..
+include $(libMCFClDIR)/lib/makefile-inc
 
 # main module (linking phase) - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCFSolve: Main.o $(libMCFClOBJ)
-	$(CC) -o MCFSolve Main.o $(libMCFClOBJ) $(libMCFClLIB) $(LIB) $(SW)
+$(DIR)/MCFSolve: $(DIR)/Main.o $(libMCFClOBJ)
+	$(CC) -o $(DIR)/MCFSolve $(DIR)/Main.o $(libMCFClOBJ) \
+	$(libMCFClLIB) $(LIB) $(SW)
 
-TestMCF: TestMain.o $(libMCFOBJ)
-	$(CC) -o TestMCF TestMain.o $(libMCFClOBJ) $(libMCFClLIB) $(LIB) $(SW)
+$(DIR)/TestMCF: $(DIR)/TestMain.o $(libMCFOBJ)
+	$(CC) -o $(DIR)/TestMCF $(DIR)/TestMain.o $(libMCFClOBJ) \
+	$(libMCFClLIB) $(LIB) $(SW)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -
 
-$(DIR)Main.o: $(DIR)Main.C $(libMCFClH)
+$(DIR)/Main.o: $(DIR)/Main.C $(libMCFClH)
 	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
-$(DIR)TestMain.o: $(DIR)TestMain.C $(libMCFClH)
+$(DIR)/TestMain.o: $(DIR)/TestMain.C $(libMCFClH)
 	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -Rf MCFSolve TestMCF *.o *~ *.dSYM
+	rm -Rf $(DIR)/MCFSolve $(DIR)/TestMCF $(DIR)/*.o $(DIR)/*~ \
+	$(DIR)/*.dSYM
 
 ############################ End of makefile #################################

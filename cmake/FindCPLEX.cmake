@@ -1,5 +1,5 @@
 # --------------------------------------------------------------------------- #
-#    CMake find module for CPLEX Studio                                       #
+#    CMake find module for CPLEX                                              #
 #                                                                             #
 #    This module finds CPLEX include directories and libraries.               #
 #    Use it by invoking find_package() with the form:                         #
@@ -15,7 +15,7 @@
 #                                                                             #
 #    This module reads hints about search locations from variables:           #
 #                                                                             #
-#        CPLEX_STUDIO_DIR    - Custom path to CPLEX Studio                    #
+#        CPLEX_ROOT          - Custom path to CPLEX                           #
 #                                                                             #
 #    The following IMPORTED target is also defined:                           #
 #                                                                             #
@@ -56,7 +56,7 @@ if (UNIX)
 else ()
     # Windows (usually C:/Program Files/IBM/ILOG)
     set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
-    if (WIN32)
+    if (ARCH STREQUAL "x86")
         set(CPLEX_ILOG_DIRS
                 "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
     endif ()
@@ -108,21 +108,23 @@ else ()
     endif ()
 endif ()
 
-# ----- Find the path to CPLEX Studio --------------------------------------- #
+# ----- Find the path to CPLEX ---------------------------------------------- #
 # This takes the greatest CPLEX_Studio* found in the ILOG directories
 
 foreach (dir ${CPLEX_ILOG_DIRS})
-    file(GLOB CPLEX_STUDIO_DIRS "${dir}/CPLEX_Studio*")
-    if (NOT IS_DIRECTORY "${CPLEX_STUDIO_DIR}")
-        message(STATUS "Specified CPLEX Studio: ${CPLEX_STUDIO_DIR} not found")
-        list(SORT CPLEX_STUDIO_DIRS)
-        list(REVERSE CPLEX_STUDIO_DIRS)
-        if (CPLEX_STUDIO_DIRS)
-            list(GET CPLEX_STUDIO_DIRS 0 CPLEX_STUDIO_DIR)
-            message(STATUS "Using CPLEX Studio: ${CPLEX_STUDIO_DIR}")
+    file(GLOB CPLEX_DIRS "${dir}/CPLEX_Studio*")
+    if (NOT IS_DIRECTORY "${CPLEX_ROOT}")
+        if (NOT "${CPLEX_ROOT}" STREQUAL "")
+            message(STATUS "Specified CPLEX: ${CPLEX_ROOT} not found")
+        endif ()
+        list(SORT CPLEX_DIRS)
+        list(REVERSE CPLEX_DIRS)
+        if (CPLEX_DIRS)
+            list(GET CPLEX_DIRS 0 CPLEX_ROOT)
+            message(STATUS "Using CPLEX: ${CPLEX_ROOT}")
             break()
         else ()
-            set(CPLEX_STUDIO_DIR CPLEX_STUDIO_DIR-NOTFOUND)
+            set(CPLEX_ROOT CPLEX_ROOT-NOTFOUND)
         endif ()
     else ()
         break()
@@ -139,8 +141,9 @@ if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)
     set(CPLEX_FOUND TRUE)
 else ()
 
+    set(CPLEX_DIR ${CPLEX_ROOT}/cplex)
+
     # ----- Find the CPLEX include directory -------------------------------- #
-    set(CPLEX_DIR ${CPLEX_STUDIO_DIR}/cplex)
     # Note that find_path() creates a cache entry
     find_path(CPLEX_INCLUDE_DIR
               NAMES ilcplex/cplex.h

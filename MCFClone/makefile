@@ -18,11 +18,11 @@
 # clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
-	rm -f $(MCFCeDIR)*~
+	rm -f $(MCFCeDIR)/*~
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-MCFCeH   = $(MCFCeDIR)MCFClone.h
+MCFCeH   = $(MCFCeDIR)/MCFClone.h
 MCFCeINC = -I$(MCFCeDIR)
 
 # dependencies: every .o from its .C + every recursively included .h- - - - -

@@ -1,0 +1,58 @@
+##############################################################################
+############################### makefile-OS ##################################
+##############################################################################
+#                                                                            #
+#   makefile of OS-specific settings                                         #
+#                                                                            #
+#  Defines some general values, like UNAME_S, which identify the type of OS  #
+#  and architecture for which the project is being compiled, so that other   #
+#  makefiles can rely on these to automatically adapt without a need for     #
+#  the user to manually edit them.                                           #
+#                                                                            #
+#   Input:  none                                                             #
+#                                                                            #
+#   Output: $(UNAME_S) = the name of the current system                      #
+#                                                                            #
+#                              Antonio Frangioni                             #
+#                                 Donato Meoli                               #
+#                         Dipartimento di Informatica                        #
+#                             Universita' di Pisa                            #
+#                                                                            #
+##############################################################################
+
+# define the macros to be exported- - - - - - - - - - - - - - - - - - - - - -
+
+ifeq ($(OS),Windows_NT)
+    UNAME_S := Windows
+    #CCFLAGS += -D WIN32
+    #ifeq ($(PROCESSOR_ARCHITEW6432),AMD64)
+    #    CCFLAGS += -D AMD64
+    #else
+    #    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+    #        CCFLAGS += -D AMD64
+    #    endif
+    #    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+    #        CCFLAGS += -D IA32
+    #    endif
+    #endif
+else
+    UNAME_S := $(shell uname -s)
+    #ifeq ($(UNAME_S),Linux)
+    #    CCFLAGS += -D LINUX
+    #endif
+    #ifeq ($(UNAME_S),Darwin)
+    #    CCFLAGS += -D OSX
+    #endif
+    #UNAME_P := $(shell uname -p)
+    #ifeq ($(UNAME_P),x86_64)
+    #    CCFLAGS += -D AMD64
+    #endif
+    #ifneq ($(filter %86,$(UNAME_P)),)
+    #    CCFLAGS += -D IA32
+    #endif
+    #ifneq ($(filter arm%,$(UNAME_P)),)
+    #    CCFLAGS += -D ARM
+    #endif
+endif
+
+############################# End of makefile ################################

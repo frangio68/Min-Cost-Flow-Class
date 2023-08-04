@@ -18,7 +18,7 @@ include(CMakeFindDependencyMacro)
 
 # ----- Settings ------------------------------------------------------------ #
 set(MCFClass_USE_CPLEX @MCFClass_USE_CPLEX@)
-set(CPLEX_STUDIO_DIR @CPLEX_STUDIO_DIR@)
+set(CPLEX_ROOT @CPLEX_ROOT@)
 
 # ----- Requirements -------------------------------------------------------- #
 # This is needed to find the custom modules we provide

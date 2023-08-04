@@ -5,7 +5,7 @@
 #   makefile of libMCFCl - frontend for building the library                 #
 #                                                                            #
 #   Input:  optional: $(libMCFClDIR) = the directory where the MCFClass      #
-#                     source is. If the macro is not provided "../" is used, #
+#                     source is. If the macro is not provided ".." is used,  #
 #                     since it is assumed that the "make -f makefile-lib"    #
 #                     command is issued in the lib/ folder.                  #
 #                                                                            #
@@ -25,7 +25,7 @@
 ##############################################################################
 
 ifndef libMCFClDIR
-libMCFClDIR = ../
+libMCFClDIR = ..
 endif
 
 ifndef CC
@@ -41,7 +41,7 @@ SW = -O3 -DNDEBUG -std=c++14
 endif
 
 # module name
-NAME = $(libMCFClDIR)lib/libMCFCl.a
+NAME = $(libMCFClDIR)/lib/libMCFCl.a
 
 # compiler
 CC = clang++
@@ -62,8 +62,8 @@ clean::
 # install - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 install:
-	mv $(NAME) $(libMCFClDIR)../lib
-	cp $(libMCFClH) $(libMCFClDIR)../include
+	mv $(NAME) $(libMCFClDIR)/../lib
+	cp $(libMCFClH) $(libMCFClDIR)/../include
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
@@ -75,7 +75,7 @@ install:
 # *INC is the -I<include directories>
 
 # libMCFCl (complete with external libraries)
-include $(libMCFClDIR)lib/makefile-c
+include $(libMCFClDIR)/lib/makefile-c
 
 # archive the library - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

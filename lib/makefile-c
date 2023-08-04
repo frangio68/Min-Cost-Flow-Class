@@ -6,23 +6,58 @@
 #                                                                            #
 #   The makefile defines internally all external libraries required by       #
 #   libMCFCl. Accordingly, all necessary OBJ, H, -I directives, and          #
-#   external libraries + -L<libdirs> are added to the corresponding          #
+#   external libraries + -L< libdirs > are added to the corresponding        #
 #   libMCFCl* macros.                                                        #
 #                                                                            #
 #   Input:  $(CC)          = compiler command                                #
 #           $(SW)          = compiler options                                #
 #           $(libMCFClDIR) = the basic directory for the library             #
+#           MCFC_NO_PATHS    if the macro is defined (irrespectively from    #
+#                            the value it has) then the two files            #
+#                            $(libMCFClDIR)/extlib/makefile-default-paths    #
+#                            and $(libMCFClDIR)/extlib/makefile-paths are    #
+#                            *not* read (the second one, optionally) to      #
+#                            define the *_ROOT macros that contain the       #
+#                            install locations of the external libraries     #
+#                            needed by MCFClass, which means that they are   #
+#                            either not needed or defined already by         #
+#                            whichever "main" makefile is including this     #
 #                                                                            #
 #   Output: $(libMCFClOBJ) = the library (that must be built)                #
-#           $(libMCFClLIB) = the external libreries + -L<libdirs>            #
+#           $(libMCFClLIB) = the external libreries + -L< libdirs >          #
 #           $(libMCFClH)   = all the .h files of the MCF library             #
-#           $(libMCFClINC) = all the -I$(include dirs) of the MCF library    #
+#           $(libMCFClINC) = all the -I$( include dirs ) of the MCF library  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #
 #                                                                            #
 ##############################################################################
+
+# OS-specific settings
+# defines some general values, like UNAME_S, which identify the type of
+# OS and architecture for which the project is being compiled, so that
+# other makefiles can rely on these to automatically adapt without a need
+# for the user to manually edit them
+include $(libMCFClDIR)/lib/makefile-OS
+
+ifndef MCFC_NO_PATHS
+	# unless the *_ROOT macros are already properly defined somehow
+
+	# include a makefile that should define all the paths needed by every
+	# other makefile (possibly after automatic OS adaptation, see above) 
+	# relatively to the places where all external libraries are to be
+	# found by default
+	include $(libMCFClDIR)/extlib/makefile-default-paths
+
+	# optionally (note the "-" in front), include a makefile that should
+	# define all the paths needed by every other makefile (possibly after
+	# automatic OS adaptation, see above) to cater for external libraries
+	# being located in non-standard locations. This file is .gitignore-d,
+	# so that its values are not lost when pulling any part of the project
+	# anew or need be manually ignored when pushing changes.
+	-include $(libMCFClDIR)/extlib/makefile-paths
+endif
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
@@ -34,21 +69,18 @@
 # *INC is the -I<include directories>
 
 # OPTUtils.h
-OPTUxH   = $(libMCFClDIR)OPTUtils/OPTUtils.h
-OPTUxINC = -I$(libMCFClDIR)OPTUtils
-
-# OS-specific settings
-include $(libMCFClDIR)extlib/makefile-OS
+OPTUxH   = $(libMCFClDIR)/OPTUtils/OPTUtils.h
+OPTUxINC = -I$(libMCFClDIR)/OPTUtils
 
 # cplex external libreries (comment out if MCFCplex is not compiled, or if
 # the makefile-c of MCFCplex is included rather than the "plain" one)
-include $(libMCFClDIR)extlib/makefile-libCPLEX
+include $(libMCFClDIR)/extlib/makefile-libCPLEX
 
 # libMCFCl (the makefile requiring all external modules in input)
-include $(libMCFClDIR)lib/makefile
+include $(libMCFClDIR)/lib/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# append external libreries to libMCFClLIB as defined in the makefile, thus
+# append external libraries to libMCFClLIB as defined in the makefile, thus
 # the := assignment has to be used (hope you have GNU make)
 
 # libreries
