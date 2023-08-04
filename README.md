@@ -33,8 +33,8 @@ This release comprises:
 
 -  [`MCFClass/`](MCFClass): definition of the base class
 
--  [`MCFClone/`](MCFClone): implements a "fake" MCF solver that takes two "real" ones
-   and does everything on both; useful for testing the solvers (either for
+-  [`MCFClone/`](MCFClone): implements a "fake" MCF solver that takes two "real" 
+   ones  and does everything on both; useful for testing the solvers (either for
    correctness or for efficiency) when used within "complex" approaches
 
 -  [`MCFCplex/`](MCFCplex): implements a MCF solver conforming to the `MCFClass`
@@ -49,18 +49,18 @@ This release comprises:
 
 -  [`ReadMe.md`](ReadMe.md): this file
 
--  [`RelaxIV/`](RelaxIV): implements a MCF solver conforming to the `MCFClass` interface
-   based on the RELAXIV code by D. Bertsekas and P. Tseng, as described in
+-  [`RelaxIV/`](RelaxIV): implements a MCF solver conforming to the `MCFClass`
+   interface based on the RELAXIV code by D. Bertsekas and P. Tseng, as described
+   in
 
        Bertsekas, Dimitri P., and Paul Tseng.
        "RELAX-IV: A faster version of the RELAX code for solving minimum
-       cost flow problems." (1994), Report LIDS-P-2276, MIT.
+       cost flow problems." (1994), Report LIDS-P-2276, MIT
 
-   be aware that `RelaxIV` is distributed under a less permissive academic
-   license than the rest of the code (see [`RelaxIV/academicl.txt`](RelaxIV/academicl.txt)
-   for details), which only applies to researchers of noncommercial and academic
-   institutions, e.g., universities; if the license does not apply to you,
-   you must not download the source or delete it immediately
+   be aware that `RelaxIV` is distributed under a [less permissive academic
+   license](RelaxIV/academicl.txt), which only applies to researchers of
+   noncommercial and academic institutions, e.g., universities; if the license
+   does not apply to you, you must not download the source or delete it immediately
 
 -  [`req/`](req): folder containing two request forms for two other solvers derived
    from the `MCFClass` interface that cannot be directly distributed in the
@@ -70,7 +70,8 @@ This release comprises:
    interface, in the sense that is only able to solve MCF instances that are in
    fact Shortest Path Tree ones (that is, only one source node and no arc
    capacities), but then does so using SPT algorithms (both label-setting and
-   label-correcting variants can be used) that are much faster than complete MCF ones
+   label-correcting variants can be used) that are much faster than complete MCF
+   ones
 
 -  [`pyMCFSimplex-0.9/`](pyMCFSimplex-0.9): a Python-Wrapper for the MCFSimplex
    solver by Johannes from the G#.Blog, check `README.txt` for details
@@ -92,7 +93,7 @@ You can either use [CMake](https://cmake.org) or plain makefiles to build the
 library, your choice. CMake compiles off-dource and it is therefore perhaps
 better suited to one-off, compile-and-forget installations, whereby the
 provided makefiles compile on-source and we find that they are better suited
-while developing and testing the code (if that's your cup of tea, it is ours).
+while developing and testing the code (if that's your cup of tea; it is ours).
 
 In both cases, all external dependencies should be automatically dealt with if
 they are installed in their default paths, as specified in the `*_ROOT` values
@@ -158,6 +159,7 @@ set(MCFClass_READ_PATHS OFF CACHE BOOL
 ### Using makefiles
 
 - To create the library, go into `lib/` and type
+
 ```sh
 make -f makefile-lib
 ```
