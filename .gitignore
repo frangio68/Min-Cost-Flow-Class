@@ -15,3 +15,8 @@ MCFZIB
 XCode/
 test/MCFSolve
 test/TestMCF
+
+build/
+
+# CMake
+cmake-build-*/
