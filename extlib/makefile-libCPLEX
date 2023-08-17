@@ -38,6 +38,9 @@ endif
 ifeq ($(UNAME_S),Darwin)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
 endif
+ifeq ($(UNAME_S),Windows)
+    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x64_windows_msvc14/stat_mda
+endif
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
