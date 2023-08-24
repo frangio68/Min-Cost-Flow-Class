@@ -133,7 +133,7 @@ Macros</h2></td></tr>
 <p>This is needed since random generators are one of the less standard parts of the C[++] library. The value of the OPT_RANDOM constant selects among the different timing routines:</p>
 <ul>
 <li>0 = an hand-made implementation of a rather good random number generator is used; note that this assumes that long ints &gt;= 32 bits</li>
-<li>1 = standard rand() / srand() pair, common to all C libreries but not very sophisticated</li>
+<li>1 = standard rand() / srand() pair, common to all C libraries but not very sophisticated</li>
 <li>2 = drand48() / srand48(), common on Unix architectures and pretty good.</li>
 </ul>
 <p>Any unsupported value would simply make the functions to report constant zero, which is not nice but useful to quickly fix problems if you don't use random numbers at all. </p>

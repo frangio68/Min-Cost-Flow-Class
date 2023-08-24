@@ -11,7 +11,7 @@
 #           $(MCFSTDIR) = the directory where the source is                  #
 #                                                                            #
 #   Output: $(MCFSTOBJ) = the final object(s) / library                      #
-#           $(MCFSTLIB) = external libreries + -L< libdirs >                 #
+#           $(MCFSTLIB) = external libraries + -L< libdirs >                 #
 #           $(MCFSTH)   = the .h files to include                            #
 #           $(MCFSTINC) = the -I$( include directories )                     #
 #                                                                            #

@@ -12,7 +12,7 @@
 #           $(libMCFClDIR) = the basic directory for the library             #
 #                                                                            #
 #   Output: $(libMCFClOBJ) = the library (that must be built)                #
-#           $(libMCFClLIB) = the external libreries + -L< libdirs >          #
+#           $(libMCFClLIB) = the external libraries + -L< libdirs >          #
 #           $(libMCFClH)   = all the .h files of the MCF library             #
 #           $(libMCFClINC) = all the -I$( include dirs ) of the MCF library  #
 #                                                                            #
@@ -27,7 +27,7 @@
 # corresponding include line
 # each module outputs some macros to be used here:
 # *OBJ is the final object/library
-# *LIB external libreries + -L< libdirs >
+# *LIB external libraries + -L< libdirs >
 # *H   is the list of all include files
 # *INC is the -I< include directories >
 
@@ -72,7 +72,7 @@ libMCFClOBJ =	$(MCFC2OBJ)\
 		$(MCFZBOBJ)\
 		$(MCFSTOBJ)\
 		$(MCFR4OBJ)
-# libreries
+# libraries
 libMCFClLIB =	$(MCFC2LIB)\
 		$(MCFCxLIB)\
 		$(MCFSxLIB)\

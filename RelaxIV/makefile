@@ -11,7 +11,7 @@
 #           $(MCFR4DIR) = the directory where the source is                  #
 #                                                                            #
 #   Output: $(MCFR4OBJ) = the final object(s) / library                      #
-#           $(MCFR4LIB) = external libreries + -L< libdirs >                 #
+#           $(MCFR4LIB) = external libraries + -L< libdirs >                 #
 #           $(MCFR4H)   = the .h files to include                            #
 #           $(MCFR4INC) = the -I$( include directories )                     #
 #                                                                            #

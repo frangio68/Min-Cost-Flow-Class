@@ -12,7 +12,7 @@
 #           $(MCFCxDIR)    = the directory where the source is               #
 #                                                                            #
 #   Output: $(MCFCxOBJ)    = the final object(s) / library                   #
-#           $(MCFCxLIB)    = external libreries + -L< libdirs >              #
+#           $(MCFCxLIB)    = external libraries + -L< libdirs >              #
 #           $(MCFCxH)      = the .h files to include                         #
 #           $(MCFCxINC)    = the -I$( include directories )                  #
 #                                                                            #
@@ -32,18 +32,18 @@ clean::
 # corresponding include line
 # each module outputs some macros to be used here:
 # *OBJ is the final object/library
-# *LIB external libreries + -L<libdirs>
+# *LIB external libraries + -L< libdirs >
 # *H   is the list of all include files
-# *INC is the -I<include directories>
+# *INC is the -I< include directories >
 
-# cplex external libreries
+# cplex external libraries
 include $(MCFCxDIR)/../extlib/makefile-libCPLEX
 
 # MCFCplex (the makefile requiring all external modules in input)
 include $(MCFCxDIR)/makefile
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# append external libreries to MCFCplex as defined in the makefile, thus
+# append external libraries to MCFCplex as defined in the makefile, thus
 # the := assignment has to be used (hope you have GNU make)
 
 MCFCxLIB := $(MCFCxLIB) $(libCPLEXLIB)

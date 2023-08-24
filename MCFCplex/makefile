@@ -13,7 +13,7 @@
 #           $(MCFCxDIR)    = the directory where the source is               #
 #                                                                            #
 #   Output: $(MCFCxOBJ)    = the final object(s) / library                   #
-#           $(MCFCxLIB)    = external libreries + -L<libdirs>                #
+#           $(MCFCxLIB)    = external libraries + -L< libdirs >              #
 #           $(MCFCxH)      = the .h files to include                         #
 #           $(MCFCxINC)    = the -I$(include directories)                    #
 #                                                                            #

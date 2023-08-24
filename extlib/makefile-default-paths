@@ -40,6 +40,6 @@
 
 CPLEX_ROOT = /opt/ibm/ILOG/CPLEX_Studio2211
 #CPLEX_ROOT = /Applications/CPLEX_Studio2211
-#CPLEX_ROOT = C:/Program Files/IBM/ILOG/CPLEX_Studio2211
+#CPLEX_ROOT = "C:/Program Files/IBM/ILOG/CPLEX_Studio2211"
 
 ####################### End of makefile-default-paths ########################

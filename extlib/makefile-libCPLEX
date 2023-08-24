@@ -9,7 +9,7 @@
 #   Output: accordingly, there is no *H and *OBJ in output, since there is   #
 #           no need to check for changes in the .h and rebuild the .o / .a   #
 #                                                                            #
-#           $(libCPLEXLIB) = external libreries + -L<libdirs> for libCPLEX   #
+#           $(libCPLEXLIB) = external libraries + -L< libdirs > for libCPLEX #
 #           $(libCPLEXINC) = the -I$(include directories) for libCPLEX       #
 #                                                                            #
 #                             Antonio Frangioni                              #
@@ -20,7 +20,7 @@
 
 # internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-# external libreries that Cplex needs
+# external libraries that Cplex needs
 ifeq ($(UNAME_S),Linux)
     libCPLEXEXTLIB = -lpthread
 endif
@@ -28,8 +28,8 @@ ifeq ($(UNAME_S),Darwin)
     libCPLEXEXTLIB = 
 endif
 
-# basic CPLEX directory
-libCPLEXBSCDIR = $(CPLEX_ROOT)/cplex
+# basic CPLEX directory without quotes, if any
+libCPLEXBSCDIR = $(subst $\",,$(CPLEX_ROOT))/cplex
 
 # lib Cplex directory
 ifeq ($(UNAME_S),Linux)
@@ -42,9 +42,16 @@ ifeq ($(UNAME_S),Windows)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x64_windows_msvc14/stat_mda
 endif
 
+# Cplex lib
+ifeq ($(UNAME_S),Windows)
+    libCPLEX = -lcplex12100
+else
+    libCPLEX = -lcplex
+endif
+
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-libCPLEXLIB = -L$(libCPLEXINCDIR) -lilocplex -lcplex $(libCPLEXEXTLIB)
-libCPLEXINC = -I$(libCPLEXBSCDIR)/include
+libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex $(libCPLEX) $(libCPLEXEXTLIB)
+libCPLEXINC = -I"$(libCPLEXBSCDIR)/include"
 
 ######################### End of makefile-libCPLEX ###########################

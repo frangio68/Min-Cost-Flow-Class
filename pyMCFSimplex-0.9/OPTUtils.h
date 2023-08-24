@@ -77,7 +77,7 @@
     - 0 = an hand-made implementation of a rather good random number generator
           is used; note that this assumes that long ints >= 32 bits
 
-    - 1 = standard rand() / srand() pair, common to all C libreries but not
+    - 1 = standard rand() / srand() pair, common to all C libraries but not
           very sophisticated
 
     - 2 = drand48() / srand48(), common on Unix architectures and pretty good.
