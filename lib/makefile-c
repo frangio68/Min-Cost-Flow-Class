@@ -69,7 +69,7 @@ endif
 # *INC is the -I< include directories >
 
 # OPTUtils.h
-OPTUxH   = $(libMCFClDIR)/OPTUtils/OPTUtils.h
+OPTUxH = $(libMCFClDIR)/OPTUtils/OPTUtils.h
 OPTUxINC = -I$(libMCFClDIR)/OPTUtils
 
 # cplex external libraries (comment out if MCFCplex is not compiled, or if
