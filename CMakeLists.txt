@@ -98,7 +98,7 @@ if (MCFClass_READ_PATHS)
 
         unset(path)
         unset(paths)
-    endmacro()
+    endmacro ()
 
     # firstly, set the custom makefile-paths, if any...
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/extlib/makefile-paths")

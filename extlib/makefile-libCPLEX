@@ -23,9 +23,8 @@
 # external libraries that Cplex needs
 ifeq ($(UNAME_S),Linux)
     libCPLEXEXTLIB = -lpthread
-endif
-ifeq ($(UNAME_S),Darwin)
-    libCPLEXEXTLIB = 
+else
+    libCPLEXEXTLIB =
 endif
 
 # basic CPLEX directory without quotes, if any

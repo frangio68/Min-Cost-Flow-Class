@@ -173,7 +173,7 @@ else ()
             if (NOT ${var})
                 set(${var} NOTFOUND)
             endif ()
-        endmacro()
+        endmacro ()
 
         # Library
         find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
