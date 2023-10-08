@@ -231,7 +231,6 @@ if (CPLEX_FOUND)
     endif ()
 
     if (UNIX)
-        # Required under Unix since 12.8
         set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
     endif ()
 
