@@ -214,9 +214,11 @@ else ()
     # REQUIRED_VARS should be cache entries and not output variables. See:
     # https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
     find_package_handle_standard_args(
-            CPLEX
-            REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
-            VERSION_VAR CPLEX_VERSION)
+            CPLEX REQUIRED_VARS
+            CPLEX_LIBRARY
+            CPLEX_LIBRARY_DEBUG
+            CPLEX_INCLUDE_DIR
+            CPLEX_VERSION)
 endif ()
 
 # ----- Export the target --------------------------------------------------- #
@@ -240,7 +242,7 @@ if (CPLEX_FOUND)
                 CPLEX::Cplex PROPERTIES
                 IMPORTED_LOCATION "${CPLEX_LIBRARY}"
                 IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
-                INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIR}"
+                INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIRS}"
                 INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
     endif ()
 endif ()

@@ -21,10 +21,10 @@
 # internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # external libraries that Cplex needs
-ifeq ($(UNAME_S),Linux)
-    libCPLEXEXTLIB = -lpthread
-else
+ifeq ($(UNAME_S),Darwin)
     libCPLEXEXTLIB =
+else
+    libCPLEXEXTLIB = -lpthread
 endif
 
 # basic CPLEX directory without quotes, if any
