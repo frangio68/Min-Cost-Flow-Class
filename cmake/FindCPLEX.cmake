@@ -182,29 +182,23 @@ else ()
         # Debug library
         find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB})
-
-        # DLL
-        if (CPLEX_LIBRARY MATCHES ".*/(cplex.*)\\.lib")
-            file(GLOB CPLEX_DLL_ "${CPLEX_DIR}/bin/*/${CMAKE_MATCH_1}.dll")
-            set(CPLEX_DLL ${CPLEX_DLL_})
-        endif ()
     endif ()
 
     # ----- Parse the version ----------------------------------------------- #
     if (CPLEX_INCLUDE_DIR)
         file(STRINGS
-             "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
-             _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
+                "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
+                _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
 
         string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_major "${_cplex_version_lines}")
         string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_minor "${_cplex_version_lines}")
-        string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_patch "${_cplex_version_lines}")
+        string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_modification "${_cplex_version_lines}")
 
-        set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_patch}")
+        set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_modification}")
         unset(_cplex_version_lines)
         unset(_cplex_version_major)
         unset(_cplex_version_minor)
-        unset(_cplex_version_patch)
+        unset(_cplex_version_modification)
     endif ()
 
     # ----- Handle the standard arguments ----------------------------------- #
@@ -214,11 +208,9 @@ else ()
     # REQUIRED_VARS should be cache entries and not output variables. See:
     # https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
     find_package_handle_standard_args(
-            CPLEX REQUIRED_VARS
-            CPLEX_LIBRARY
-            CPLEX_LIBRARY_DEBUG
-            CPLEX_INCLUDE_DIR
-            CPLEX_VERSION)
+            CPLEX
+            REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
+            VERSION_VAR CPLEX_VERSION)
 endif ()
 
 # ----- Export the target --------------------------------------------------- #
