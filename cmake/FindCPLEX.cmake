@@ -149,7 +149,6 @@ else ()
 
     if (UNIX)
         # ----- Find the CPLEX library -------------------------------------- #
-        # Note that find_library() creates a cache entry
         find_library(CPLEX_LIBRARY
                      NAMES cplex
                      PATHS ${CPLEX_DIR}
