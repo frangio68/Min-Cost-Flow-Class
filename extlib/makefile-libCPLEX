@@ -51,6 +51,6 @@ endif
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex $(libCPLEX) $(libCPLEXEXTLIB)
-libCPLEXINC = -I"$(libCPLEXBSCDIR)/include"
+libCPLEXINC = -I"$(libCPLEXBSCDIR)/include" -DBUILD_CPXSTATIC -DCPXSIZE_BITS_TEST_DISABLE
 
 ######################### End of makefile-libCPLEX ###########################
