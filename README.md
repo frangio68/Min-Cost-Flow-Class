@@ -171,7 +171,7 @@ make -f makefile-lib
 
 ```makefile
 MCFCxDIR = $(libMCFClDIR)/MCFCplex
-include $(MCFCxDIR)makefile
+include $(MCFCxDIR)/makefile
 ```
 
 You can similarly enable (or disable) any solver, both the LGPL ones and
