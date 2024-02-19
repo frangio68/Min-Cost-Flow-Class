@@ -156,7 +156,6 @@ else ()
                      PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
                      DOC "CPLEX library.")
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
-
     elseif (NOT CPLEX_LIBRARY)
 
         # ----- Macro: find_win_cplex_library ------------------------------- #
