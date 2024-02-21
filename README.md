@@ -90,7 +90,7 @@ getting hold of the code. Request forms are available in the [`req/`](req) folde
 ## Build and install
 
 You can either use [CMake](https://cmake.org) or plain makefiles to build the
-library, your choice. CMake compiles off-dource and it is therefore perhaps
+library, your choice. CMake compiles off-source and it is therefore perhaps
 better suited to one-off, compile-and-forget installations, whereby the
 provided makefiles compile on-source and we find that they are better suited
 while developing and testing the code (if that's your cup of tea; it is ours).
