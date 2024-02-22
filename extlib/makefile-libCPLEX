@@ -4,8 +4,7 @@
 #                                                                            #
 #   makefile of libCPLEX                                                     #
 #                                                                            #
-#   Input:  $(CPLEX_ROOT), the directory where Cplex is installed            #
-#                                                                            #
+#   Input:  $(CPLEX_ROOT), the directory where Cplex Studio is installed     #
 #   Output: accordingly, there is no *H and *OBJ in output, since there is   #
 #           no need to check for changes in the .h and rebuild the .o / .a   #
 #                                                                            #
@@ -52,7 +51,7 @@ ifeq ($(UNAME_S),Windows)
               -L"$(vcpkg_ROOT)/lib" $(libCPLEXEXTLIB)
 else
     libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex $(libCPLEXEXTLIB)
-end
+endif
 libCPLEXINC = -I"$(libCPLEXBSCDIR)/include" -DBUILD_CPXSTATIC -DCPXSIZE_BITS_TEST_DISABLE
 
 ######################### End of makefile-libCPLEX ###########################
