@@ -40,6 +40,4 @@
 
 CPLEX_ROOT = C:/IBM/ILOG/CPLEX_Studio
 
-vcpkg_ROOT = C:/vcpkg/installed/x64-windows
-
 ##################### End of makefile-default-paths-win ######################

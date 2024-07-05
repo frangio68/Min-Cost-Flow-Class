@@ -48,7 +48,7 @@ endif
 
 ifeq ($(UNAME_S),Windows)
     libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex \
-              -L"$(vcpkg_ROOT)/lib" $(libCPLEXEXTLIB)
+              -L"$(VCPKG_ROOT)/lib" $(libCPLEXEXTLIB)
 else
     libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex $(libCPLEXEXTLIB)
 endif
