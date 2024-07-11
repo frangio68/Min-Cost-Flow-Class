@@ -112,7 +112,7 @@ if (MCFClass_READ_PATHS)
         else ()
             makefile_macros_to_cmake(extlib/makefile-default-paths-linux)
         endif ()
-    else () # Windows
+    elseif (WIN32)
         makefile_macros_to_cmake(extlib/makefile-default-paths-win)
     endif ()
 
@@ -120,7 +120,7 @@ if (MCFClass_READ_PATHS)
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         if (UNIX)
             set(ARCH x86-64)
-        else () # Windows
+        elseif (WIN32)
             set(ARCH x64)
         endif ()
     else ()
