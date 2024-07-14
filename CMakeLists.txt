@@ -86,7 +86,7 @@ if (MCFClass_READ_PATHS)
                                  rhs STREQUAL /usr/local))
                             # ... then set the one defined in makefile-default-paths
                             set("${lhs}" ${rhs})
-                            message(STATUS "Specify ${lhs}: " ${rhs})
+                            #message(STATUS "Specify ${lhs}: " ${rhs})
                         endif ()
                     endif ()
 
