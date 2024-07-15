@@ -121,7 +121,7 @@ Configure and build the library with:
 mkdir build
 cd build
 cmake ..
-make
+cmake --build .
 ```
 
 If CPLEX is not available or you are not interested in `MCFCplex`, run
@@ -133,7 +133,7 @@ cmake -DMCFClass_USE_CPLEX=OFF ..
 - Optionally, you can install the library with:
 
 ```sh
-sudo make install
+cmake --install .
 ```
 
 - After the library is built, you can use it in your CMake project with:
