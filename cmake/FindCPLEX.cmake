@@ -50,7 +50,7 @@ if (UNIX)
                 lib/${ARCH}_sles10_4.1/static_pic
                 lib/${ARCH}_linux/static_pic)
     endif ()
-else ()
+elseif (WIN32)
     # Windows (usually C:/Program Files/IBM/ILOG, or C:/IBM/ILOG)
     set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
     set(CPLEX_ILOG_DIRS "C:/IBM/ILOG" ${CPLEX_ILOG_DIRS})
