@@ -149,8 +149,7 @@ target_link_libraries(<my_target> MCFClass::MCFClass)
 
 ```cmake
 set(MCFClass_READ_PATHS OFF CACHE BOOL
-		                "Whether MCFClass will read locations for
-		                dependencies or not." FORCE)
+        "Whether MCFClass will read locations for dependencies or not." FORCE)
 ```
 
   in your CMake project.
