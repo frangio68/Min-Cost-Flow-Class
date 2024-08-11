@@ -48,8 +48,8 @@ include(BuildType)
 # An option is an ON/OFF user-settable cache variable
 option(MCFClass_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
 
-option(MCFClass_READ_PATHS "Whether ${modName} will read locations for
-                            dependencies or not." ON)
+option(MCFClass_READ_PATHS
+       "Whether ${modName} will read locations for dependencies or not." ON)
 
 # ----- Requirements -------------------------------------------------------- #
 if (MCFClass_READ_PATHS)
