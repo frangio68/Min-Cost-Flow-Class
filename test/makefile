@@ -4,9 +4,6 @@
 #                                                                            #
 #   makefile of MCFSolve                                                     #
 #                                                                            #
-#   'make clean' cleans up                                                   #
-#   'make' or 'make MCFSolve' builds the module                              #
-#                                                                            #
 #                              Antonio Frangioni                             #
 #                          Dipartimento di Informatica                       #
 #                              Universita' di Pisa                           #

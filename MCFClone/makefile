@@ -25,6 +25,4 @@ clean::
 MCFCeH   = $(MCFCeDIR)/MCFClone.h
 MCFCeINC = -I$(MCFCeDIR)
 
-# dependencies: every .o from its .C + every recursively included .h- - - - -
-
 ############################# End of makefile ################################
