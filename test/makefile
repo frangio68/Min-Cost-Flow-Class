@@ -16,17 +16,30 @@ DIR = .
 # basic libraries
 LIB = -lm
 
+# common flags
+COMMON_SW = -std=c++14
+
 # debug switches
-SW = -g -std=c++14 -Wall
+SW_DEBUG = -g -Wall $(COMMON_SW)
 # production switches
-#SW = -O3 -DNDEBUG -std=c++14
+SW_RELEASE = -O3 -DNDEBUG $(COMMON_SW)
 
 # compiler
 CC = clang++
 
 # default target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-default: $(DIR)/MCFSolve $(DIR)/TestMCF
+default: release
+
+# debug target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+debug: SW = $(SW_DEBUG)
+debug: $(DIR)/MCFSolve $(DIR)/TestMCF
+
+# release target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+release: SW = $(SW_RELEASE)
+release: $(DIR)/MCFSolve $(DIR)/TestMCF
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -
 # if a module is not used in the current configuration, just comment out the
@@ -59,10 +72,18 @@ $(DIR)/Main.o: $(DIR)/Main.C $(libMCFClH)
 $(DIR)/TestMain.o: $(DIR)/TestMain.C $(libMCFClH)
 	$(CC) -c $*.C -o $@ $(libMCFClINC) $(SW)
 
-# clean - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# clean target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 clean::
 	rm -Rf $(DIR)/MCFSolve $(DIR)/TestMCF $(DIR)/*.o $(DIR)/*~ \
 	$(DIR)/*.dSYM
+
+# distclean target- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+distclean: clean
+
+# phony targets - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+.PHONY: debug release clean distclean
 
 ############################ End of makefile #################################
