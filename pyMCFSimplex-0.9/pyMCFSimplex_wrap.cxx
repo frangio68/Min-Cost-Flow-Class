@@ -352,7 +352,7 @@ typedef struct swig_cast_info {
 
 /* Structure used to store module information
  * Each module generates one structure like this, and the runtime collects
- * all of these structures and stores them in a circularly linked list.*/
+ * all of these structures and stores them in a circularly linked list. */
 typedef struct swig_module_info {
   swig_type_info         **types;		/* Array of pointers to swig_type_info structures that are in this module */
   size_t                 size;		        /* Number of types in this module */

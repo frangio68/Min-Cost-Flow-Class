@@ -541,7 +541,7 @@ class MCFClass {
 	       optimization "from scratch" discarding any previous
 	       information. Usually reoptimization speeds up the computation
 	       considerably, but this is not always true, especially if the
-	       data of the problem changes a lot.*/
+	       data of the problem changes a lot. */
 
  virtual void SetPar( int par , int val ) {
   switch( par ) {
