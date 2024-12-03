@@ -119,7 +119,15 @@ if (MCFClass_READ_PATHS)
     # Retrieve the system architecture
     if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         if (UNIX)
-            set(ARCH x86-64)
+            if (APPLE)
+                if (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64") # Apple Silicon MX arch
+                    set(ARCH arm64)
+                else () # Intel arch
+                    set(ARCH x86-64)
+                endif ()
+            else ()
+                set(ARCH x86-64)
+            endif ()
         elseif (WIN32)
             set(ARCH x64)
         endif ()
