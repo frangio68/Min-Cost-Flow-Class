@@ -52,7 +52,7 @@ release: $(DIR)/MCFSolve $(DIR)/TestMCF
 
 # the whole libMCF, with all required external libraries
 libMCFClDIR = ..
-include $(libMCFClDIR)/lib/makefile-inc
+include $(libMCFClDIR)/lib/makefile-lib
 
 # main module (linking phase) - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -34,29 +34,39 @@
 #                                                                            #
 ##############################################################################
 
-# OS-specific settings
-# defines some general values, like UNAME_S, which identify the type of
-# OS and architecture for which the project is being compiled, so that
-# other makefiles can rely on these to automatically adapt without a need
-# for the user to manually edit them
+# OS-specific settings- - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# defines some general values, like UNAME_S, which identify the type of OS
+# and UNAME_P which identify the architecture for which the project is being
+# compiled, so that other makefiles can rely on these to automatically adapt
+# without a need for the user to manually edit them
 include $(libMCFClDIR)/lib/makefile-OS
 
+# paths for external libraries- - - - - - - - - - - - - - - - - - - - - - - -
 ifndef MCFC_NO_PATHS
-	# unless the *_ROOT macros are already properly defined somehow
+       # default paths
+       # include a makefile that defines all the *_ROOT paths needed by every
+       # other makefile (possibly after automatic OS adaptation, see above)
+       # relatively to the places where all external libraries are to be
+       # found; use the previously defined UNAME_S and UNAME_P to load the
+       # right one of the current architecture
+       ifeq ($(UNAME_S),Linux)
+       	    include $(libMCFClDIR)/extlib/makefile-default-paths-linux
+       endif
+       ifeq ($(UNAME_S),Darwin)
+       	    include $(libMCFClDIR)/extlib/makefile-default-paths-macos
+       endif
+       ifeq ($(UNAME_S),Windows)
+       	    include $(libMCFClDIR)/extlib/makefile-default-paths-win
+       endif
 
-	# include a makefile that should define all the paths needed by every
-	# other makefile (possibly after automatic OS adaptation, see above) 
-	# relatively to the places where all external libraries are to be
-	# found by default
-	include $(libMCFClDIR)/extlib/makefile-default-paths
-
-	# optionally (note the "-" in front), include a makefile that should
-	# define all the paths needed by every other makefile (possibly after
-	# automatic OS adaptation, see above) to cater for external libraries
-	# being located in non-standard locations. This file is .gitignore-d,
-	# so that its values are not lost when pulling any part of the project
-	# anew or need be manually ignored when pushing changes.
-	-include $(libMCFClDIR)/extlib/makefile-paths
+       # non-default paths
+       # optionally (note the "-" in front), include a makefile that should
+       # define all the paths needed by every other makefile (possibly after
+       # automatic OS adaptation, see above) to cater for external libraries
+       # being located in non-standard locations. This file is .gitignore-d,
+       # so that its values are not lost when pulling any part of the project
+       # anew or need be manually ignored when pushing changes.
+       -include $(libMCFClDIR)/extlib/makefile-paths
 endif
 
 # define & include the necessary modules- - - - - - - - - - - - - - - - - - -

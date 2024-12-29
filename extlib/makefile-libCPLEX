@@ -38,7 +38,11 @@ ifeq ($(UNAME_S),Linux)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_linux/static_pic
 endif
 ifeq ($(UNAME_S),Darwin)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
+     ifeq ($(UNAME_P),arm)
+    	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/arm64_osx/static_pic
+     else
+     	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
+    endif
 endif
 ifeq ($(UNAME_S),Windows)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x64_windows_msvc14/stat_mda
