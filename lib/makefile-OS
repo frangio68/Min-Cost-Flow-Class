@@ -5,13 +5,15 @@
 #   makefile of OS-specific settings                                         #
 #                                                                            #
 #  Defines some general values, like UNAME_S, which identify the type of OS  #
-#  and architecture for which the project is being compiled, so that other   #
-#  makefiles can rely on these to automatically adapt without a need for     #
-#  the user to manually edit them.                                           #
+#  and UNAME_P which identify the architecture for which the project is      #
+#  being compiled, so that other makefiles can rely on these to              #
+#  automatically adapt without a need for the user to manually edit them.    #
 #                                                                            #
 #   Input:  none                                                             #
 #                                                                            #
-#   Output: $(UNAME_S) = the name of the current system                      #
+#   Output: $(UNAME_S) = the name of the current operating system            #
+#           $(UNAME_P) = the name of the underlying architecture             #
+#           (x86, arm, ...)                                                  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                                 Donato Meoli                               #

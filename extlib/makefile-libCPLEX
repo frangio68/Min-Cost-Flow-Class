@@ -26,9 +26,6 @@ endif
 ifeq ($(UNAME_S),Darwin)
     libCPLEXEXTLIB =
 endif
-ifeq ($(UNAME_S),Windows)
-    libCPLEXEXTLIB = -lpthreadVC3
-endif
 
 # basic CPLEX directory without quotes, if any
 libCPLEXBSCDIR = $(subst $\",,$(CPLEX_ROOT))/cplex
@@ -38,20 +35,16 @@ ifeq ($(UNAME_S),Linux)
     libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_linux/static_pic
 endif
 ifeq ($(UNAME_S),Darwin)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
-endif
-ifeq ($(UNAME_S),Windows)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x64_windows_msvc14/stat_mda
+     ifeq ($(UNAME_P),arm)
+    	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/arm64_osx/static_pic
+     else
+     	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
+    endif
 endif
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-ifeq ($(UNAME_S),Windows)
-    libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex2211 \
-        -L"$(VCPKG_ROOT)/lib" $(libCPLEXEXTLIB)
-else
-    libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex $(libCPLEXEXTLIB)
-endif
+libCPLEXLIB = -L"$(libCPLEXINCDIR)" -lilocplex -lcplex $(libCPLEXEXTLIB)
 libCPLEXINC = -I"$(libCPLEXBSCDIR)/include" -DBUILD_CPXSTATIC -DCPXSIZE_BITS_TEST_DISABLE
 
 ######################### End of makefile-libCPLEX ###########################
