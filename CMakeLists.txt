@@ -140,7 +140,7 @@ if (MCFClass_USE_CPLEX)
     # Needed for MCFCplex
     find_package(CPLEX)
     if (NOT CPLEX_FOUND)
-        set(MCFClass_USE_CPLEX OFF)
+        set(MCFClass_USE_CPLEX OFF CACHE BOOL "Whether ${modName} will use CPLEX or not." FORCE)
     endif ()
 endif ()
 
