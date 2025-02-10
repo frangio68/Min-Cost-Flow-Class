@@ -9,7 +9,6 @@
 #    file that tells where the headers and library are. It will be different  #
 #    depending on a local build or an installed package.                      #
 #                                                                             #
-#                              Niccolo' Iardella                              #
 #                                Donato Meoli                                 #
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
