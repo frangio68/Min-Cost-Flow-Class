@@ -141,7 +141,6 @@ else ()
     set(CPLEX_DIR ${CPLEX_ROOT}/cplex)
 
     # ----- Find the CPLEX include directory -------------------------------- #
-    # Note that find_path() creates a cache entry
     find_path(CPLEX_INCLUDE_DIR
               NAMES ilcplex/cplex.h
               PATHS ${CPLEX_DIR}/include
@@ -155,7 +154,7 @@ else ()
                      PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
                      DOC "CPLEX library.")
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
-    elseif (NOT CPLEX_LIBRARY)
+    elseif (WIN32)
 
         # ----- Macro: find_win_cplex_library ------------------------------- #
         # On Windows the version is appended to the library name which cannot be
@@ -207,7 +206,7 @@ else ()
     # https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
     find_package_handle_standard_args(
             CPLEX
-            REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
+            REQUIRED_VARS CPLEX_LIBRARY CPLEX_INCLUDE_DIR
             VERSION_VAR CPLEX_VERSION)
 endif ()
 
