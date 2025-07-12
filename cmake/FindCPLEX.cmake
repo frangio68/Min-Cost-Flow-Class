@@ -215,16 +215,16 @@ endif ()
 # ----- Export the target --------------------------------------------------- #
 if (CPLEX_FOUND)
     set(CPLEX_INCLUDE_DIRS "${CPLEX_INCLUDE_DIR}")
-    set(CPLEX_LINK_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+    set(CPLEX_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
     # See: https://cmake.org/cmake/help/latest/module/CheckLibraryExists.html
     check_library_exists(m floor "" HAVE_LIBM)
     if (HAVE_LIBM)
-        set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} m)
+        set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} m)
     endif ()
 
     if (UNIX)
-        set(CPLEX_LINK_LIBRARIES ${CPLEX_LINK_LIBRARIES} dl)
+        set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} dl)
     endif ()
 
     if (NOT TARGET CPLEX::Cplex)
@@ -234,7 +234,7 @@ if (CPLEX_FOUND)
                 IMPORTED_LOCATION "${CPLEX_LIBRARY}"
                 IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
                 INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIRS}"
-                INTERFACE_LINK_LIBRARIES "${CPLEX_LINK_LIBRARIES}")
+                INTERFACE_LINK_LIBRARIES "${CPLEX_LIBRARIES}")
     endif ()
 endif ()
 
