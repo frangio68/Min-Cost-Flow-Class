@@ -146,14 +146,16 @@ else ()
               PATHS ${CPLEX_DIR}/include
               DOC "CPLEX include directory.")
 
+    # ----- Find the CPLEX library ------------------------------------------ #
     if (UNIX)
-        # ----- Find the CPLEX library -------------------------------------- #
         find_library(CPLEX_LIBRARY
                      NAMES cplex
                      PATHS ${CPLEX_DIR}
                      PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
                      DOC "CPLEX library.")
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY})
+
+        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY}
+                CACHE FILEPATH "CPLEX debug library." FORCE)
     elseif (WIN32)
 
         # ----- Macro: find_win_cplex_library ------------------------------- #
@@ -168,17 +170,17 @@ else ()
                 endif ()
             endforeach ()
             if (NOT ${var})
-                set(${var} NOTFOUND)
+                set(${var} "${var}-NOTFOUND")
             endif ()
         endmacro ()
 
-        # Library
         find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
-        set(CPLEX_LIBRARY ${CPLEX_LIB})
+        set(CPLEX_LIBRARY ${CPLEX_LIB}
+                CACHE FILEPATH "CPLEX library." FORCE)
 
-        # Debug library
         find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB})
+        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB}
+                CACHE FILEPATH "CPLEX debug library." FORCE)
     endif ()
 
     # ----- Parse the version ----------------------------------------------- #
