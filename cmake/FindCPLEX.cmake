@@ -134,7 +134,7 @@ endforeach ()
 find_package(Threads QUIET)
 
 # Check if already in cache
-if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG)
+if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG AND CPLEX_VERSION)
     set(CPLEX_FOUND TRUE)
 else ()
 
@@ -174,11 +174,11 @@ else ()
             endif ()
         endmacro ()
 
-        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES}")
+        find_win_cplex_library(CPLEX_LIB ${CPLEX_LIB_PATH_SUFFIXES})
         set(CPLEX_LIBRARY ${CPLEX_LIB}
                 CACHE FILEPATH "CPLEX library." FORCE)
 
-        find_win_cplex_library(CPLEX_LIB "${CPLEX_LIB_PATH_SUFFIXES_DEBUG}")
+        find_win_cplex_library(CPLEX_LIB ${CPLEX_LIB_PATH_SUFFIXES_DEBUG})
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB}
                 CACHE FILEPATH "CPLEX debug library." FORCE)
     endif ()
@@ -214,7 +214,7 @@ endif ()
 
 # ----- Export the target --------------------------------------------------- #
 if (CPLEX_FOUND)
-    set(CPLEX_INCLUDE_DIRS "${CPLEX_INCLUDE_DIR}")
+    set(CPLEX_INCLUDE_DIRS ${CPLEX_INCLUDE_DIR})
     set(CPLEX_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
     # See: https://cmake.org/cmake/help/latest/module/CheckLibraryExists.html
