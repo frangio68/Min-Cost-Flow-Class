@@ -512,14 +512,14 @@ void MCFSimplex::SetPar( int par , int val )
  
   if( ( val == kDantzig ) || ( val == kFirstEligibleArc ) ||
       ( val == kCandidateListPivot ) )
-   SetAlg( usePrimalSimplex , val );
+   SetAlg( usePrimalSimplex , char( val ) );
 
   break;
 
  case kNumCandList:
 
   MemDeAllocCandidateList();
-  forcedNumCandidateList = val;
+  forcedNumCandidateList = Index( val );
   MemAllocCandidateList();
   forcedNumCandidateList = 0;
   forcedHotListSize = 0;
@@ -528,7 +528,7 @@ void MCFSimplex::SetPar( int par , int val )
  case kHotListSize:
 
   MemDeAllocCandidateList();
-  forcedHotListSize = val;
+  forcedHotListSize = Index( val );
   MemAllocCandidateList();
   forcedNumCandidateList = 0;
   forcedHotListSize = 0;
@@ -1138,13 +1138,13 @@ void MCFSimplex::ChgCost( Index arc , CNumber NCost )
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
-			   Index strt , Index stp )
-{
- if( stp > m )
-  stp = m;
+#if( QUADRATICCOST )
+ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
+			    Index strt , Index stp )
+ {
+  if( stp > m )
+   stp = m;
 
- #if( QUADRATICCOST )
   if( nms ) {
    while( *nms < strt ) {
     nms++;
@@ -1169,18 +1169,24 @@ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
    ComputePotential( dummyRootP );
   else
    status = kUnSolved;
- #else
-  if( NQCoef )
-   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
- #endif
 
- }  // end( MCFSimplex::ChgQCoef )
+  }  // end( MCFSimplex::ChgQCoef )
+#else
+ void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set /*nms*/ ,
+			    Index /*strt*/ , Index /*stp*/ )
+ {
+  if( NQCoef != 0 )
+   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
+
+  }  // end( MCFSimplex::ChgQCoef )
+#endif
+
 
 /*-------------------------------------------------------------------------*/
 
-void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
-{
- #if( QUADRATICCOST )
+#if( QUADRATICCOST )
+ void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
+ {
   if( arc >= m )
    return;
 
@@ -1198,12 +1204,16 @@ void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
    }
   else
    status = kUnSolved;
- #else
-  if( NQCoef )
-   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
- #endif
 
- }  // end( MCFSimplex::ChgQCoef )
+  }  // end( MCFSimplex::ChgQCoef )
+#else
+ void MCFSimplex::ChgQCoef( Index /*arc*/ , CNumber NQCoef )
+ {
+  if( NQCoef != 0 )
+   throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
+
+  }  // end( MCFSimplex::ChgQCoef )
+#endif
 
 /*-------------------------------------------------------------------------*/
     
@@ -1887,7 +1897,7 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
    stopArcsP++;
    }
 
-  Index pos = arc - arcsP;
+  Index pos = Index( arc - arcsP );
   arc->tail = nodesP + Start + USENAME0 - 1;
   arc->head = nodesP + End + USENAME0 - 1;
   arc->upper = aU;
@@ -1915,7 +1925,7 @@ MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
    stopArcsD++;
    }
 
-  Index pos = arc - arcsD;
+  Index pos = Index( arc - arcsD );
   arc->tail = nodesD + Start + USENAME0 - 1;
   arc->head = nodesD + End + USENAME0 - 1;
   arc->upper = aU;
@@ -2801,7 +2811,7 @@ void MCFSimplex::PrimalSimplex( void )
       status = kUnfeasible;
     }
 
-   if( ( status == kUnSolved ) && MaxTime && MCFt ) {
+   if( ( status == kUnSolved ) && ( MaxTime != 0 ) && MCFt ) {
     double tu, ts;
     TimeMCF( tu , ts );
     if( MaxTime < tu + ts )
@@ -3250,7 +3260,7 @@ void MCFSimplex::DualSimplex( void )
      }
    }
 
-  if( ( status == kUnSolved ) && MaxTime ) {
+  if( ( status == kUnSolved ) && ( MaxTime != 0 ) ) {
    double tu, ts;
    TimeMCF( tu , ts );
    if( MaxTime < tu + ts )
@@ -3295,7 +3305,8 @@ void MCFSimplex::DualSimplex( void )
 /*--------------------------------------------------------------------------*/
 
 template< class N , class A >
-void MCFSimplex::UpdateT( A *h , A *k , N *h1 , N *h2 , N *k1 , N *k2 )
+void MCFSimplex::UpdateT( A * /*h*/ , A *k , N * /*h1*/ ,
+			  N *h2 , N *k1 , N *k2 )
 {
  /* In subtree T2 there is a path from node h2 (deepest node of the leaving
     arc h and root of T2) to node k2 (deepest node of the leaving arc h and
@@ -3571,15 +3582,15 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
   minimeValue = tempCandidateListSize;
 
  #if( QUADRATICCOST )
-  // Check if the left arcs in the list continue to violate the dual condition
+  // check if the left arcs in the list continue to violate the dual condition
   for( i = 2 ; i <= minimeValue ; i++ ) {
    arcPType *arc = candP[ i ].arc;
    FONumber red_cost = ReductCost( arc );
    FNumber theta = 0;
-   /* If reduct cost of arc is lower than 0, the flow of the arc must increase.
-      If reduct cost of arc is bigger than 0, the flow of the arc must decrease.
-      "theta" is the difference between lower (upper) bound and the actual flow.
-      */
+   /* If reduced cost of arc is lower than 0, the flow of the arc must
+    * increase. If reduced cost of arc is bigger than 0, the flow of the arc
+    * must decrease. "theta" is the difference between lower (upper) bound
+    * and the actual flow. */
 
    if( LTZ( red_cost , EpsCst ) )
     theta = arc->upper - arc->flow;
@@ -3646,14 +3657,15 @@ MCFSimplex::arcPType* MCFSimplex::RulePrimalCandidateListPivot( void )
 
      // if it's possible to increase (or decrease) the flow in this arc
      if( theta != 0 ) {
-      /* "Q" is the sum of the quadratic coefficient of the arc belonging the T
-	 path from tail's arc to head's arc
+      /* "Q" is the sum of the quadratic coefficient of the arc belonging
+         the T path from tail's arc to head's arc
 	 "Q" is always bigger than 0 or equals to 0.
 	 If "Q" > 0, the value - RC / Q is the increase (decrease) of the flow
 	 with the best decrease of f.o. value.
 	 - RC/ Q must be compare with "theta" to avoid that the best increase
 	 (decrease) of the flow violates the bounds of the arc.
 	 This confront determines "theta". */
+
       CNumber Q = ( arc->tail )->sumQuadratic + ( arc->head )->sumQuadratic +
                   arc->quadraticCost;
 
@@ -3926,7 +3938,7 @@ void MCFSimplex::ComputePotential( N *r )
 
 void MCFSimplex::CreateInitialPModifiedBalanceVector( void )
 {
- int i = 0;
+ std::ptrdiff_t i = 0;
  // initialize every node's modifiedBalance to its balance
  for( nodePType *node = nodesP ; node != stopNodesP ; node++ )
   modifiedBalance[ i++ ] = node->balance;
@@ -3985,7 +3997,7 @@ void MCFSimplex::PostPVisit( nodePType *r )
 {
  // The method controls if "r" is a leaf in T
  bool rLeaf = false;
- int i = r - nodesP;
+ std::ptrdiff_t i = r - nodesP;
  if( r->nextInT ) {
   if( ( r->nextInT )->subTreeLevel <= r->subTreeLevel )
    rLeaf = true;
@@ -4147,7 +4159,7 @@ void MCFSimplex::AdjustFlow( nodePType *r )
 void MCFSimplex::CreateInitialDModifiedBalanceVector( void )
 {
  #if( ! QUADRATICCOST )
-  int i = 0;
+  std::ptrdiff_t i = 0;
   // initialize every node's modifiedBalance to its balance
   for( nodeDType *node = nodesD ; node != stopNodesD ; node++ )
    modifiedBalance[ i++ ] = node->balance;
@@ -4183,7 +4195,7 @@ void MCFSimplex::PostDVisit( nodeDType *r )
  #if( ! QUADRATICCOST )
   // The method controls if "r" is a leaf in T
   bool rLeaf = false;
-  int i = r - nodesD;
+  std::ptrdiff_t i = r - nodesD;
   if( r->nextInT ) {
    if( ( r->nextInT )->subTreeLevel <= r->subTreeLevel )
     rLeaf = true;
@@ -4480,14 +4492,14 @@ void MCFSimplex::infoPArc( arcPType *arc , int ind , int tab )
   for( int t = 0 ; t < tab ; t++ )
    cout << "\t";
   #if( UNIPI_VIS_ARC_REDUCT_COST )
-   cout << " rc = " << MCFGetRC( ind );
+   cout << " rc = " << MCFGetRC( Index( ind ) );
   #endif
  #else
   cout << endl;
   for( int t = 0 ; t < tab ; t++ )
    cout << "\t";
   #if( UNIPI_VIS_ARC_REDUCT_COST )
-   cout << " rc = " << MCFGetRC( ind );
+   cout << " rc = " << MCFGetRC( Index( ind ) );
   #endif
   #if( UNIPI_VIS_ARC_STATE )
    switch( arc->ident ) {
@@ -4548,7 +4560,7 @@ void MCFSimplex::infoDArc( arcDType *arc , int ind , int tab )
   for( int t = 0 ; t < tab ; t++ )
    cout << "\t";
   #if( UNIPI_VIS_ARC_REDUCT_COST )
-   cout << " rc = " << MCFGetRC( ind );
+   cout << " rc = " << MCFGetRC( Index( ind ) );
   #endif
   #if (UNIPI_VIS_ARC_STATE)
   switch( arc->ident ) {

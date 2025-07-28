@@ -996,7 +996,8 @@ class MCFClass {
     information; thus, returning Inf< Index >() is allowed, as in the base class
     implementation, to signify that this information is not available. */
 
- virtual Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred ) const
+ virtual Index MCFGetUnbCycl( Index_Set /*Pred*/ ,
+			      Index_Set /*ArcPred*/ ) const
  {
   return( Inf< Index >() );
   }
@@ -1054,7 +1055,7 @@ class MCFClass {
     operations worth), an "empty" implementation that does nothing is provided
     by the base class. */
 
- virtual void MCFPutState( MCFStatePtr S ) {}
+ virtual void MCFPutState( MCFStatePtr /*S*/ ) {}
 
 /** @} ---------------------------------------------------------------------*/
 /** @name Time the code
@@ -1301,7 +1302,7 @@ class MCFClass {
     linear" MCF solvers that only work with all zero quadratic coefficients.
     */
 
- virtual CNumber MCFQCoef( Index i ) const { return( 0 ); }
+ virtual CNumber MCFQCoef( Index /*i*/ ) const { return( 0 ); }
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /// return a read-only pointer to the vector of arc quadratic costs
@@ -1492,9 +1493,10 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
- virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set nms = 0 ,
-			Index strt = 0 , Index stp = Inf< Index >() ) {
-  if( NQCoef )
+ virtual void ChgQCoef( cCRow NQCoef = 0 , cIndex_Set /*nms*/ = 0 ,
+			Index /*strt*/ = 0 ,
+			Index /*stp*/ = Inf< Index >() ) {
+  if( NQCoef != 0 )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
   }
 
@@ -1511,8 +1513,8 @@ class MCFClass {
          DelArc() below and LoadNet() above about C_INF costs] can be
          touched with these methods. */
 
- virtual void ChgQCoef( Index arc , CNumber NQCoef ) {
-  if( NQCoef )
+ virtual void ChgQCoef( Index /*arc*/ , CNumber NQCoef ) {
+  if( NQCoef != 0 )
    throw( MCFException( "ChgQCoef: nonzero coefficients not allowed" ) );
   }
 
@@ -2154,7 +2156,7 @@ inline void MCFClass::WriteMCF( ostream & oStrm , int frmt ) const
 
    for( Index i = 0 ; i < MCFn() ; ) {
     cFNumber Dfcti = MCFDfct( i++ );
-    if( Dfcti )
+    if( Dfcti != 0 )
      oStrm << "n\t" << i << "\t" << - Dfcti << endl;
     }
 

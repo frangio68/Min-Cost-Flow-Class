@@ -274,7 +274,7 @@ class OPTrand {
      nmbr = gb_flip_cycle();
     return( double( nmbr ) / double( (unsigned long)0x80000000 ) );
    #elif( OPT_RANDOM == 1 )
-    ::srand( myseed );
+    ::srand( unsigned( myseed ) );
     myseed = ::rand();
     return( double( myseed ) / double( RAND_MAX ) );
    #elif( OPT_RANDOM == 2 )
