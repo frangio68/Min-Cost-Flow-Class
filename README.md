@@ -194,7 +194,7 @@ out (or commenting) the corresponding two lines in `lib/makefile`.
 
 The following packages use `MCFClass`:
 
-- [https://github.com/HenrikSchumacher/Knoodle](Knoodle), a package that
+- [Knoodle](https://github.com/HenrikSchumacher/Knoodle), a package that
   simplifies so-called planar diagrams.
 
 
