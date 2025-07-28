@@ -190,6 +190,14 @@ out (or commenting) the corresponding two lines in `lib/makefile`.
   [`lib/makefile-inc`](lib/makefile-inc)
 
 
+## Success stories
+
+The following packages use `MCFClass`:
+
+- [https://github.com/HenrikSchumacher/Knoodle](Knoodle), a package that
+  simplifies so-called planar diagrams.
+
+
 ## Other stuff
 
 More information about (some of) the implemented algorithms can be found at
