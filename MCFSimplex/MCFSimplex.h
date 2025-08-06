@@ -203,8 +203,8 @@ class MCFSimplex: public MCFClass
   switch( par ) {
    case( kAlgPrimal ):         val = usePrimalSimplex ? kYes : kNo; break;
    case( kAlgPricing ):        val = pricingRule; break;
-   case( kNumCandList ):       val = numCandidateList; break;
-   case( kHotListSize ):       val = hotListSize; break;
+   case( kNumCandList ):       val = int( numCandidateList ); break;
+   case( kHotListSize ):       val = int( hotListSize ); break;
    case( kRecomputeFOLimits ): val = recomputeFOLimits; break;
    default: MCFClass::GetPar( par , val );
    }
@@ -297,14 +297,16 @@ class MCFSimplex: public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
+#if( QUADRATICCOST )
  CNumber MCFQCoef( Index i ) const override {
-  #if( QUADRATICCOST )
-   return( usePrimalSimplex ? ( arcsP + i )->quadraticCost
-	                    : ( arcsD + i )->quadraticCost );
-  #else
-   return( 0 );
-  #endif
+  return( usePrimalSimplex ? ( arcsP + i )->quadraticCost
+	                   : ( arcsD + i )->quadraticCost );
   }
+#else
+ CNumber MCFQCoef( Index /*i*/ ) const override {
+  return( 0 );
+  }
+#endif
 
 /*--------------------------------------------------------------------------*/
 
