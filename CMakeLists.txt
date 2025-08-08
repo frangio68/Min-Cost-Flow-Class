@@ -215,7 +215,7 @@ include(GNUInstallDirs)
 # Install the library
 install(TARGETS ${modName}
         EXPORT ${modName}Targets
-        RUNTIME DESTINATION ${CMAKE_RUNTIME_BINDIR} # .dll
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # .dll
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # .so .dylib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}) # .lib
 
