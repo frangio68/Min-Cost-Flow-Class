@@ -176,7 +176,7 @@ class MCFCplex: public MCFClass {
    - kQPMethod:   the alorithm used to solve the QP, possible values are
                   defined in the enum QPMethod.
 
-   - <any other>: any unrecognized value is taken to be one of the the many
+   - <any other>: any unrecognized value is taken to be one of the many
                   "int" algorithmic parameters of Cplex and passed right
                   away via CPXsetintparam() [see the documentation in the
                   Cplex manual for details. */
@@ -205,7 +205,7 @@ class MCFCplex: public MCFClass {
 
    Apart from the parameters of the base class, this method handles:
 
-   - <any other>: any unrecognized value is taken to be one of the the many
+   - <any other>: any unrecognized value is taken to be one of the many
                   "int" algorithmic parameters of Cplex and passed right
                   away via CPXsetintparam(); see the documentation in the
                   Cplex manual for details. */
