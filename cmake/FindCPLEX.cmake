@@ -228,7 +228,7 @@ if (CPLEX_FOUND)
     endif ()
 
     if (NOT TARGET CPLEX::Cplex)
-        add_library(CPLEX::Cplex STATIC IMPORTED)
+        add_library(CPLEX::Cplex UNKNOWN IMPORTED)
         set_target_properties(
                 CPLEX::Cplex PROPERTIES
                 IMPORTED_LOCATION "${CPLEX_LIBRARY}"
