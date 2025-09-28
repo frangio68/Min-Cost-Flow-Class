@@ -1339,20 +1339,20 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
   cIndex_Set tnms = nms;  // nms may be needed below
   #if QUADRATICCOST
    for( Index h ; ( h = *(tnms++) ) < stp ; )
-    if ( arcsP[ h ].cost < Inf< CNumber >() )
+    if( arcsP[ h ].cost < Inf< CNumber >() )
      arcsP[ h ].upper = *(NCap++);
     else
      NCap++;
   #else
    if( usePrimalSimplex )
     for( Index h ; ( h = *(tnms++) ) < stp ; )
-     if ( arcsP[ h ].cost < Inf< CNumber >() )
+     if( arcsP[ h ].cost < Inf< CNumber >() )
       arcsP[ h ].upper = *(NCap++);
      else
       NCap++;
    else
     for( Index h ; ( h = *(tnms++) ) < stp ; )
-     if ( arcsD[ h ].cost < Inf< CNumber >() )
+     if( arcsD[ h ].cost < Inf< CNumber >() )
       arcsD[ h ].upper = *(NCap++);
      else
       NCap++;
@@ -1361,14 +1361,14 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
  else
   #if QUADRATICCOST
    for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-    if ( arc->cost < Inf< CNumber >() )
+    if( arc->cost < Inf< CNumber >() )
      arc->upper = *(NCap++);
     else
      NCap++;
   #else
    if( usePrimalSimplex )
     for( arcPType *arc = arcsP + strt ; arc < ( arcsP + stp ) ; arc++ )
-     if ( arc->cost < Inf< CNumber >() )
+     if( arc->cost < Inf< CNumber >() )
       arc->upper = *(NCap++);
      else
       NCap++;
