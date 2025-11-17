@@ -189,14 +189,14 @@ else ()
                 "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
                 _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
 
-        string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_major "${_cplex_version_lines}")
-        string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_minor "${_cplex_version_lines}")
+        string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_version "${_cplex_version_lines}")
+        string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_release "${_cplex_version_lines}")
         string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_modification "${_cplex_version_lines}")
 
-        set(CPLEX_VERSION "${_cplex_version_major}.${_cplex_version_minor}.${_cplex_version_modification}")
+        set(CPLEX_VERSION "${_cplex_version_version}.${_cplex_version_release}.${_cplex_version_modification}")
         unset(_cplex_version_lines)
-        unset(_cplex_version_major)
-        unset(_cplex_version_minor)
+        unset(_cplex_version_version)
+        unset(_cplex_version_release)
         unset(_cplex_version_modification)
     endif ()
 
