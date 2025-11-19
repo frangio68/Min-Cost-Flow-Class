@@ -217,16 +217,6 @@ if (CPLEX_FOUND)
     set(CPLEX_INCLUDE_DIRS ${CPLEX_INCLUDE_DIR})
     set(CPLEX_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
-    # See: https://cmake.org/cmake/help/latest/module/CheckLibraryExists.html
-    check_library_exists(m floor "" HAVE_LIBM)
-    if (HAVE_LIBM)
-        set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} m)
-    endif ()
-
-    if (UNIX)
-        set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} dl)
-    endif ()
-
     if (NOT TARGET CPLEX::Cplex)
         add_library(CPLEX::Cplex UNKNOWN IMPORTED)
         set_target_properties(
