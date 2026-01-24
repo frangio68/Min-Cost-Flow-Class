@@ -181,7 +181,7 @@ class MCFSimplex: public MCFClass
                 enum MCFParam to specify the integer parameters (every enum
 		        is an int).
 
-   @param value is the value to assign to the parameter. */
+   @param val   is the value to assign to the parameter. */
 
  virtual void SetPar( int par , int val ) override;
 
@@ -193,7 +193,7 @@ class MCFSimplex: public MCFClass
                 enum MCFParam to specify the float parameters (every enum
 		        is an int).
 
-   @param value is the value to assign to the parameter. */
+   @param val   is the value to assign to the parameter. */
 
  virtual void SetPar( int par , double val ) override;
 
