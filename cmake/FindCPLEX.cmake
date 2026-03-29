@@ -142,17 +142,17 @@ else ()
 
     # ----- Find the CPLEX include directory -------------------------------- #
     find_path(CPLEX_INCLUDE_DIR
-              NAMES ilcplex/cplex.h
-              PATHS ${CPLEX_DIR}/include
-              DOC "CPLEX include directory.")
+            NAMES ilcplex/cplex.h
+            PATHS ${CPLEX_DIR}/include
+            DOC "CPLEX include directory.")
 
     # ----- Find the CPLEX library ------------------------------------------ #
     if (UNIX)
         find_library(CPLEX_LIBRARY
-                     NAMES cplex
-                     PATHS ${CPLEX_DIR}
-                     PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
-                     DOC "CPLEX library.")
+                NAMES cplex
+                PATHS ${CPLEX_DIR}
+                PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
+                DOC "CPLEX library.")
 
         set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY}
                 CACHE FILEPATH "CPLEX debug library." FORCE)
@@ -172,7 +172,7 @@ else ()
             if (NOT ${var})
                 set(${var} "${var}-NOTFOUND")
             endif ()
-        endmacro ()
+        endmacro()
 
         find_win_cplex_library(CPLEX_LIB ${CPLEX_LIB_PATH_SUFFIXES})
         set(CPLEX_LIBRARY ${CPLEX_LIB}
@@ -235,8 +235,8 @@ endif ()
 # Variables marked as advanced are not displayed in CMake GUIs, see:
 # https://cmake.org/cmake/help/latest/command/mark_as_advanced.html
 mark_as_advanced(CPLEX_INCLUDE_DIR
-                 CPLEX_LIBRARY
-                 CPLEX_LIBRARY_DEBUG
-                 CPLEX_VERSION)
+        CPLEX_LIBRARY
+        CPLEX_LIBRARY_DEBUG
+        CPLEX_VERSION)
 
 # --------------------------------------------------------------------------- #

@@ -15,7 +15,7 @@
 #                         Dipartimento di Informatica                         #
 #                             Universita' di Pisa                             #
 # --------------------------------------------------------------------------- #
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 cmake_policy(VERSION 3.15)
 project(MCFClass
         VERSION 1.0.0
@@ -45,7 +45,7 @@ include(BuildType)
 option(MCFClass_USE_CPLEX "Whether ${modName} will use CPLEX or not." ON)
 
 option(MCFClass_READ_PATHS
-       "Whether ${modName} will read locations for dependencies or not." ON)
+        "Whether ${modName} will read locations for dependencies or not." ON)
 
 # ----- Requirements -------------------------------------------------------- #
 if (MCFClass_READ_PATHS)
@@ -79,7 +79,7 @@ if (MCFClass_READ_PATHS)
 
                         # ... and if it is not a default path in Unix...
                         if (NOT (rhs STREQUAL /usr OR
-                                 rhs STREQUAL /usr/local))
+                                rhs STREQUAL /usr/local))
                             # ... then set the one defined in makefile-default-paths
                             set("${lhs}" ${rhs})
                             #message(STATUS "Specify ${lhs}: " ${rhs})
@@ -94,7 +94,7 @@ if (MCFClass_READ_PATHS)
 
         unset(path)
         unset(paths)
-    endmacro ()
+    endmacro()
 
     # firstly, set the custom makefile-paths, if any...
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/extlib/makefile-paths")
@@ -157,9 +157,9 @@ target_compile_features(${modName} PUBLIC cxx_std_20)
 # but should be added to anything that links to it.
 # Note: do not GLOB files here.
 target_sources(${modName} PRIVATE
-               MCFSimplex/MCFSimplex.C
-               RelaxIV/RelaxIV.C
-               SPTree/SPTree.C)
+        MCFSimplex/MCFSimplex.C
+        RelaxIV/RelaxIV.C
+        SPTree/SPTree.C)
 
 # When using target_include_directories(), PUBLIC means that any targets
 # that link to this target also need that include directory.
