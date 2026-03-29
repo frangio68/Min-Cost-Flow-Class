@@ -4413,8 +4413,8 @@ MCFSimplex::arcPType* MCFSimplex::RecoverPArc( nodePType *tail ,
   arc++;
   if( arc == stopArcsP )
    arc = dummyArcsP;
-   if( arc == stopDummyP )
-    return( NULL );
+  if( arc == stopDummyP )
+   return( NULL );
   }
 
  return( arc );

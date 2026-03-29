@@ -525,7 +525,7 @@ class MCFClass {
                 be extended by derived classes for the setting of their
                 parameters
 
-   @param value is the value to assign to the parameter.  
+   @param val   is the value to assign to the parameter.  
 
    The base class implementation handles these parameters: 
 
@@ -560,7 +560,7 @@ class MCFClass {
                 be extended by derived classes for the setting of their
                 parameters
 
-   @param value is the value to assign to the parameter.  
+   @param val   is the value to assign to the parameter.  
 
    The base class implementation handles these parameters: 
 

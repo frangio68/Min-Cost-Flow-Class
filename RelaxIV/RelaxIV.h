@@ -219,7 +219,7 @@ class RelaxIV : public MCFClass {
 
    @param par   is the parameter to be set;
 
-   @param value is the value to assign to the parameter.  
+   @param val   is the value to assign to the parameter.  
 
    Apart from the parameters of the base class, this method handles:
 
