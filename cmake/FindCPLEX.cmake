@@ -11,6 +11,7 @@
 #        CPLEX_FOUND         - True if headers are found                      #
 #        CPLEX_INCLUDE_DIRS  - Include directories                            #
 #        CPLEX_LIBRARIES     - Libraries to be linked                         #
+#        CPLEX_DLL           - The found runtime DLL (Windows only)           #
 #        CPLEX_VERSION       - Version number                                 #
 #                                                                             #
 #    This module reads hints about search locations from variables:           #
