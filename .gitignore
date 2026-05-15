@@ -1,22 +1,71 @@
-### possible local definitions of external libraries, not to be seen outside
-extlib/makefile-paths
+# ============================================================
+#  MCFClass — .gitignore
+# ============================================================
 
+# --- Project-specific ---------------------------------------
+extlib/makefile-paths
 CS2
 MCFZIB
-**/*~
-**/*.o
-**/*.a
-**/.DS_Store
-**/*.dSYM
-.DS_Store
-*.sw[oprst]
-????-*.patch
-/TAGS
 XCode/
+/TAGS
+????-*.patch
 test/MCFSolve
 test/TestMCF
 
-build/
+# --- C/C++ build artifacts ----------------------------------
+*.o
+*.obj
+*.d
+*.gch
+*.pch
+*.a
+*.lib
+*.la
+*.lai
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.dSYM/
+*.pdb
+*.idb
+*.ilk
+*.map
+*.exp
+*.gcno
+*.gcda
 
-# CMake
+# --- CMake --------------------------------------------------
+build/
 cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+CMakeLists.txt.user
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+Testing/
+_deps/
+
+# --- IDEs ---------------------------------------------------
+.idea/
+.vscode/
+*.iml
+*.iws
+out/
+
+# --- OS junk ------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+*~
+.directory
+.fuse_hidden*
+.nfs*
