@@ -17,8 +17,10 @@
 # --------------------------------------------------------------------------- #
 cmake_minimum_required(VERSION 3.21)
 cmake_policy(VERSION 3.15)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DeriveVersion.cmake)
+smspp_derive_version(SMSPP_MODULE_VERSION)
 project(MCFClass
-        VERSION 1.0.0
+        VERSION ${SMSPP_MODULE_VERSION}
         DESCRIPTION "C++ solvers for MCF problems"
         HOMEPAGE_URL http://groups.di.unipi.it/optimize/Software/MCF.html
         LANGUAGES C CXX)
@@ -179,6 +181,7 @@ target_include_directories(
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/OPTUtils>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/RelaxIV>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SPTree>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
         $<INSTALL_INTERFACE:include/${modNamespace}>)
 
 # When linking other targets to the library with target_link_libraries(),
