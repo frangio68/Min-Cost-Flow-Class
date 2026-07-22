@@ -8,11 +8,15 @@
 #                                                                              #
 # Resolution order (the first that yields a numeric x[.y[.z]] wins):           #
 #   1. a working git clone: `git describe --tags --abbrev=0`;                  #
-#   2. a source tarball (e.g. a GitLab release, NOT a git repo): the VERSION   #
-#      file, which git fills in at `git archive` time via the                  #
-#      `VERSION export-subst` .gitattributes entry (its content is             #
+#   2. a source tarball (e.g. a GitLab release, NOT a git repo): the           #
+#      VERSION.txt file, which git fills in at `git archive` time via the      #
+#      `VERSION.txt export-subst` .gitattributes entry (its content is         #
 #      "$Format:%(describe:tags,abbrev=0)$", substituted with the tag by git); #
 #   3. otherwise the sentinel "0.0.0" (no version info available).             #
+#                                                                              #
+# NOTE: the file is VERSION.txt, NOT VERSION: libc++'s C++20 <version> header  #
+# would otherwise be shadowed by it on case-insensitive filesystems (macOS,    #
+# Windows) whenever the repo root is on a -I include path.                     #
 #                                                                              #
 # The leading x[.y[.z]] is extracted from whatever git returns, so a describe  #
 # with a distance suffix ("1.2.3-4-gdeadbee", e.g. an archive of a non-tag     #
@@ -42,11 +46,11 @@ function(smspp_derive_version out_var)
         endif()
     endif()
 
-    # 2) tarball: the VERSION file filled in by `git archive` (export-subst);
+    # 2) tarball: the VERSION.txt file filled in by `git archive` (export-subst);
     #    in a non-archived copy it still holds the literal "$Format:...$", which
     #    just fails the numeric match below and falls through to the sentinel
-    if(NOT _raw AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
-        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" _raw)
+    if(NOT _raw AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt")
+        file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION.txt" _raw)
         string(STRIP "${_raw}" _raw)
     endif()
 
