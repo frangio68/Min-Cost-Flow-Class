@@ -146,11 +146,40 @@ endif ()
 # This will generate a *Config.h header in the build directory.
 configure_file(cmake/${modName}Config.h.in ${modName}Config.h)
 
+# ----- RPATH --------------------------------------------------------------- #
+# The installed libraries and executables look for the libraries of the same
+# installation relative to their own location, so that the installed tree can
+# be moved as a whole; the directories of the external libraries are kept.
+include(GNUInstallDirs)
+if (NOT CMAKE_INSTALL_RPATH)
+    if (APPLE)
+        set(rpathOrigin "@loader_path")
+    else ()
+        set(rpathOrigin "$ORIGIN")
+    endif ()
+    file(RELATIVE_PATH binToLib ${CMAKE_INSTALL_FULL_BINDIR}
+            ${CMAKE_INSTALL_FULL_LIBDIR})
+    set(CMAKE_INSTALL_RPATH "${rpathOrigin}" "${rpathOrigin}/${binToLib}")
+endif ()
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 # ----- Library ------------------------------------------------------------- #
 # With the BUILD_SHARED_LIBS variable we can specify if the library will
 # be STATIC or SHARED, so no reason to do it now.
 add_library(${modName})
 target_compile_features(${modName} PUBLIC cxx_std_20)
+
+# The name of the shared library carries the version of its binary interface,
+# which any minor release may change while the major version is 0, and then
+# any major release.
+if (PROJECT_VERSION_MAJOR EQUAL 0)
+    set(soVersion ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR})
+else ()
+    set(soVersion ${PROJECT_VERSION_MAJOR})
+endif ()
+set_target_properties(${modName} PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION ${soVersion})
 
 # When adding source files with target_sources(), PRIVATE means that the files
 # should only be added to this library, whereas PUBLIC means they should be
