@@ -192,12 +192,12 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
   for( FRow tB = B + n ; tB > B ; )
    *(tB--) = 0;
 
- bool InfCap = false;
+ bool anyinf = false;
  if( pU ) {  // copy the capacities - - - - - - - - - - - - - - - - - - - - -
   FRow tCap = Cap + m;
   for( pU += m ; tCap > Cap ; )
    if( ( (*tCap--) = *(--pU) ) == Inf< FNumber >() ) {
-    InfCap = true;
+    anyinf = true;
     break;
     }
 
@@ -205,7 +205,7 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
    (*tCap--) = *(--pU);
   }
  else {    // capacities are all-INF
-  InfCap = true;
+  anyinf = true;
   for( FRow tCap = Cap + m ; tCap > Cap ; )
    (*tCap--) = Inf< FNumber >();
   }
@@ -227,7 +227,11 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
    *(tC--) = *(tRC--) = 0;
   }
 
- if( InfCap ) {  // make all capacities finite- - - - - - - - - - - - - - - -
+ for( Index i = 1 ; i <= m ; i++ )
+  InfCap[ i ] = ( Cap[ i ] == Inf< FNumber >() );
+ MaxCap = 0;
+
+ if( anyinf ) {  // make all capacities finite- - - - - - - - - - - - - - - -
   FNumber maxcap = 0;
   for( FRow tB = B + n ; tB > B ; tB-- )
    if( *tB > 0 )
@@ -247,6 +251,8 @@ void RelaxIV::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
   for( tCap = Cap + m ; tCap > Cap ; tCap-- )
    if( *tCap == Inf< FNumber >() )
     *tCap = maxcap;
+
+  MaxCap = maxcap;
   }
 
  Index_Set tEn = Endn + m;
@@ -356,6 +362,8 @@ void RelaxIV::SolveMCF( void )
 {
  if( MCFt )
   MCFt->Start();
+
+ infcaps();  // the finite capacity of the arcs of infinite one
 
  FO = Inf< FONumber >();
  iter = num_augm = 0;
@@ -1661,7 +1669,7 @@ void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , Index strt ,
    for( Index h ; ( h = *(nms++) ) < stp ; )
     tB[ h ] = *(NDfct++);
   else
-   for( tB += stp , NDfct += stp - strt ; tB-- > B + strt ; )
+   for( tB += stp , NDfct += stp - strt ; tB-- > B + strt + 1 ; )
     *tB = *(--NDfct);
 
   status = kUnSolved;
@@ -1675,7 +1683,8 @@ void RelaxIV::ChgDfcts( cFRow NDfct , cIndex_Set nms , Index strt ,
     tB[ h ] = NDh;
     }
   else
-   for( tDfct += stp , NDfct += stp - strt , tB += stp ; tB-- > B + strt ; ) {
+   for( tDfct += stp , NDfct += stp - strt , tB += stp ;
+	tB-- > B + strt + 1 ; ) {
     *(--tDfct) += *(--NDfct) - *tB;
     *tB = *NDfct;
     }
@@ -1711,25 +1720,34 @@ void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , Index strt , Index stp )
   stp = m;
 
  if( status || ( ! Senstv ) ) {
-  FRow tCap = Cap;
-  if( nms ) {
-   Index h;
-   for( tCap++ ; ( h = *(nms++) ) < stp ; )
-    tCap[ h ] = *(NCap++);
-   }
+  if( nms )
+   for( Index h ; ( h = *(nms++) ) < stp ; ) {
+    cFNumber NCh = *(NCap++);
+    InfCap[ ++h ] = ( NCh == Inf< FNumber >() );
+    Cap[ h ] = InfCap[ h ] ? MaxCap : NCh;
+    }
   else
-   for( tCap += stp , NCap += stp - strt ; tCap > Cap + strt ; )
-    *(tCap--) = *(--NCap);
+   for( Index h = strt ; h < stp ; ) {
+    cFNumber NCh = *(NCap++);
+    InfCap[ ++h ] = ( NCh == Inf< FNumber >() );
+    Cap[ h ] = InfCap[ h ] ? MaxCap : NCh;
+    }
 
   status = kUnSolved;
   }
  else
   if( nms )
-   for( Index h ; ( h = *(nms++) ) < stp ; )
-    chgcapi( ++h , *(NCap++) );
+   for( Index h ; ( h = *(nms++) ) < stp ; ) {
+    cFNumber NCh = *(NCap++);
+    InfCap[ ++h ] = ( NCh == Inf< FNumber >() );
+    chgcapi( h , InfCap[ h ] ? MaxCap : NCh );
+    }
   else
-   for( Index h = strt ; h < stp ; )
-    chgcapi( ++h , *(NCap++) );
+   for( Index h = strt ; h < stp ; ) {
+    cFNumber NCh = *(NCap++);
+    InfCap[ ++h ] = ( NCh == Inf< FNumber >() );
+    chgcapi( h , InfCap[ h ] ? MaxCap : NCh );
+    }
 
  }  // end( RelaxIV::ChgUCaps( some / all ) )
 
@@ -1737,6 +1755,10 @@ void RelaxIV::ChgUCaps( cFRow NCap , cIndex_Set nms , Index strt , Index stp )
 
 void RelaxIV::ChgUCap( Index arc , FNumber NCap )
 {
+ InfCap[ arc + 1 ] = ( NCap == Inf< FNumber >() );
+ if( InfCap[ arc + 1 ] )
+  NCap = MaxCap;
+
  if( status || ( ! Senstv ) ) {
   Cap[ ++arc ] = NCap;
   status = kUnSolved;
@@ -2068,7 +2090,8 @@ MCFClass::Index RelaxIV::AddArc( Index Start , Index End , FNumber aU ,
  // insert new arc in position arc - - - - - - - - - - - - - - - - - - - - -
 
   C[ arc ] = aC;
-  Cap[ arc ] = aU;
+  InfCap[ arc ] = ( aU == Inf< FNumber >() );
+  Cap[ arc ] = InfCap[ arc ] ? MaxCap : aU;
   Endn[ arc ] = End + USENAME0;
   Startn[ arc ] = Start + USENAME0;
 
@@ -3019,6 +3042,40 @@ void RelaxIV::chgcapi( Index i , FNumber NCap )
   U[ i ] = diffX;
 
  }  // end( chgcapi )
+
+/*--------------------------------------------------------------------------*/
+
+void RelaxIV::infcaps( void )
+{
+ // an arc of infinite capacity is given a finite one that no optimal flow
+ // exceeds, the sum of the positive deficits and of the capacities of the
+ // arcs of negative cost; these change after LoadNet(), hence the bound is
+ // computed anew before each solution, and raised where it no longer holds
+ FNumber maxcap = 0;
+ for( FRow tB = B + n ; tB > B ; tB-- )
+  if( *tB > 0 )
+   maxcap += *tB;
+
+ bool any = false;
+ for( Index i = 1 ; i <= m ; i++ )
+  if( InfCap[ i ] )
+   any = true;
+  else
+   if( ( Startn[ i ] < Inf< Index >() ) && ( C[ i ] < 0 ) )
+    maxcap += Cap[ i ];
+
+ if( ( ! any ) || ( maxcap <= MaxCap ) )
+  return;
+
+ MaxCap = maxcap;
+ for( Index i = 1 ; i <= m ; i++ )
+  if( InfCap[ i ] ) {
+   if( status || ( ! Senstv ) || ( RC[ i ] == Inf< CNumber >() ) )
+    Cap[ i ] = maxcap;
+   else
+    chgcapi( i , maxcap );
+   }
+ }  // end( infcaps )
 
 /*--------------------------------------------------------------------------*/
 
@@ -4129,6 +4186,7 @@ void RelaxIV::MemAlloc( void )
  X    = new FNumber[ mmax ]; X--;
  U    = new FNumber[ mmax ]; U--;
  Cap  = new FNumber[ mmax ]; Cap--;
+ InfCap = new bool[ mmax ]; InfCap--;
  RC   = new CNumber[ mmax ]; RC--;
  C    = new CNumber[ mmax ]; C--;
  Dfct = new FNumber[ nmax ]; Dfct--;
@@ -4182,6 +4240,7 @@ void RelaxIV::MemDeAlloc( void )
  delete[] ++Dfct;
  delete[] ++C;
  delete[] ++RC;
+ delete[] ++InfCap;
  delete[] ++Cap;
  delete[] ++U;
  delete[] ++X;

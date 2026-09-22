@@ -706,6 +706,10 @@ class RelaxIV : public MCFClass {
 
    void chgcapi( Index i , FNumber NCap );
 
+/*--------------------------------------------------------------------------*/
+
+   void infcaps( void );
+
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
 #if( DYNMC_MCF_RIV )
@@ -736,6 +740,8 @@ class RelaxIV : public MCFClass {
  FRow X;                  ///< arc Flows
  FRow U;                  ///< arc residual capacities
  FRow Cap;                ///< arc Capacities
+ bool * InfCap;           ///< true for the arcs of infinite capacity
+ FNumber MaxCap;          ///< the finite capacity they are given
 
  CRow C;                  ///< arc Costs
  CRow RC;                 ///< arc Reduced Costs
