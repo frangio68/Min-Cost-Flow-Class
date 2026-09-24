@@ -348,10 +348,13 @@ void SPTree::SolveMCF( void )
    while( ( h < NDsts ) && Reached( DstBse[ h ] ) )  // check if there are
     h++;                                             // unreached dests
 
-   if( h < NDsts )   // the scanning has been interrupted as soon as Dest has
-    ScanFS( Dest );  // been encountered: if the process must be continued,
-   else              // FS( Dest ) must be scanned, since Dest has already
-    break;           // been removed from Q
+   if( h < NDsts ) {  // the scanning has been interrupted as soon as Dest
+    ScanFS( Dest );   // has been encountered: if the process must be
+    if( status )      // continued, FS( Dest ) must be scanned, since Dest
+     break;           // has already been removed from Q
+    }
+   else
+    break;
    }
 
   if( status == kOK )
@@ -516,10 +519,10 @@ void SPTree::MCFArcs( Index_Set Startv , Index_Set Endv ,
   stp = m;
 
  FrwdStr tFS = FS;
- cIndex_Set tDM1 = DictM1;
+ cIndex_Set tDct = Dict;
  for( Index i = 0 ; i++ < n ; )
-  for( Index h = LenFS( i ) ; h-- ; ) {
-   Index k = *(tDM1++);
+  for( Index h = LenFS( i ) ; h-- ; tFS++ ) {
+   Index k = *(tDct++);   // the arc standing in this position of the FS
    if( ( k >= strt ) && ( k < stp ) ) {
     k -= strt;
 
@@ -527,7 +530,7 @@ void SPTree::MCFArcs( Index_Set Startv , Index_Set Endv ,
      Startv[ k ] = i - USENAME0;
 
     if( Endv )
-     Endv[ k ] = (*(tFS++)).Nde - USENAME0;
+     Endv[ k ] = (*tFS).Nde - USENAME0;
     }
    }
  }  // end( SPTree::MCFArcs )
@@ -912,6 +915,11 @@ void SPTree::ShortestPathTree( void )
  // end main cycle: Q is empty or Dest is reached - - - - - - - - - - - - - -
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+ if( status == kUnbounded ) {  // a directed cycle of negative cost
+  FO = - Inf< FONumber >();
+  return;
+  }
+
  #if( LABEL_SETTING )
   if( ! Reached( Dest ) ) {
    status = kUnfeasible;
@@ -1088,6 +1096,34 @@ MCFClass::FONumber SPTree::MCFGetFO( Index ND , cIndex_Set DB ) const
 
 /*--------------------------------------------------------------------------*/
 
+MCFClass::Index SPTree::MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
+ const
+{
+ if( status != kUnbounded )
+  return( Inf< Index >() );  // no cycle to give [see MCFGetUnbCycl()]
+
+ cIndex nde = FndCycle();   // the node where the cycle closes
+ if( nde == InINF )
+  return( Inf< Index >() );
+
+ // write the cycle, each arc in the direction the flow takes - - - - - - - -
+ for( Index i = nde ; ; ) {
+  cIndex prd = NdePrd[ i ];
+  Pred[ i - USENAME0 ] = prd - USENAME0;
+  ArcPred[ i - USENAME0 ] = ReadyArcP ? ArcPrd[ i ] : Dict[ ArcPrd[ i ] ];
+
+  if( prd == nde )
+   break;
+
+  i = prd;
+  }
+
+ return( nde - USENAME0 );
+
+ }  // end( SPTree::MCFGetUnbCycl )
+
+/*--------------------------------------------------------------------------*/
+
 MCFClass::cIndex_Set SPTree::ArcPredecessors( void )
 {
  CalcArcP();
@@ -1124,6 +1160,9 @@ void SPTree::Initialize( void )
  Q[ Origin ] = 0;         // .. and it is in Q
 
  ReadyArcP = false;
+ unbNde = 0;
+ for( Index_Set tNS = NScan + n ; tNS > NScan ; )
+  *(tNS--) = 0;
 
  #if( SPT_ALGRTM <= 3 )
   *Q = tail = Origin;
@@ -1138,6 +1177,17 @@ void SPTree::Initialize( void )
 
 void SPTree::ScanFS( cIndex mi )
 {
+ if( ++NScan[ mi ] > n ) {  // a node scanned more than n times is the hint
+  unbNde = mi;              // of a directed cycle of negative cost, which
+  if( FndCycle() < InINF ) {  // the predecessor function proves if it now
+   status = kUnbounded;       // contains a cycle; if it does not, the scan
+   return;                    // is given other n times to find one, as it
+   }                          // will if such a cycle exists at all
+
+  NScan[ mi ] = 0;
+  unbNde = 0;
+  }
+
  cCNumber pmi = Pi[ mi ];
  FrwdStr FSj = FS + StrtFS[ mi ];
  for( Index h = LenFS( mi ) ; h-- ; FSj++ ) {
@@ -1166,6 +1216,9 @@ void SPTree::ScanFS( cIndex mi )
 
 MCFClass::Index SPTree::ExtractQ( void )
 {
+ if( status == kUnbounded )  // the main cycle has to stop
+  return( 0 );
+
  Index mi;
 
  #if( SPT_ALGRTM <= 1 )  // - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1317,6 +1370,42 @@ void SPTree::InsertQ( cIndex j , cCNumber label )
 
 /*--------------------------------------------------------------------------*/
 
+MCFClass::Index SPTree::FndCycle( void ) const
+{
+ if( ! unbNde )
+  return( InINF );
+
+ /* The walk back along the predecessors from unbNde meets a node twice if
+  * and only if the predecessor function contains a cycle, which is one of
+  * negative cost: the labels of its nodes keep decreasing, and each of them
+  * is the length of a walk ending with the arcs of the cycle. The walk that
+  * reaches the Origin, which has no predecessor, has met none. */
+ Index_Set seen = new Index[ n + 1 ];
+ for( Index i = n ; i ; )
+  seen[ i-- ] = 0;
+
+ Index nde = unbNde;
+ for( ; ; ) {
+  if( ( ! nde ) || ( nde > n ) ) {  // the Origin, or no predecessor at all
+   nde = InINF;
+   break;
+   }
+
+  if( seen[ nde ] )  // met twice: the cycle closes here
+   break;
+
+  seen[ nde ] = 1;
+  nde = NdePrd[ nde ];
+  }
+
+ delete[] seen;
+
+ return( nde );
+
+ }  // end( SPTree::FndCycle )
+
+/*--------------------------------------------------------------------------*/
+
 void SPTree::CalcArcP( void )
 {
  if( ! ReadyArcP ) {
@@ -1348,6 +1437,7 @@ void SPTree::MemAlloc( void )
   H = new Index[ nmax - 1 ];
  #endif
 
+ NScan  = new Index[ nmax ]; NScan--;
  Q      = new Index[ nmax + 1 ];
  FS     = new FSElmnt[ cFS ];
  Pi     = new CNumber[ nmax + 1 ];
@@ -1371,6 +1461,7 @@ void SPTree::MemDeAlloc( void )
  delete[] Pi;
  delete[] FS;
  delete[] Q;
+ delete[] ++NScan;
 
  #if( SPT_ALGRTM > 3 )
   delete[] H;

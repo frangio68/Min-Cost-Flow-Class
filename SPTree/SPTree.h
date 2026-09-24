@@ -133,9 +133,12 @@ namespace MCFClass_di_unipi_it
  *  algorithms for solving "uncapacitated" (Linear) Min Cost Flow
  *  problems with one source node.
  *
- *  \warning The SPT algorithm will enter in an infinite loop if a directed
- *           cycle of negative cost exists in the graph: there is no check
- *	     about this in the code. */
+ *  \note A directed cycle of negative cost makes the problem unbounded, all
+ *        the arcs having infinite capacity; since the SPT algorithm would
+ *        cycle for ever on it, a node whose Forward Star is scanned more
+ *        than n times has its predecessors walked back, and a cycle found
+ *        there stops the algorithm with status kUnbounded, MCFGetUnbCycl()
+ *        giving that cycle. */
 
 class SPTree : public MCFClass
 {
@@ -239,6 +242,18 @@ class SPTree : public MCFClass
          Origin, returns Inf< FONumber >(). */
 
    FONumber MCFGetFO( void ) const override { return( FO ); }
+
+/*--------------------------------------------------------------------------*/
+/** Returns the directed cycle of negative cost that proves the instance
+   unbounded, all the arcs having infinite capacity here. The cycle is read
+   off the predecessor function, which is where unboundedness is detected: a
+   node scanned more than n times tells that a cycle may be there, and the
+   walk back along the predecessors from it proves that it is by meeting a
+   node twice, the arcs between the two visits being the cycle. Returns
+   Inf< Index >() if the status is not kUnbounded
+   [see MCFClass::MCFGetUnbCycl()]. */
+
+   Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred ) const override;
 
 /*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
@@ -631,6 +646,13 @@ class SPTree : public MCFClass
 
 /*--------------------------------------------------------------------------*/
 
+   Index FndCycle( void ) const;
+
+/* Walks back the predecessors from unbNde and returns the node where they
+   close a cycle, InINF if they reach the Origin without closing one. */
+
+/*--------------------------------------------------------------------------*/
+
    void CalcArcP( void );
 
 /* Calculates the ArcPrd[] vector. */
@@ -653,6 +675,12 @@ class SPTree : public MCFClass
  bool ReadyArcP;     // if the "arc predecessor" data structure has already
                      // been updated after a "final" ShortestPathTree() call 
  FrwdStr FS;         // the Forward Star (itself)
+
+ Index_Set NScan;    // NScan[ i ] = how many times FS( i ) has been scanned:
+                     // more than n times means that a directed cycle of
+                     // negative cost exists [see MCFGetUnbCycl()]
+ Index unbNde;       // the node that has been scanned more than n times, 0
+                     // if there is none
 
  Index_Set Q;        // the set of scanned nodes: Q[ i ] = INF ==> i \notin Q
  #if( SPT_ALGRTM <= 3 )

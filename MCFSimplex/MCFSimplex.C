@@ -167,6 +167,7 @@ MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
  nodesD = NULL;
  arcsP = NULL;
  arcsD = NULL;
+ unbArcP = NULL;
  candP = NULL;
  candD = NULL;
 
@@ -569,6 +570,8 @@ void MCFSimplex::SolveMCF( void )
  if( MCFt )
   MCFt->Start();
 
+ unbArcP = NULL;  // no certificate of unboundedness yet
+
  if( status == kUnSolved ) {
   #if( QUADRATICCOST )
    CreateInitialPrimalBase();
@@ -743,6 +746,65 @@ void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms ,
   #endif
 
  }  // end(  MCFSimplex::MCFGetPi( some ) )
+
+/*--------------------------------------------------------------------------*/
+
+MCFClass::Index MCFSimplex::MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
+ const
+{
+ if( ( status != kUnbounded ) || ( ! unbArcP ) )
+  return( Inf< Index >() );  // no cycle to give [see MCFGetUnbCycl()]
+
+ auto name = [ this ]( nodePType * nd ) {
+  return( Index( ( nd - nodesP + 1 ) - USENAME0 ) );
+  };
+
+ /* The cycle is the entering arc, from its tail to its head, plus the path
+  * of the basis tree from the head back to the tail: the two ends are
+  * lifted to their common ancestor, the deeper one first, and each step is
+  * written in Pred[] and ArcPred[] in the direction the flow takes. */
+ nodePType * u = unbArcP->tail;
+ nodePType * v = unbArcP->head;
+ Pred[ name( v ) ] = name( u );
+ ArcPred[ name( v ) ] = Index( unbArcP - arcsP );
+
+ nodePType * hu = u;
+ nodePType * hv = v;
+ while( hu != hv ) {
+  if( ( hv == dummyRootP ) || ( hu == dummyRootP ) )
+   return( Inf< Index >() );  // through the dummy root: no cycle of the
+                              // instance, whatever it is
+  nodePType * step;
+  bool fromv;
+  if( hv->subTreeLevel >= hu->subTreeLevel ) {
+   step = hv;
+   fromv = true;
+   }
+  else {
+   step = hu;
+   fromv = false;
+   }
+
+  arcPType * a = step->enteringTArc;
+  if( ( ! a ) || ( a >= stopArcsP ) )
+   return( Inf< Index >() );  // a dummy arc, as above
+
+  nodePType * fthr = a->tail == step ? a->head : a->tail;
+  if( fromv ) {         // the path from the head goes up, as the flow does
+   Pred[ name( fthr ) ] = name( step );
+   ArcPred[ name( fthr ) ] = Index( a - arcsP );
+   hv = fthr;
+   }
+  else {                // that from the tail goes up against the flow
+   Pred[ name( step ) ] = name( fthr );
+   ArcPred[ name( step ) ] = Index( a - arcsP );
+   hu = fthr;
+   }
+  }
+
+ return( name( u ) );
+
+ }  // end( MCFSimplex::MCFGetUnbCycl )
 
 /*--------------------------------------------------------------------------*/
 
@@ -2633,7 +2695,8 @@ void MCFSimplex::PrimalSimplex( void )
 
    if( theta >= Inf< FNumber >() ) {
     status = kUnbounded;
-    break;
+    unbArcP = enteringArc;  // the cycle of this pivot is the certificate
+    break;                  // of unboundedness [see MCFGetUnbCycl()]
     }
 
    // Update flow with "theta"

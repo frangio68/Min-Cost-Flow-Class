@@ -255,6 +255,21 @@ class MCFSimplex: public MCFClass
  FONumber MCFGetFO( void ) const override;
 
 /*--------------------------------------------------------------------------*/
+ /// returns the cycle that proves the instance unbounded
+ /** Returns the directed cycle of negative cost and infinite capacity that
+  * proves the instance unbounded, which the Primal Simplex has in its hands
+  * when it declares it: the cycle of the pivot it cannot perform, i.e., the
+  * entering arc plus the path of the basis tree between its two ends, where
+  * every arc is traversed forward, an arc traversed backward having to hold
+  * an infinite flow for the step to be infinite. Returns Inf< Index >() if
+  * the status is not kUnbounded, if the Dual Simplex is the one that ran,
+  * which does not produce the cycle, or if the cycle passes through the
+  * dummy root, which is not a cycle of the instance [see
+  * MCFClass::MCFGetUnbCycl()]. */
+
+ Index MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred ) const override;
+
+/*--------------------------------------------------------------------------*/
 /*-------------- METHODS FOR READING THE DATA OF THE PROBLEM ---------------*/
 /*--------------------------------------------------------------------------*/
 
@@ -576,6 +591,12 @@ class MCFSimplex: public MCFClass
                                 // and the last node is the dummy root node
 
  nodePType *dummyRootP;         // the dummy root node
+
+ arcPType *unbArcP;             // the entering arc of the pivot that cannot
+                                // be performed, which the Primal Simplex
+                                // leaves behind when it declares the
+                                // instance unbounded, NULL if it did not
+                                // [see MCFGetUnbCycl()]
 
  nodePType *stopNodesP;         // first infeasible node address = nodes + n 
   
