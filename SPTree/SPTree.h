@@ -679,8 +679,11 @@ class SPTree : public MCFClass
  Index_Set NScan;    // NScan[ i ] = how many times FS( i ) has been scanned:
                      // more than n times means that a directed cycle of
                      // negative cost exists [see MCFGetUnbCycl()]
- Index unbNde;       // the node that has been scanned more than n times, 0
-                     // if there is none
+ Index unbNde;       // the node that has been scanned more than n times, or
+                     // whose label went below MinPath, 0 if there is none
+ CNumber MinPath;    // the cost of the most negative simple path, i.e., the
+                     // sum of the n - 1 most negative arc costs: a label
+                     // below it proves a directed cycle of negative cost
 
  Index_Set Q;        // the set of scanned nodes: Q[ i ] = INF ==> i \notin Q
  #if( SPT_ALGRTM <= 3 )

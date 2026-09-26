@@ -24,6 +24,9 @@
 
 #include <assert.h>
 
+#include <algorithm>
+#include <vector>
+
 /*--------------------------------------------------------------------------*/
 /*--------------------------------- MACROS ---------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -1164,6 +1167,24 @@ void SPTree::Initialize( void )
  for( Index_Set tNS = NScan + n ; tNS > NScan ; )
   *(tNS--) = 0;
 
+ // the cost of the most negative simple path there can be, i.e., the sum of
+ // the n - 1 most negative costs of the arcs: a label below it is the length
+ // of no simple path, hence the predecessors lead to a cycle [see ScanFS()]
+ std::vector< CNumber > neg;
+ for( Index i = 1 ; i <= n ; ++i ) {
+  FrwdStr FSj = FS + StrtFS[ i ];
+  for( Index h = LenFS( i ) ; h-- ; FSj++ )
+   if( (*FSj).Cst < 0 )
+    neg.push_back( (*FSj).Cst );
+  }
+ if( ( n > 0 ) && ( neg.size() > n - 1 ) ) {
+  std::nth_element( neg.begin() , neg.begin() + ( n - 1 ) , neg.end() );
+  neg.resize( n - 1 );
+  }
+ MinPath = 0;
+ for( auto c : neg )
+  MinPath += c;
+
  #if( SPT_ALGRTM <= 3 )
   *Q = tail = Origin;
  #else
@@ -1208,6 +1229,19 @@ void SPTree::ScanFS( cIndex mi )
    ArcPrd[ tnde ] = ( FSj - FS );
    Pi[ tnde ] = dist;
 
+   // a label below the cost of the most negative simple path is the length
+   // of a walk that is not simple: the predecessors of tnde, which along an
+   // acyclic path would give a simple path no longer than its label, close a
+   // cycle, and it is one of negative cost; unlike the count of the scans
+   // this holds whatever the order in which Q gives the nodes
+   if( LT( dist , MinPath , EpsCst ) ) {
+    unbNde = tnde;
+    if( FndCycle() < InINF ) {
+     status = kUnbounded;
+     return;
+     }
+    unbNde = 0;
+    }
    }  // end if( dist of tnde decreased )
   }  // end for( h - scanning FS[ min ] )
  }  // end( ScanFS )
