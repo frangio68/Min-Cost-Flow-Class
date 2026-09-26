@@ -859,8 +859,8 @@ void SPTree::ShortestPathTree( void )
   if( MCFt && MaxTime )  // case I: all checks enabled
    while( ( mi = ExtractQ() ) ) {
     #if( LABEL_SETTING )
-     if( mi == Dest )
-      break;
+     if( ( mi == Dest ) && ( MinPath == 0 ) )  // with negative costs a
+      break;                                   // label is not final yet
     #endif
 
     ScanFS( mi );
@@ -878,8 +878,8 @@ void SPTree::ShortestPathTree( void )
   else                   // case II: only iter check enabled
    while( ( mi = ExtractQ() ) ) {
     #if( LABEL_SETTING )
-     if( mi == Dest )
-      break;
+     if( ( mi == Dest ) && ( MinPath == 0 ) )  // with negative costs a
+      break;                                   // label is not final yet
     #endif
 
     ScanFS( mi );
@@ -894,8 +894,8 @@ void SPTree::ShortestPathTree( void )
   if( MCFt && MaxTime )  // case III: only time check enabled
    while( ( mi = ExtractQ() ) ) {
     #if( LABEL_SETTING )
-     if( mi == Dest )
-      break;
+     if( ( mi == Dest ) && ( MinPath == 0 ) )  // with negative costs a
+      break;                                   // label is not final yet
     #endif
 
     ScanFS( mi );
@@ -908,8 +908,8 @@ void SPTree::ShortestPathTree( void )
   else                   // case IV: no check enabled
    while( ( mi = ExtractQ() ) ) {
     #if( LABEL_SETTING )
-     if( mi == Dest )
-      break;
+     if( ( mi == Dest ) && ( MinPath == 0 ) )  // with negative costs a
+      break;                                   // label is not final yet
     #endif
 
     ScanFS( mi );

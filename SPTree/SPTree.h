@@ -73,8 +73,9 @@
     is terminated when the last destination is extracted from Q even
     though Q is still nonempty.
 
-    \warning Solving a SPT algorithm with negative arc costs with
-             LABEL_SETTING > 0 may produce a suboptimal solution. */
+    With negative arc costs the property does not hold, and the algorithm
+    goes on until Q is empty, as a label-correcting one does, instead of
+    stopping at the destination. */
 
  #if( SPT_ALGRTM == 4 )
   #define HeapCard 2
