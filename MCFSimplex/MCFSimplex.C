@@ -4103,14 +4103,15 @@ void MCFSimplex::BalanceFlow( nodePType *r )
 {
  // used only by Primal Simplex to restore a primal feasible solution.
  if( r == dummyRootP ) {
-  nodePType *node = dummyRootP->nextInT;
-  while( node ) {
-   // call this function recursively for every son of dummy root
+  // the sons of the dummy root are collected before any of them is
+  // balanced: balancing one may move a subtree under the root, which
+  // changes the thread (nextInT) the scan would be following
+  std::vector< nodePType * > sons;
+  for( nodePType *node = dummyRootP->nextInT ; node ; node = node->nextInT )
    if( node->subTreeLevel == 1 )
-	BalanceFlow( node );
-
-   node = node->nextInT;
-   }
+    sons.push_back( node );
+  for( auto node : sons )
+   BalanceFlow( node );
   }
  else {
   // The method controls if "r" is a leaf in T
@@ -4126,13 +4127,17 @@ void MCFSimplex::BalanceFlow( nodePType *r )
    AdjustFlow( r );  // The method controls if entering basic arc in "r" is
                      // not feasible; in case adjust its flow
   else { // If "r" isn't a leaf
-   nodePType *node = r->nextInT;
-   // Balance the flow of every child of "r"
-   while ( ( node ) && ( node->subTreeLevel > r->subTreeLevel ) ) {
-    if( node->subTreeLevel == r->subTreeLevel + 1 ) 
-     BalanceFlow( node );
-    node = node->nextInT;
-    }
+   // Balance the flow of every child of "r": the children are collected
+   // first, since balancing one may move its subtree under the dummy root,
+   // after which the thread (nextInT) no longer leads to the other ones
+   std::vector< nodePType * > sons;
+   for( nodePType *node = r->nextInT ;
+        ( node ) && ( node->subTreeLevel > r->subTreeLevel ) ;
+        node = node->nextInT )
+    if( node->subTreeLevel == r->subTreeLevel + 1 )
+     sons.push_back( node );
+   for( auto node : sons )
+    BalanceFlow( node );
 
    // The method controls if entering basic arc in "r" is not feasible;
    //in case adjust its flow
