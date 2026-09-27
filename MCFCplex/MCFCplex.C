@@ -28,6 +28,8 @@
 
 #include "MCFCplex.h"
 
+#include <vector>
+
 /*--------------------------------------------------------------------------*/
 /*------------------------------- MACROS -----------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -412,6 +414,15 @@ void MCFCplex::SolveMCF( void )
   MCFt->Start();
  
  if( net ) {
+  if( ! Senstv ) {  // from scratch: CPLEX keeps the basis of the last solve
+   // and starts from it whatever CPX_PARAM_ADVIND says, hence it is given
+   // the initial one, i.e., every arc at its lower bound and the artificial
+   // arc of every node in the basis
+   std::vector< int > astat( CPXNETgetnumarcs( env , net ) , CPX_AT_LOWER );
+   std::vector< int > nstat( CPXNETgetnumnodes( env , net ) , CPX_BASIC );
+   CPXNETcopybase( env , net , astat.data() , nstat.data() );
+   }
+
   /*!!
     CPXNETwriteprob( env , net , "MCFCplex.dmx" , "min" );
     !!*/
@@ -419,6 +430,8 @@ void MCFCplex::SolveMCF( void )
   status = CPXNETgetstat( env , net );
   }
  else {
+  // re-optimize from the basis of the last solve only if asked to
+  CPXsetintparam( env , CPX_PARAM_ADVIND , Senstv ? 1 : 0 );
   CPXqpopt( env , qp );       // call the QP solver - - - - - - - - - - - - -
   status = CPXgetstat( env , qp );
   }
