@@ -583,6 +583,15 @@ class MCFSimplex: public MCFClass
 
  bool usePrimalSimplex;         // TRUE if the Primal Network Simplex is used
 
+ bool PBalancePending;          // TRUE if a change of the capacities, of
+                                // the deficits or of the graph has left the
+                                // flow of the Primal tree to be balanced
+                                // [see FlushPending()]
+ bool DBalancePending;          // the same for the Dual tree
+ bool DBoundsPending;           // TRUE if a closed arc has changed the Dual
+                                // tree, and the arcs out of it have to be
+                                // put at the bound their reduced cost says
+
  char pricingRule;              // which pricing rule is used
 
  nodePType *nodesP;             // vector of nodes: points to the n + 1 node
@@ -959,6 +968,17 @@ class MCFSimplex: public MCFClass
 /**< This method works after the method PostPVisit (in a Primal context). It
    restores primal admissimibility on the r's subtree. It starts from the leaf
    of the subtree and goes up to the root, using the method AdjustFlow. */
+
+/*--------------------------------------------------------------------------*/
+
+  void FlushPending( void );
+
+/**< Method to balance the flow and to recompute the potentials of the tree
+   after the changes of the capacities, of the deficits and of the graph made
+   since the last call, once for all of them rather than once for each change:
+   on many small changes (say, a few hundred arcs closed one at a time) this
+   is the difference between O(n) and O(n) times their number. It is called by
+   SolveMCF() and by every method that needs the tree to be balanced. */
 
 /*--------------------------------------------------------------------------*/
 

@@ -183,6 +183,8 @@ MCFSimplex::MCFSimplex( Index nmx , Index mmx ) : MCFClass( nmx , mmx )
  else
   nmax = mmax = 0;
 
+ PBalancePending = DBalancePending = DBoundsPending = false;
+
  Senstv = false;  //!! unlike what it should be, Senstv is false by default
                   //!! since reoptimization has some issues that have not
                   //!! been ironed out yet
@@ -197,6 +199,7 @@ void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
                           cFRow pU , cCRow pC , cFRow pDfct ,
                           cIndex_Set pSn , cIndex_Set pEn )
 {
+ PBalancePending = DBalancePending = DBoundsPending = false;
  MemDeAllocCandidateList();
 
  if( ( nmx != nmax ) || ( mmx != mmax ) ) {
@@ -292,6 +295,7 @@ void MCFSimplex::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
 
 void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
 {
+ FlushPending();
  bool oldUsePrimalSimplex = usePrimalSimplex;
  char oldPricingRule = pricingRule;
  usePrimalSimplex = UsPrml;
@@ -567,6 +571,7 @@ void MCFSimplex::SetPar( int par , double val )
 
 void MCFSimplex::SolveMCF( void )
 {
+ FlushPending();
  if( MCFt )
   MCFt->Start();
 
@@ -604,6 +609,7 @@ void MCFSimplex::SolveMCF( void )
 void MCFSimplex::MCFGetX( FRow F , Index_Set nms ,
 			  Index strt , Index stp ) const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  if( stp > m )
   stp = m;
 
@@ -659,6 +665,7 @@ void MCFSimplex::MCFGetX( FRow F , Index_Set nms ,
 void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms ,
 			   Index strt , Index stp ) const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  if( nms ) {
   while( *nms < strt )
    nms++;
@@ -697,6 +704,7 @@ void MCFSimplex::MCFGetRC( CRow CR , cIndex_Set nms ,
 
 MCFSimplex::CNumber MCFSimplex::MCFGetRC( Index i ) const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  #if QUADRATICCOST
   return( CNumber( ReductCost( arcsP + i ) ) );
  #else
@@ -713,6 +721,7 @@ MCFSimplex::CNumber MCFSimplex::MCFGetRC( Index i ) const
 void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms ,
 			   Index strt , Index stp ) const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  if( stp > n )
   stp = n;
 
@@ -752,6 +761,7 @@ void MCFSimplex::MCFGetPi( CRow P , cIndex_Set nms ,
 MCFClass::Index MCFSimplex::MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
  const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  if( ( status != kUnbounded ) || ( ! unbArcP ) )
   return( Inf< Index >() );  // no cycle to give [see MCFGetUnbCycl()]
 
@@ -810,6 +820,7 @@ MCFClass::Index MCFSimplex::MCFGetUnbCycl( Index_Set Pred , Index_Set ArcPred )
 
 MCFSimplex::FONumber MCFSimplex::MCFGetFO( void ) const
 {
+ const_cast< MCFSimplex * >( this )->FlushPending();
  if( status == kOK )
   return( GetFO() );
  else
@@ -1040,6 +1051,7 @@ void MCFSimplex::MCFDfcts( FRow Dfctv , cIndex_Set nms ,
 void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
 			   Index strt , Index stp )
 {
+ FlushPending();
  if( stp > m )
   stp = m;
 
@@ -1106,6 +1118,9 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
     if( usePrimalSimplex )
      ComputePotential( dummyRootP );
     else {
+     // the costs of the tree arcs may have changed, and with them the
+     // potentials the reduced costs below are taken with
+     ComputePotential( dummyRootD );
      for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ )
       if( arc->ident > BASIC ) {
        if( GTZ( ReductCost( arc ) , EpsCst ) ) {
@@ -1132,6 +1147,7 @@ void MCFSimplex::ChgCosts( cCRow NCost , cIndex_Set nms ,
 
 void MCFSimplex::ChgCost( Index arc , CNumber NCost )
 {
+ FlushPending();
  if( arc >= m )
   return;
 
@@ -1204,6 +1220,7 @@ void MCFSimplex::ChgCost( Index arc , CNumber NCost )
  void MCFSimplex::ChgQCoef( cCRow NQCoef , cIndex_Set nms ,
 			    Index strt , Index stp )
  {
+  FlushPending();
   if( stp > m )
    stp = m;
 
@@ -1249,6 +1266,7 @@ void MCFSimplex::ChgCost( Index arc , CNumber NCost )
 #if( QUADRATICCOST )
  void MCFSimplex::ChgQCoef( Index arc , CNumber NQCoef )
  {
+  FlushPending();
   if( arc >= m )
    return;
 
@@ -1320,21 +1338,14 @@ void MCFSimplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
  if( Senstv && (status != kUnSolved ) )
   #if QUADRATICCOST
   {
-   CreateInitialPModifiedBalanceVector();
-   PostPVisit( dummyRootP );
-   BalanceFlow( dummyRootP );
-   ComputePotential( dummyRootP );
+   PBalancePending = true;
    }
   #else
    if( usePrimalSimplex ) {
-    CreateInitialPModifiedBalanceVector();
-    PostPVisit( dummyRootP );
-    BalanceFlow( dummyRootP );
-    ComputePotential( dummyRootP );
+    PBalancePending = true;
     }
    else {
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit( dummyRootD );
+    DBalancePending = true;
     }
   #endif
  else
@@ -1361,21 +1372,14 @@ void MCFSimplex::ChgDfct( Index nod , FNumber NDfct )
  if( Senstv && ( status != kUnSolved ) )
   #if QUADRATICCOST
   {
-   CreateInitialPModifiedBalanceVector();
-   PostPVisit( dummyRootP );
-   BalanceFlow( dummyRootP );
-   ComputePotential( dummyRootP );
+   PBalancePending = true;
    }
   #else
    if( usePrimalSimplex ) {
-    CreateInitialPModifiedBalanceVector();
-    PostPVisit( dummyRootP );
-    BalanceFlow( dummyRootP );
-    ComputePotential( dummyRootP );
+    PBalancePending = true;
     }
    else {
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit( dummyRootD );
+    DBalancePending = true;
     }
   #endif
  else
@@ -1450,10 +1454,7 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
      arc->flow = arc->upper;
     }
 
-   CreateInitialPModifiedBalanceVector();
-   PostPVisit( dummyRootP );
-   BalanceFlow( dummyRootP );
-   ComputePotential( dummyRootP );
+   PBalancePending = true;
    }
   #else
    if( usePrimalSimplex ) {
@@ -1464,10 +1465,7 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
       arc->flow = arc->upper;
      }
 
-    CreateInitialPModifiedBalanceVector();
-    PostPVisit( dummyRootP );
-    BalanceFlow( dummyRootP );
-    ComputePotential( dummyRootP );
+    PBalancePending = true;
     }
    else {
     for( arcDType *arc = arcsD ; arc != stopArcsD ; arc++ ) {
@@ -1478,9 +1476,7 @@ void MCFSimplex::ChgUCaps( cFRow NCap , cIndex_Set nms ,
       arc->flow = arc->upper;
       }
 
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit( dummyRootD );
-    ComputePotential( dummyRootD );
+    DBalancePending = true;
     }
   }
   #endif
@@ -1522,10 +1518,7 @@ void MCFSimplex::ChgUCap( Index arc , FNumber NCap )
   if( GT( ( arcsP + arc )->flow , ( arcsP + arc )->upper , EpsFlw ) ) 
    ( arcsP + arc )->flow = ( arcsP + arc )->upper;
 
-   CreateInitialPModifiedBalanceVector();
-   PostPVisit( dummyRootP );
-   BalanceFlow( dummyRootP );
-   ComputePotential( dummyRootP );
+   PBalancePending = true;
   #else
    if( usePrimalSimplex ) {
     fn = ( arcsP + arc )->flow - ( arcsP + arc )->upper;
@@ -1534,10 +1527,7 @@ void MCFSimplex::ChgUCap( Index arc , FNumber NCap )
 	  ( ! ETZ( fn , EpsFlw ) ) ) )
      ( arcsP + arc )->flow = ( arcsP + arc )->upper;
 
-    CreateInitialPModifiedBalanceVector();
-    PostPVisit( dummyRootP );
-    BalanceFlow( dummyRootP );
-    ComputePotential( dummyRootP );
+    PBalancePending = true;
     }
    else {
     fn = ( arcsD + arc )->flow - ( arcsD + arc )->upper;
@@ -1549,9 +1539,7 @@ void MCFSimplex::ChgUCap( Index arc , FNumber NCap )
      ( arcsD + arc )->ident = AT_UPPER;
      }
 
-    CreateInitialDModifiedBalanceVector();
-    PostDVisit( dummyRootD );
-    ComputePotential( dummyRootD );
+    DBalancePending = true;
     }
   #endif
   }
@@ -1599,10 +1587,7 @@ void MCFSimplex::CloseArc( Index name )
    node->enteringTArc = dummyArcsP + ( node - nodesP );
    }
 
-  CreateInitialPModifiedBalanceVector();
-  PostPVisit( dummyRootP );
-  BalanceFlow( dummyRootP );                
-  ComputePotential( dummyRootP );
+  PBalancePending = true;
   return;
   }
 
@@ -1631,24 +1616,10 @@ void MCFSimplex::CloseArc( Index name )
   nodeDType *last = CutAndUpdateSubtree( node , -node->subTreeLevel + 1 );
   PasteSubtree( node , last , dummyRootD );
   node->enteringTArc = dummyArcsD + ( node - nodesD );
-  ComputePotential( dummyRootD );
-
-  for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
-   if( a->ident > BASIC ) {
-    if( GTZ( ReductCost( a ) , EpsCst ) ) {
-     a->flow = 0;
-     a->ident = AT_LOWER;
-     }
-    else {
-     a->flow = a->upper; 
-     a->ident = AT_UPPER;
-     }
-    }
+  DBoundsPending = true;
   }
 
- CreateInitialDModifiedBalanceVector();
- PostDVisit( dummyRootD );
- ComputePotential( dummyRootD );
+ DBalancePending = true;
 
  }  // end( MCFSimplex::CloseArc )
 
@@ -1697,10 +1668,7 @@ void MCFSimplex::DelNode( Index name )
     }
    }
 
-  CreateInitialPModifiedBalanceVector();
-  PostPVisit( dummyRootP );
-  BalanceFlow( dummyRootP );
-  ComputePotential( dummyRootP );
+  PBalancePending = true;
   }
  else {
   #if( QUADRATICCOST )
@@ -1735,9 +1703,7 @@ void MCFSimplex::DelNode( Index name )
      arc->ident = CLOSED;
      }
 
-   CreateInitialDModifiedBalanceVector();
-   PostDVisit( dummyRootD );
-   ComputePotential( dummyRootD );
+   DBalancePending = true;
   #endif
   }
  }  // end( MCFSimplex::DelNode )
@@ -1769,15 +1735,16 @@ void MCFSimplex::OpenArc( Index name )
  if( arc->ident > CLOSED )  // arc is not closed
   return;                   // nothing to do
 
+ if( DBoundsPending )       // the reduced cost needs the potentials of the
+  FlushPending();           // tree that the closed arcs have changed
+
  if( GTZ( ReductCost( arc ) , EpsCst ) )
   arc->ident = AT_LOWER;
  else {
   arc->ident = AT_UPPER;
   arc->flow = arc->upper;
-  if( Senstv && ( status != kUnSolved ) ) {
-   CreateInitialDModifiedBalanceVector();
-   PostDVisit( dummyRootD );
-   }
+  if( Senstv && ( status != kUnSolved ) )
+   DBalancePending = true;
   else
    status = kUnSolved;
   }
@@ -1787,6 +1754,7 @@ void MCFSimplex::OpenArc( Index name )
 
 MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
 {
+ FlushPending();
  if( n >= nmax )
   return( Inf< Index >() );        
 
@@ -1849,6 +1817,7 @@ MCFSimplex::Index MCFSimplex::AddNode( FNumber aDfct )
 
 void MCFSimplex::ChangeArc( Index name , Index nSN , Index nEN )
 {
+ FlushPending();
  if( name >= m )
   return;
 
@@ -1882,6 +1851,7 @@ void MCFSimplex::ChangeArc( Index name , Index nSN , Index nEN )
 
 void MCFSimplex::DelArc( Index name )
 {
+ FlushPending();
  if( name >= m )
   return;
 
@@ -1942,6 +1912,7 @@ void MCFSimplex::DelArc( Index name )
 MCFSimplex::Index MCFSimplex::AddArc( Index Start , Index End ,
 				      FNumber aU , CNumber aC ) 
 {
+ FlushPending();
  if( usePrimalSimplex ) {
   arcPType *arc = arcsP;
   #if( QUADRATICCOST )
@@ -2155,6 +2126,44 @@ c++;
 
 /*--------------------------------------------------------------------------*/
 
+void MCFSimplex::FlushPending( void )
+{
+ if( status != kUnSolved ) {
+  if( PBalancePending ) {
+   CreateInitialPModifiedBalanceVector();
+   PostPVisit( dummyRootP );
+   BalanceFlow( dummyRootP );
+   ComputePotential( dummyRootP );
+   }
+
+  if( DBoundsPending ) {
+   ComputePotential( dummyRootD );
+   for( arcDType *a = arcsD ; a != stopArcsD ; a++ )
+    if( a->ident > BASIC ) {
+     if( GTZ( ReductCost( a ) , EpsCst ) ) {
+      a->flow = 0;
+      a->ident = AT_LOWER;
+      }
+     else {
+      a->flow = a->upper; 
+      a->ident = AT_UPPER;
+      }
+     }
+   }
+
+  if( DBalancePending || DBoundsPending ) {
+   CreateInitialDModifiedBalanceVector();
+   PostDVisit( dummyRootD );
+   ComputePotential( dummyRootD );
+   }
+  }
+
+ PBalancePending = DBalancePending = DBoundsPending = false;
+
+ }  // end( MCFSimplex::FlushPending )
+
+/*--------------------------------------------------------------------------*/
+
 void MCFSimplex::PostPVisit( nodePType *node , int level )
 {
  node->subTreeLevel = level;
@@ -2212,7 +2221,8 @@ void MCFSimplex::MemAlloc( void )
    }
  #endif
 
- modifiedBalance = new FNumber[ nmax + 1 ];  // node modified balance
+ if( ! modifiedBalance )  // shared by the two algorithms [see MemDeAlloc()]
+  modifiedBalance = new FNumber[ nmax + 1 ];  // node modified balance
 
  }  // end( MemAlloc )
 
@@ -2220,9 +2230,6 @@ void MCFSimplex::MemAlloc( void )
 
 void MCFSimplex::MemDeAlloc( bool whatDeAlloc )
 {
- delete[] modifiedBalance;
- modifiedBalance = NULL;
- 
  if( whatDeAlloc ) {
   delete[] nodesP;
   delete[] arcsP;
@@ -2235,6 +2242,13 @@ void MCFSimplex::MemDeAlloc( bool whatDeAlloc )
   nodesD = NULL;
   arcsD = NULL;
  }
+
+ // the modified balances serve both algorithms, and SetAlg() allocates the
+ // structures of the new one before it deletes those of the old one
+ if( ( ! nodesP ) && ( ! nodesD ) ) {
+  delete[] modifiedBalance;
+  modifiedBalance = NULL;
+  }
 
  MemDeAllocCandidateList();
 
