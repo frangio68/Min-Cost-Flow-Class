@@ -1300,8 +1300,8 @@ void MCFSimplex::ChgCost( Index arc , CNumber NCost )
 void MCFSimplex::ChgDfcts( cFRow NDfct , cIndex_Set nms ,
 			   Index strt , Index stp )
 {
- if( stp > m )
-  stp = m;
+ if( stp > n )
+  stp = n;
 
  if( nms ) {
   while( *nms < strt ) {
