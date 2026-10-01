@@ -62,7 +62,7 @@ SPTree::SPTree( Index nmx , Index mmx , bool Drctd ) : MCFClass( nmx , mmx )
 {
  DirSPT = Drctd;
  MinPathOK = false;
- NegCycl = kMayNegCycl;
+ NegCycl = kNoNegCst;
 
  if( nmax && mmax )
   MemAlloc();

@@ -171,7 +171,7 @@ class SPTree : public MCFClass
     computed again after every change of the costs or of the arcs, and is of
     no use when the caller knows that there is no such cycle. */
 
-  enum SPTNegCycl { kNoNegCst = 0 ,  ///< no cost is negative
+  enum SPTNegCycl { kNoNegCst = 0 ,  ///< no cost is negative (the default)
                     kNoNegCycl ,     ///< negative costs, but no negative cycle
                     kMayNegCycl      ///< there may be a negative cycle
                     };
@@ -217,14 +217,15 @@ class SPTree : public MCFClass
 
 /**< Sets the integer parameters of SPTree, i.e., those of MCFClass and
    kNegCycl, which tells what the caller knows of the costs [see
-   SPTNegCycl]: with kMayNegCycl (the default) a label below the cost of the
-   most negative simple path stops the algorithm with status kUnbounded, the
-   predecessors closing a cycle of negative cost, while with kNoNegCycl and
-   kNoNegCst that cost is not computed and no label is compared with it,
-   kNoNegCst also letting a label-setting algorithm stop at Dest. A value
+   SPTNegCycl]: with kNoNegCst (the default) and kNoNegCycl the cost of the
+   most negative simple path is not computed and no label is compared with
+   it, kNoNegCst also letting a label-setting algorithm stop at Dest, while
+   with kMayNegCycl a label below that cost stops the algorithm with status
+   kUnbounded, the predecessors closing a cycle of negative cost. A value
    that the costs belie gives wrong results: with kNoNegCycl and a cycle of
    negative cost, only the count of the scans of a node finds it, and with
-   kNoNegCst and a negative cost a label at Dest may not be final. */
+   kNoNegCst and a negative cost a label at Dest may not be final; hence, a
+   caller with negative costs has to say so. */
 
 /*--------------------------------------------------------------------------*/
 
