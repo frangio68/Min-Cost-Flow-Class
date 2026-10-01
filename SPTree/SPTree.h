@@ -685,6 +685,8 @@ class SPTree : public MCFClass
  CNumber MinPath;    // the cost of the most negative simple path, i.e., the
                      // sum of the n - 1 most negative arc costs: a label
                      // below it proves a directed cycle of negative cost
+ bool MinPathOK;     // true if MinPath is that of the costs and the arcs of
+                     // now, false if a change of them has to recompute it
 
  Index_Set Q;        // the set of scanned nodes: Q[ i ] = INF ==> i \notin Q
  #if( SPT_ALGRTM <= 3 )

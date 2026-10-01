@@ -61,6 +61,7 @@ const MCFClass::CNumber CINF = Inf< MCFClass::CNumber >();
 SPTree::SPTree( Index nmx , Index mmx , bool Drctd ) : MCFClass( nmx , mmx )
 {
  DirSPT = Drctd;
+ MinPathOK = false;
 
  if( nmax && mmax )
   MemAlloc();
@@ -77,6 +78,7 @@ void SPTree::LoadNet( Index nmx , Index mmx , Index pn , Index pm ,
 		      cFRow pU , cCRow pC , cFRow pDfct ,
 		      cIndex_Set pSn , cIndex_Set pEn )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  // allocating and deallocating memory- - - - - - - - - - - - - - - - - - - -
  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -617,6 +619,7 @@ void SPTree::MCFDfcts( FRow Dfctv , cIndex_Set nms , Index strt , Index stp )
 
 void SPTree::ChgCosts( cCRow NCost , cIndex_Set nms , Index strt , Index stp )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  if( nms ) {
   while( *nms < strt ) {
    nms++;
@@ -658,6 +661,7 @@ void SPTree::ChgCosts( cCRow NCost , cIndex_Set nms , Index strt , Index stp )
 
 void SPTree::ChgCost( Index arc , CNumber NCost )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  if( DirSPT )
   FS[ DictM1[ arc ] ].Cst = NCost;
  else {
@@ -706,6 +710,7 @@ void SPTree::ChgUCap( Index arc , FNumber NCap )
 
 void SPTree::CloseArc( Index name )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  #if( DYNMC_MCF_SPT )
   if( ! DirSPT )
    throw( MCFException( "SPTree::CloseArc() not allowed if DirSPT == 0" ) );
@@ -737,6 +742,7 @@ void SPTree::CloseArc( Index name )
 
 void SPTree::DelNode( Index name )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  throw( MCFException( "SPTree::DelNode() not implemented yet" ) );
  }
 
@@ -744,6 +750,7 @@ void SPTree::DelNode( Index name )
 
 void SPTree::OpenArc( Index name )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  #if( DYNMC_MCF_SPT )
   if( ! DirSPT )
    throw( MCFException( "SPTree::OpenArc() not allowed if DirSPT == 0" ) );
@@ -775,6 +782,7 @@ void SPTree::OpenArc( Index name )
 
 MCFClass::Index SPTree::AddNode( cFNumber aDfct )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  throw( MCFException( "SPTree::AddNode() not implemented yet" ) );
 
  return( InINF );
@@ -805,6 +813,7 @@ void SPTree::ChangeArc( Index name , Index nSS , Index nEN )
 MCFClass::Index SPTree::AddArc( Index Start , Index End , FNumber aU ,
 				CNumber aC )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  #if( DYNMC_MCF_SPT )
   Index nde = Start + USENAME0;
   Index pos = StrtFS[ nde ] + LenFS[ nde ];
@@ -834,6 +843,7 @@ MCFClass::Index SPTree::AddArc( Index Start , Index End , FNumber aU ,
 
 void SPTree::DelArc( Index name )
 {
+ MinPathOK = false;  // the costs or the arcs change [see Initialize()]
  SPTree::CloseArc( name );  // limited implementation
  }
 
@@ -1169,21 +1179,26 @@ void SPTree::Initialize( void )
 
  // the cost of the most negative simple path there can be, i.e., the sum of
  // the n - 1 most negative costs of the arcs: a label below it is the length
- // of no simple path, hence the predecessors lead to a cycle [see ScanFS()]
- std::vector< CNumber > neg;
- for( Index i = 1 ; i <= n ; ++i ) {
-  FrwdStr FSj = FS + StrtFS[ i ];
-  for( Index h = LenFS( i ) ; h-- ; FSj++ )
-   if( (*FSj).Cst < 0 )
-    neg.push_back( (*FSj).Cst );
+ // of no simple path, hence the predecessors lead to a cycle [see ScanFS()];
+ // it only depends on the costs and on the arcs, hence it is computed again
+ // only after a change of them [see MinPathOK]
+ if( ! MinPathOK ) {
+  std::vector< CNumber > neg;
+  for( Index i = 1 ; i <= n ; ++i ) {
+   FrwdStr FSj = FS + StrtFS[ i ];
+   for( Index h = LenFS( i ) ; h-- ; FSj++ )
+    if( (*FSj).Cst < 0 )
+     neg.push_back( (*FSj).Cst );
+   }
+  if( ( n > 0 ) && ( neg.size() > n - 1 ) ) {
+   std::nth_element( neg.begin() , neg.begin() + ( n - 1 ) , neg.end() );
+   neg.resize( n - 1 );
+   }
+  MinPath = 0;
+  for( auto c : neg )
+   MinPath += c;
+  MinPathOK = true;
   }
- if( ( n > 0 ) && ( neg.size() > n - 1 ) ) {
-  std::nth_element( neg.begin() , neg.begin() + ( n - 1 ) , neg.end() );
-  neg.resize( n - 1 );
-  }
- MinPath = 0;
- for( auto c : neg )
-  MinPath += c;
 
  #if( SPT_ALGRTM <= 3 )
   *Q = tail = Origin;
