@@ -156,6 +156,27 @@ class SPTree : public MCFClass
  public:
 
 /*--------------------------------------------------------------------------*/
+/*---------------------------- PUBLIC TYPES --------------------------------*/
+/*--------------------------------------------------------------------------*/
+/** Public enum describing the possible parameters of SPTree, "extended"
+    from MCFClass::MCFParam, to be used with the methods SetPar() and
+    GetPar(). */
+
+  enum SPTParam { kNegCycl = kLastParam  ///< what the costs may give
+                  };
+
+/** The values of kNegCycl, i.e., what the caller knows of the costs: the
+    check of a directed cycle of negative cost compares each label with the
+    sum of the n - 1 most negative costs of the arcs, which has to be
+    computed again after every change of the costs or of the arcs, and is of
+    no use when the caller knows that there is no such cycle. */
+
+  enum SPTNegCycl { kNoNegCst = 0 ,  ///< no cost is negative
+                    kNoNegCycl ,     ///< negative costs, but no negative cycle
+                    kMayNegCycl      ///< there may be a negative cycle
+                    };
+
+/*--------------------------------------------------------------------------*/
 /*--------------------------- PUBLIC METHODS -------------------------------*/
 /*--------------------------------------------------------------------------*/
 /*--------------------------------------------------------------------------*/
@@ -177,6 +198,45 @@ class SPTree : public MCFClass
 /*--------------------------------------------------------------------------*/
 /*-------------------------- OTHER INITIALIZATIONS -------------------------*/
 /*--------------------------------------------------------------------------*/
+
+   using MCFClass::SetPar;
+   using MCFClass::GetPar;
+
+/*--------------------------------------------------------------------------*/
+
+   void SetPar( int par , int val ) override {
+    if( par == kNegCycl ) {
+     if( ( val < kNoNegCst ) || ( val > kMayNegCycl ) )
+      throw( MCFException( "SPTree::SetPar: invalid value of kNegCycl" ) );
+     NegCycl = val;
+     MinPathOK = false;
+     }
+    else
+     MCFClass::SetPar( par , val );
+    }
+
+/**< Sets the integer parameters of SPTree, i.e., those of MCFClass and
+   kNegCycl, which tells what the caller knows of the costs [see
+   SPTNegCycl]: with kMayNegCycl (the default) a label below the cost of the
+   most negative simple path stops the algorithm with status kUnbounded, the
+   predecessors closing a cycle of negative cost, while with kNoNegCycl and
+   kNoNegCst that cost is not computed and no label is compared with it,
+   kNoNegCst also letting a label-setting algorithm stop at Dest. A value
+   that the costs belie gives wrong results: with kNoNegCycl and a cycle of
+   negative cost, only the count of the scans of a node finds it, and with
+   kNoNegCst and a negative cost a label at Dest may not be final. */
+
+/*--------------------------------------------------------------------------*/
+
+   void GetPar( int par , int & val ) const override {
+    if( par == kNegCycl )
+     val = NegCycl;
+    else
+     MCFClass::GetPar( par , val );
+    }
+
+/**< Returns the integer parameters of SPTree [see SetPar()]. */
+
 
    void LoadNet( Index nmx = 0 , Index mmx = 0 , Index pn = 0 , Index pm = 0 ,
 		 cFRow pU = 0 , cCRow pC = 0 , cFRow pDfct = 0 ,
@@ -687,6 +747,7 @@ class SPTree : public MCFClass
                      // below it proves a directed cycle of negative cost
  bool MinPathOK;     // true if MinPath is that of the costs and the arcs of
                      // now, false if a change of them has to recompute it
+ int NegCycl;        // what the costs may give [see SPTNegCycl]
 
  Index_Set Q;        // the set of scanned nodes: Q[ i ] = INF ==> i \notin Q
  #if( SPT_ALGRTM <= 3 )

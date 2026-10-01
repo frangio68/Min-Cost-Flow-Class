@@ -62,6 +62,7 @@ SPTree::SPTree( Index nmx , Index mmx , bool Drctd ) : MCFClass( nmx , mmx )
 {
  DirSPT = Drctd;
  MinPathOK = false;
+ NegCycl = kMayNegCycl;
 
  if( nmax && mmax )
   MemAlloc();
@@ -1181,7 +1182,21 @@ void SPTree::Initialize( void )
  // the n - 1 most negative costs of the arcs: a label below it is the length
  // of no simple path, hence the predecessors lead to a cycle [see ScanFS()];
  // it only depends on the costs and on the arcs, hence it is computed again
- // only after a change of them [see MinPathOK]
+ // only after a change of them [see MinPathOK]. A caller that knows that
+ // there is no negative cycle spares the computation [see kNegCycl]: with
+ // no negative cost the most negative simple path costs 0 (which also lets
+ // a label-setting algorithm stop at Dest), and with negative costs and no
+ // negative cycle no label is compared with it
+ if( NegCycl == kNoNegCst ) {
+  MinPath = 0;
+  MinPathOK = true;
+  }
+ else
+  if( NegCycl == kNoNegCycl ) {
+   MinPath = -Inf< CNumber >();
+   MinPathOK = true;
+   }
+
  if( ! MinPathOK ) {
   std::vector< CNumber > neg;
   for( Index i = 1 ; i <= n ; ++i ) {
