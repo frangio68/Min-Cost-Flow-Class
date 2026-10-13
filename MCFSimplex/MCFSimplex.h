@@ -225,6 +225,11 @@ class MCFSimplex: public MCFClass
 
  void SolveMCF( void ) override;
 
+/**< The tolerance on the reduced costs used while solving is the larger
+   between kEpsCst and 100 times the machine epsilon of CNumber times the
+   cost of the artificial arcs, which is the magnitude of the potentials;
+   a smaller one is below the rounding of the reduced costs. */
+
 /*--------------------------------------------------------------------------*/
 /*---------------------- METHODS FOR READING RESULTS -----------------------*/
 /*--------------------------------------------------------------------------*/

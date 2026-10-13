@@ -588,6 +588,14 @@ void MCFSimplex::SolveMCF( void )
   #endif
   }
 
+ // the potentials are of the order of MAX_ART_COST, so a reduced cost is
+ // known only up to the rounding at that magnitude: with a smaller EpsCst
+ // the rounding passes for a violation, the pivot is too small to change
+ // the potentials, and the same arcs enter and leave the basis for ever
+ const CNumber EpsCst0 = EpsCst;
+ EpsCst = std::max( EpsCst ,
+                    CNumber( 100 * Eps< CNumber >() * MAX_ART_COST ) );
+
  #if( QUADRATICCOST )
   PrimalSimplex();
  #else
@@ -596,6 +604,8 @@ void MCFSimplex::SolveMCF( void )
   else
    DualSimplex();
  #endif
+
+ EpsCst = EpsCst0;
 
  if( MCFt )
   MCFt->Stop();
