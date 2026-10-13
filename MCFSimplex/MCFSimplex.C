@@ -311,21 +311,26 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
  if( ! ( nmax && mmax ) )  // instance not loaded yet
   return;                  // nothing else to do
 
- // candidate lists change both if the pricing rule changes and if
- // the primal/dual simplex change
- MemDeAllocCandidateList();
- if( pricingRule == kFirstEligibleArc ) {
-  if( usePrimalSimplex )
-   arcToStartP = arcsP;
-  else
-   arcToStartD = arcsD;
-  }
+ // the data of the pricing rule, which belong to the algorithm in use:
+ // after the change of algorithm they are set up on the structures of the
+ // new one, since MemDeAlloc() of the old one deletes the candidate lists
+ auto set_pricing = [ this ]() {
+  MemDeAllocCandidateList();
+  if( pricingRule == kFirstEligibleArc ) {
+   if( usePrimalSimplex )
+    arcToStartP = arcsP;
+   else
+    arcToStartD = arcsD;
+   }
 
- if( pricingRule == kCandidateListPivot )
-  MemAllocCandidateList();
+  if( pricingRule == kCandidateListPivot )
+   MemAllocCandidateList();
+  };
 
- if( usePrimalSimplex == oldUsePrimalSimplex )
+ if( usePrimalSimplex == oldUsePrimalSimplex ) {
+  set_pricing();
   return;
+  }
 
  #if( QUADRATICCOST )
   if( ! usePrimalSimplex )
@@ -399,6 +404,7 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
    }
 
   MemDeAlloc( false );  // delete the dual data structure
+  set_pricing();
   if( Senstv && ( status != kUnSolved ) ) {
    nodePType *node = dummyRootP;
    for( Index i = 0 ; i < n ; i++ )
@@ -473,6 +479,7 @@ void MCFSimplex::SetAlg( bool UsPrml , char WhchPrc )
 
  CreateAdditionalDualStructures();
  MemDeAlloc( true );  // delete primal data structure
+ set_pricing();
 
  nodeDType *node = dummyRootD;
  for( Index i = 0 ; i < n ; i++ )
