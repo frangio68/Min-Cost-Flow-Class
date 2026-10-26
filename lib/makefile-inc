@@ -35,16 +35,17 @@
 #           $(libMCFClLIB) = external libraries + -L< libdirs > for libMCFCl #
 #           $(libMCFClOBJ) = the libMCFCl.a library itself                   #
 #                                                                            #
-#   Internally, the makefile calls makefile-c, strips away the *H macro and  #  
+#   Internally, the makefile calls makefile-c, strips away the *H macro and  #
 #   redefines the *OBJ one.                                                  #
 #                                                                            #
 #                              Antonio Frangioni                             #
 #                         Dipartimento di Informatica                        #
 #                             Universita' di Pisa                            #
-#									     #
+#                                                                            #
 ##############################################################################
 
-# include the libMCFCl makefile internally defining all external modules - - - -
+# include the libMCFCl makefile internally defining all external modules - - -
+# -
 
 include $(libMCFClDIR)/lib/makefile-c
 

@@ -79,8 +79,9 @@ endif
 OPTUxH = $(libMCFClDIR)/OPTUtils/OPTUtils.h
 OPTUxINC = -I$(libMCFClDIR)/OPTUtils
 
-# cplex external libraries (comment out if MCFCplex is not compiled, or if
-# the makefile-c of MCFCplex is included rather than the "plain" one)
+# cplex external libraries, which say whether MCFCplex is compiled [see
+# lib/makefile] (comment out if the makefile-c of MCFCplex is included rather
+# than the "plain" one)
 include $(libMCFClDIR)/extlib/makefile-libCPLEX
 
 # libMCFCl (the makefile requiring all external modules in input)
@@ -91,7 +92,9 @@ include $(libMCFClDIR)/lib/makefile
 # the := assignment has to be used (hope you have GNU make)
 
 # libraries
-libMCFClLIB := $(libMCFClLIB) $(libCPLEXLIB)
-libMCFClINC := $(libMCFClINC) $(libCPLEXINC)
+ifneq ($(MCFCxOBJ),)
+    libMCFClLIB := $(libMCFClLIB) $(libCPLEXLIB)
+    libMCFClINC := $(libMCFClINC) $(libCPLEXINC)
+endif
 
 ############################ End of makefile #################################

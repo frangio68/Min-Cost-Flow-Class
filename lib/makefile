@@ -43,9 +43,13 @@ include $(MCFClDIR)/makefile
 #MCFCeDIR = $(libMCFClDIR)/MCFClone
 #include $(MCFCeDIR)/makefile
 
-# MCFCplex
+# MCFCplex, compiled only if the header of CPLEX is in one of the -I of
+# $(libCPLEXINC) [see extlib/makefile-libCPLEX]
 MCFCxDIR = $(libMCFClDIR)/MCFCplex
-include $(MCFCxDIR)/makefile
+ifneq ($(wildcard $(addsuffix /ilcplex/cplex.h,$(subst $\",,\
+	$(patsubst -I%,%,$(filter -I%,$(libCPLEXINC)))))),)
+    include $(MCFCxDIR)/makefile
+endif
 
 # MCFSimplex
 MCFSxDIR = $(libMCFClDIR)/MCFSimplex
