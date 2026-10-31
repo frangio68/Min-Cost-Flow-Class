@@ -134,6 +134,28 @@ endforeach ()
 # https://cmake.org/cmake/help/latest/module/FindThreads.html
 find_package(Threads QUIET)
 
+# Drop the cached paths if one of them does not exist any more, so that
+# they are all searched again from the same place
+set(_cplex_cached CPLEX_INCLUDE_DIR CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG
+        CPLEX_DLL)
+foreach (_var ${_cplex_cached})
+    foreach (_path ${${_var}})
+        if (IS_ABSOLUTE "${_path}" AND NOT EXISTS "${_path}")
+            set(_cplex_stale TRUE)
+        endif ()
+    endforeach ()
+endforeach ()
+if (_cplex_stale)
+    message(STATUS "Cached CPLEX paths not found, searching again")
+    foreach (_var ${_cplex_cached})
+        unset(${_var} CACHE)
+    endforeach ()
+endif ()
+unset(_cplex_cached)
+unset(_cplex_stale)
+unset(_var)
+unset(_path)
+
 # Check if already in cache
 if (WIN32)
     if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG AND CPLEX_DLL AND CPLEX_VERSION)
@@ -150,6 +172,11 @@ if (NOT CPLEX_FOUND)
     set(CPLEX_DIR ${CPLEX_ROOT}/cplex)
 
     # ----- Find the CPLEX include directory -------------------------------- #
+    # On Windows the libraries are taken from CPLEX_DIR, hence so is the
+    # include directory
+    if (WIN32)
+        unset(CPLEX_INCLUDE_DIR CACHE)
+    endif ()
     find_path(CPLEX_INCLUDE_DIR
             NAMES ilcplex/cplex.h
             PATHS ${CPLEX_DIR}/include
