@@ -1740,6 +1740,14 @@ class MCFClass {
 /*--------------------------------------------------------------------------*/
 /*--------------------------- PROTECTED METHODS ----------------------------*/
 /*--------------------------------------------------------------------------*/
+/** Reads from DMXs the upper bound of an arc in a DIMACS file into U, and
+    returns false if there is none; "inf", "+Inf", "Infinity" (in any case)
+    are an infinite one, Inf< FNumber >(), which is what WriteMCF() writes
+    when FNumber is a floating point type. */
+
+   static inline bool ReadDMXUB( istream &DMXs , FNumber &U );
+
+/*--------------------------------------------------------------------------*/
 /*-------------------------- MANAGING COMPARISONS --------------------------*/
 /*--------------------------------------------------------------------------*/
 /** @name Managing comparisons.
@@ -1868,6 +1876,25 @@ class MCFClass {
 /*------------------- inline methods implementation ------------------------*/
 /*--------------------------------------------------------------------------*/
 
+inline bool MCFClass::ReadDMXUB( istream &DMXs , FNumber &U )
+{
+ std::string tok;
+ if( ! ( DMXs >> tok ) )
+  return( false );
+
+ // "inf", "+Inf", "Infinity" and so on are an infinite capacity
+ const std::size_t f = ( tok[ 0 ] == '+' ) ? 1 : 0;
+ if( ( tok.size() > f ) && ( ( tok[ f ] == 'i' ) || ( tok[ f ] == 'I' ) ) ) {
+  U = Inf< FNumber >();
+  return( true );
+  }
+
+ std::istringstream is( tok );
+ return( ( is >> U ) && ( is.peek() == std::char_traits< char >::eof() ) );
+ }
+
+/*--------------------------------------------------------------------------*/
+
 inline void MCFClass::LoadDMX( istream &DMXs , bool IsQuad )
 {
  // read first non-comment line - - - - - - - - - - - - - - - - - - - - - - -
@@ -1970,7 +1997,7 @@ inline void MCFClass::LoadDMX( istream &DMXs , bool IsQuad )
     if( ! ( DMXs >> LB ) )
      throw( MCFException( "LoadDMX: error reading lower bound" ) );
 
-    if( ! ( DMXs >> tU[ i ] ) )
+    if( ! ReadDMXUB( DMXs , tU[ i ] ) )
      throw( MCFException( "LoadDMX: error reading upper bound" ) );
 
     if( ! ( DMXs >> tC[ i ] ) )
@@ -1987,7 +2014,8 @@ inline void MCFClass::LoadDMX( istream &DMXs , bool IsQuad )
     if( tU[ i ] < LB )
      throw( MCFException( "LoadDMX: lower bound > upper bound" ) );
 
-    tU[ i ] -= LB;
+    if( tU[ i ] < Inf< FNumber >() )
+     tU[ i ] -= LB;
     tDfct[ tStartn[ i ] - 1 ] += LB;
     tDfct[ tEndn[ i ] - 1 ] -= LB;
     #if( USENAME0 )
