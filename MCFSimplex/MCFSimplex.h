@@ -686,7 +686,8 @@ class MCFSimplex: public MCFClass
  Index forcedHotListSize;       // used to force the number of candidate list
                                 // and hot list dimension
 
- CNumber MAX_ART_COST;          // large cost for artificial arcs
+ CNumber MAX_ART_COST;          // large cost for artificial arcs, the one of
+                                // ArtificialCost() when the base is built
 
  FNumber *modifiedBalance;      // vector of balance used by the PostVisit
 
@@ -736,6 +737,16 @@ class MCFSimplex: public MCFClass
 
 /**< Method to deallocate memory for the data structures created in
    MemAllocCandidateList(). */
+
+/*--------------------------------------------------------------------------*/
+
+  CNumber ArtificialCost( void ) const;
+
+/**< Returns the cost of the artificial arcs of the initial base, i.e.,
+   max( 1e7 , n C ) with C the largest absolute cost of an arc that is not
+   closed or deleted: a path costs less than the two artificial arcs through
+   the dummy root, and therefore a feasible problem never ends with flow on
+   them. */
 
 /*--------------------------------------------------------------------------*/
 

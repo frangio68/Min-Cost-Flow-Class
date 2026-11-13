@@ -584,6 +584,14 @@ void MCFSimplex::SolveMCF( void )
 
  unbArcP = NULL;  // no certificate of unboundedness yet
 
+ // a larger cost of the artificial arcs changes the potentials of the base,
+ // which is then built again
+ const CNumber ArtCost = ArtificialCost();
+ if( ( status == kUnSolved ) || ( ArtCost > MAX_ART_COST ) ) {
+  MAX_ART_COST = ArtCost;
+  status = kUnSolved;
+  }
+
  if( status == kUnSolved ) {
   #if( QUADRATICCOST )
    CreateInitialPrimalBase();
@@ -2339,6 +2347,48 @@ void MCFSimplex::MemDeAllocCandidateList( void )
  delete[] candD; 
  candD = NULL;
 }
+
+/*--------------------------------------------------------------------------*/
+
+MCFSimplex::CNumber MCFSimplex::ArtificialCost( void ) const
+{
+ // a path of the network has at most n - 1 arcs, and therefore it costs less
+ // than the 2 MAX_ART_COST of the two artificial arcs through the dummy root
+ // when MAX_ART_COST >= n * C, C the largest | cost | of an arc; were it
+ // not so, a feasible problem whose cheapest path from a source to a sink
+ // costs more would keep flow on the artificial arcs and look unfeasible
+ CNumber C = 0;
+ auto scan = [ & C ]( const auto * arc , const auto * stop ) {
+  for( ; arc != stop ; arc++ ) {
+   #if( QUADRATICCOST )
+    if( arc->cost == Inf< CNumber >() )  // deleted
+     continue;
+   #else
+    if( arc->ident < BASIC )  // closed or deleted
+     continue;
+   #endif
+   C = std::max( C , CNumber( std::abs( arc->cost ) ) );
+   }
+  };
+
+ #if( QUADRATICCOST )
+  scan( arcsP , stopArcsP );
+ #else
+  if( usePrimalSimplex )
+   scan( arcsP , stopArcsP );
+  else
+   scan( arcsD , stopArcsD );
+ #endif
+
+ // the potentials go up to 2 MAX_ART_COST plus the cost of a path
+ const CNumber Max = numeric_limits< CNumber >::is_integer
+                     ? numeric_limits< CNumber >::max() / 4
+                     : Inf< CNumber >();
+ const CNumber nC = ( C > Max / CNumber( n ? n : 1 ) ) ? Max
+                                                         : CNumber( n ) * C;
+ return( std::max( CNumber( 1e7 ) , nC ) );
+
+ }  // end( MCFSimplex::ArtificialCost )
 
 /*--------------------------------------------------------------------------*/
 
