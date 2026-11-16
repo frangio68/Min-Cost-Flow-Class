@@ -20,27 +20,14 @@
 # internal macros - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # external libraries that Cplex needs
-ifeq ($(UNAME_S),Linux)
-    libCPLEXEXTLIB = -lpthread
-endif
-ifeq ($(UNAME_S),Darwin)
-    libCPLEXEXTLIB =
-endif
+libCPLEXEXTLIB = -lpthread
 
 # basic CPLEX directory without quotes, if any
 libCPLEXBSCDIR = $(subst $\",,$(CPLEX_ROOT))/cplex
 
-# lib Cplex directory
-ifeq ($(UNAME_S),Linux)
-    libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_linux/static_pic
-endif
-ifeq ($(UNAME_S),Darwin)
-     ifeq ($(UNAME_P),arm)
-    	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/arm64_osx/static_pic
-     else
-     	libCPLEXINCDIR = $(libCPLEXBSCDIR)/lib/x86-64_osx/static_pic
-    endif
-endif
+# lib Cplex directory, the one of the layouts that is there
+libCPLEXINCDIR = $(firstword $(wildcard $(addprefix $(libCPLEXBSCDIR)/lib/, \
+	x86-64_linux/static_pic arm64_osx/static_pic x86-64_osx/static_pic)))
 
 # macros to be exported - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

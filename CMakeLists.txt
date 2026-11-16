@@ -113,25 +113,6 @@ if (MCFClass_READ_PATHS)
     elseif (WIN32)
         makefile_macros_to_cmake(extlib/makefile-default-paths-win)
     endif ()
-
-    # Retrieve the system architecture
-    if (CMAKE_SIZEOF_VOID_P EQUAL 8)
-        if (UNIX)
-            if (APPLE)
-                if (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64") # Apple Silicon MX arch
-                    set(ARCH arm64)
-                else () # Intel arch
-                    set(ARCH x86-64)
-                endif ()
-            else ()
-                set(ARCH x86-64)
-            endif ()
-        elseif (WIN32)
-            set(ARCH x64)
-        endif ()
-    else ()
-        set(ARCH x86)
-    endif ()
 endif ()
 
 if (MCFClass_USE_CPLEX)
@@ -150,12 +131,14 @@ configure_file(cmake/${modName}Config.h.in ${modName}Config.h)
 # The installed libraries and executables look for the libraries of the same
 # installation relative to their own location, so that the installed tree can
 # be moved as a whole; the directories of the external libraries are kept.
+# CMake gives the token of the directory of the loaded file where the
+# dynamic linker has $ORIGIN, and has none for the @loader_path of ld64;
+# where there is no run-time path (the DLLs) the entries are ignored.
 include(GNUInstallDirs)
 if (NOT CMAKE_INSTALL_RPATH)
-    if (APPLE)
+    set(rpathOrigin "${CMAKE_SHARED_LIBRARY_RPATH_ORIGIN_TOKEN}")
+    if (NOT rpathOrigin)
         set(rpathOrigin "@loader_path")
-    else ()
-        set(rpathOrigin "$ORIGIN")
     endif ()
     file(RELATIVE_PATH binToLib ${CMAKE_INSTALL_FULL_BINDIR}
             ${CMAKE_INSTALL_FULL_LIBDIR})

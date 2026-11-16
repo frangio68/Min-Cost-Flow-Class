@@ -11,7 +11,7 @@
 #        CPLEX_FOUND         - True if headers are found                      #
 #        CPLEX_INCLUDE_DIRS  - Include directories                            #
 #        CPLEX_LIBRARIES     - Libraries to be linked                         #
-#        CPLEX_DLL           - The found runtime DLL (Windows only)           #
+#        CPLEX_DLL           - The found runtime DLL, where there is one      #
 #        CPLEX_VERSION       - Version number                                 #
 #                                                                             #
 #    This module reads hints about search locations from variables:           #
@@ -31,80 +31,25 @@
 # --------------------------------------------------------------------------- #
 include(FindPackageHandleStandardArgs)
 
-# ----- Find ILOG directories and lib suffixes ------------------------------ #
-# Based on the OS and architecture, generate:
-# - a list of possible ILOG directories
-# - a list of possible lib suffixes to find the library
+# ----- ILOG directories and lib suffixes ----------------------------------- #
+# The directories where the installers of the systems put the ILOG products,
+# and the directories of the library in the layouts of the platforms CPLEX
+# is built for, the release and the debug one where they differ (the
+# libraries for the MSVC runtime): only those of the system at hand are there
 
-if (UNIX)
-    if (APPLE)
-        # macOS (usually /Applications)
-        set(CPLEX_ILOG_DIRS /Applications)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_darwin9_gcc4.0/static_pic
-                lib/${ARCH}_osx/static_pic)
-    else ()
-        # Other Unix-based systems (usually /opt/ibm/ILOG)
-        set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_sles10_4.1/static_pic
-                lib/${ARCH}_linux/static_pic)
-    endif ()
-elseif (WIN32)
-    # Windows (usually C:/Program Files/IBM/ILOG, or C:/IBM/ILOG)
-    set(CPLEX_ILOG_DIRS "C:/Program Files/IBM/ILOG")
-    set(CPLEX_ILOG_DIRS "C:/IBM/ILOG" ${CPLEX_ILOG_DIRS})
-    if (ARCH STREQUAL "x86")
-        set(CPLEX_ILOG_DIRS
-                "C:/Program Files (x86)/IBM/ILOG" ${CPLEX_ILOG_DIRS})
-    endif ()
-
-    # Amended for VS and its various toolsets
-    # https://cmake.org/cmake/help/v3.11/variable/MSVC_VERSION.html
-    # Can use GREATER_EQUAL instead of the mess below if cmake version >= 3.7
-    #if (NOT (MSVC_VERSION LESS 1930)) # VS 17.0 (v143 toolset)
-    #    set(CPLEX_LIB_PATH_SUFFIXES
-    #            lib/${ARCH}_windows_msvc17/stat_mda)
-    #    set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-    #            lib/${ARCH}_windows_msvc17/stat_mdd)
-    #elseif (NOT (MSVC_VERSION LESS 1920)) # VS 16.0 (v142 toolset)
-    #    set(CPLEX_LIB_PATH_SUFFIXES
-    #            lib/${ARCH}_windows_msvc16/stat_mda)
-    #    set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-    #            lib/${ARCH}_windows_msvc16/stat_mdd)
-    #elseif (NOT (MSVC_VERSION LESS 1910)) # VS 15.0 (v141 toolset)
-    #    set(CPLEX_LIB_PATH_SUFFIXES
-    #            lib/${ARCH}_windows_msvc15/stat_mda)
-    #    set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-    #            lib/${ARCH}_windows_msvc15/stat_mdd)
-    #else
-    if (NOT (MSVC_VERSION LESS 1900)) # VS 14.0 (v140 toolset)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_windows_msvc14/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-                lib/${ARCH}_windows_msvc14/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1800)) # VS 12.0 (v120 toolset)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_windows_msvc12/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-                lib/${ARCH}_windows_msvc12/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1700)) # VS 11.0 (v110 toolset)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_windows_msvc11/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-                lib/${ARCH}_windows_msvc11/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1600)) # VS 10.0 (v100 toolset)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_windows_msvc10/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-                lib/${ARCH}_windows_msvc10/stat_mdd)
-    elseif (NOT (MSVC_VERSION LESS 1500)) # VS  9.0 (v90 toolset)
-        set(CPLEX_LIB_PATH_SUFFIXES
-                lib/${ARCH}_windows_msvc09/stat_mda)
-        set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
-                lib/${ARCH}_windows_msvc09/stat_mdd)
-    endif ()
-endif ()
+set(CPLEX_ILOG_DIRS /opt/ibm/ILOG /opt/IBM/ILOG /Applications
+        "C:/IBM/ILOG" "C:/Program Files/IBM/ILOG")
+set(CPLEX_LIB_PATH_SUFFIXES
+        lib/x86-64_linux/static_pic
+        lib/x86-64_sles10_4.1/static_pic
+        lib/arm64_osx/static_pic
+        lib/x86-64_osx/static_pic
+        lib/x86-64_darwin9_gcc4.0/static_pic
+        lib/x64_windows_msvc14/stat_mda
+        lib/x64_windows_vs2017/stat_mda)
+set(CPLEX_LIB_PATH_SUFFIXES_DEBUG
+        lib/x64_windows_msvc14/stat_mdd
+        lib/x64_windows_vs2017/stat_mdd)
 
 # ----- Find the path to CPLEX ---------------------------------------------- #
 # This takes the greatest CPLEX_Studio* found in the ILOG directories
@@ -137,7 +82,7 @@ find_package(Threads QUIET)
 # Drop the cached paths if one of them does not exist any more, so that
 # they are all searched again from the same place
 set(_cplex_cached CPLEX_INCLUDE_DIR CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG
-        CPLEX_DLL)
+        CPLEX_DLL CPLEX_VERSION)
 foreach (_var ${_cplex_cached})
     foreach (_path ${${_var}})
         if (IS_ABSOLUTE "${_path}" AND NOT EXISTS "${_path}")
@@ -156,15 +101,16 @@ unset(_cplex_stale)
 unset(_var)
 unset(_path)
 
+# The cached version is the one of the include directory it was read from
+if (NOT "${CPLEX_INCLUDE_DIR}" STREQUAL
+        "${_CPLEX_VERSION_INCLUDE_DIR}")
+    unset(CPLEX_VERSION CACHE)
+endif ()
+
 # Check if already in cache
-if (WIN32)
-    if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG AND CPLEX_DLL AND CPLEX_VERSION)
-        set(CPLEX_FOUND TRUE)
-    endif ()
-else ()
-    if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG AND CPLEX_VERSION)
-        set(CPLEX_FOUND TRUE)
-    endif ()
+if (CPLEX_INCLUDE_DIR AND CPLEX_LIBRARY AND CPLEX_LIBRARY_DEBUG AND
+        CPLEX_VERSION)
+    set(CPLEX_FOUND TRUE)
 endif ()
 
 if (NOT CPLEX_FOUND)
@@ -172,85 +118,67 @@ if (NOT CPLEX_FOUND)
     set(CPLEX_DIR ${CPLEX_ROOT}/cplex)
 
     # ----- Find the CPLEX include directory -------------------------------- #
-    # On Windows the libraries are taken from CPLEX_DIR, hence so is the
-    # include directory
-    if (WIN32)
-        unset(CPLEX_INCLUDE_DIR CACHE)
-    endif ()
+    # The libraries are taken from CPLEX_DIR, hence so is the include
+    # directory
+    unset(CPLEX_INCLUDE_DIR CACHE)
     find_path(CPLEX_INCLUDE_DIR
             NAMES ilcplex/cplex.h
             PATHS ${CPLEX_DIR}/include
             DOC "CPLEX include directory.")
 
+    # ----- Parse the version ----------------------------------------------- #
+    if (CPLEX_INCLUDE_DIR)
+        file(STRINGS "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
+                _cplex_version_lines
+                REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
+        foreach (_part VERSION RELEASE MODIFICATION)
+            string(REGEX REPLACE ".*CPX_VERSION_${_part} *\([0-9]*\).*"
+                    "\\1" _cplex_${_part} "${_cplex_version_lines}")
+        endforeach ()
+        set(CPLEX_VERSION
+                "${_cplex_VERSION}.${_cplex_RELEASE}.${_cplex_MODIFICATION}")
+        # the name of the library, without or with the version (e.g.,
+        # cplex2211 for 22.1.1)
+        set(_cplex_names cplex
+                cplex${_cplex_VERSION}${_cplex_RELEASE}${_cplex_MODIFICATION}
+                cplex${_cplex_VERSION}${_cplex_RELEASE}0)
+        unset(_cplex_version_lines)
+        unset(_cplex_VERSION)
+        unset(_cplex_RELEASE)
+        unset(_cplex_MODIFICATION)
+        unset(_part)
+    endif ()
+
     # ----- Find the CPLEX library ------------------------------------------ #
-    if (UNIX)
+    # The debug library is the release one where there is no other; where
+    # the library is a DLL, the one found in lib/ is its import library, and
+    # the DLL is in the bin/ of its layout
+    if (_cplex_names)
         find_library(CPLEX_LIBRARY
-                NAMES cplex
+                NAMES ${_cplex_names}
                 PATHS ${CPLEX_DIR}
                 PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES}
                 DOC "CPLEX library.")
+        find_library(CPLEX_LIBRARY_DEBUG
+                NAMES ${_cplex_names}
+                PATHS ${CPLEX_DIR}
+                PATH_SUFFIXES ${CPLEX_LIB_PATH_SUFFIXES_DEBUG}
+                NO_DEFAULT_PATH
+                DOC "CPLEX debug library.")
+        if (NOT CPLEX_LIBRARY_DEBUG)
+            set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY}
+                    CACHE FILEPATH "CPLEX debug library." FORCE)
+        endif ()
 
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIBRARY}
-                CACHE FILEPATH "CPLEX debug library." FORCE)
-    elseif (WIN32)
-
-        # ----- Macro: find_win_cplex_library ------------------------------- #
-        # On Windows the version is appended to the library name which cannot be
-        # handled by find_library, so here a macro to search manually.
-        macro(find_win_cplex_library var path_suffixes)
-            foreach (s ${path_suffixes})
-                file(GLOB CPLEX_LIBRARY_CANDIDATES "${CPLEX_DIR}/${s}/cplex*.lib")
-                if (CPLEX_LIBRARY_CANDIDATES)
-                    list(GET CPLEX_LIBRARY_CANDIDATES 0 ${var})
-                    break()
-                endif ()
-            endforeach ()
-            if (NOT ${var})
-                set(${var} "${var}-NOTFOUND")
-            endif ()
-        endmacro()
-
-        # ----- Macro: find_win_cplex_dll ----------------------------------- #
-        macro(find_win_cplex_dll var)
-            file(GLOB CPLEX_DLL_CANDIDATES "${CPLEX_DIR}/bin/${ARCH}_win*/cplex*.dll")
-            set(${var} "${var}-NOTFOUND")
-            foreach (_dll ${CPLEX_DLL_CANDIDATES})
-                get_filename_component(_dll_name "${_dll}" NAME)
-                if (_dll_name MATCHES "^cplex[0-9]+\\.dll$")
-                    set(${var} "${_dll}")
-                    break()
-                endif ()
-            endforeach ()
-        endmacro()
-
-        find_win_cplex_library(CPLEX_LIB ${CPLEX_LIB_PATH_SUFFIXES})
-        set(CPLEX_LIBRARY ${CPLEX_LIB}
-                CACHE FILEPATH "CPLEX library." FORCE)
-
-        find_win_cplex_library(CPLEX_LIB ${CPLEX_LIB_PATH_SUFFIXES_DEBUG})
-        set(CPLEX_LIBRARY_DEBUG ${CPLEX_LIB}
-                CACHE FILEPATH "CPLEX debug library." FORCE)
-
-        find_win_cplex_dll(CPLEX_DLL_FILE)
-        set(CPLEX_DLL ${CPLEX_DLL_FILE}
-                CACHE FILEPATH "CPLEX runtime DLL." FORCE)
-    endif ()
-
-    # ----- Parse the version ----------------------------------------------- #
-    if (CPLEX_INCLUDE_DIR)
-        file(STRINGS
-                "${CPLEX_INCLUDE_DIR}/ilcplex/cpxconst.h"
-                _cplex_version_lines REGEX "#define CPX_VERSION_(VERSION|RELEASE|MODIFICATION)")
-
-        string(REGEX REPLACE ".*CPX_VERSION_VERSION *\([0-9]*\).*" "\\1" _cplex_version_version "${_cplex_version_lines}")
-        string(REGEX REPLACE ".*CPX_VERSION_RELEASE *\([0-9]*\).*" "\\1" _cplex_version_release "${_cplex_version_lines}")
-        string(REGEX REPLACE ".*CPX_VERSION_MODIFICATION *\([0-9]*\).*" "\\1" _cplex_version_modification "${_cplex_version_lines}")
-
-        set(CPLEX_VERSION "${_cplex_version_version}.${_cplex_version_release}.${_cplex_version_modification}")
-        unset(_cplex_version_lines)
-        unset(_cplex_version_version)
-        unset(_cplex_version_release)
-        unset(_cplex_version_modification)
+        list(TRANSFORM _cplex_names PREPEND "${CMAKE_SHARED_LIBRARY_PREFIX}")
+        list(TRANSFORM _cplex_names APPEND "${CMAKE_SHARED_LIBRARY_SUFFIX}")
+        list(REMOVE_AT _cplex_names 0)
+        find_file(CPLEX_DLL
+                NAMES ${_cplex_names}
+                PATHS ${CPLEX_DIR}/bin/x64_win64
+                NO_DEFAULT_PATH
+                DOC "CPLEX runtime DLL.")
+        unset(_cplex_names)
     endif ()
 
     # ----- Handle the standard arguments ----------------------------------- #
@@ -258,65 +186,58 @@ if (NOT CPLEX_FOUND)
     # options passed to find_package(). It also sets <PackageName>_FOUND if
     # REQUIRED_VARS are set.
     # REQUIRED_VARS should be cache entries and not output variables. See:
-    # https://cmake.org/cmake/help/latest/module/FindPackageHandleStandardArgs.html
-    if (WIN32)
-        find_package_handle_standard_args(
-                CPLEX
-                REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_DLL CPLEX_INCLUDE_DIR
-                VERSION_VAR CPLEX_VERSION)
-    else ()
-        find_package_handle_standard_args(
-                CPLEX
-                REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
-                VERSION_VAR CPLEX_VERSION)
-    endif ()
+    # https://cmake.org/cmake/help/latest/module/
+    # FindPackageHandleStandardArgs.html
+    find_package_handle_standard_args(
+            CPLEX
+            REQUIRED_VARS CPLEX_LIBRARY CPLEX_LIBRARY_DEBUG CPLEX_INCLUDE_DIR
+            VERSION_VAR CPLEX_VERSION)
+endif ()
+
+# A found package keeps its version in the cache, with the include
+# directory it was read from
+if (CPLEX_FOUND)
+    set(CPLEX_VERSION "${CPLEX_VERSION}" CACHE INTERNAL
+            "CPLEX version.")
+    set(_CPLEX_VERSION_INCLUDE_DIR "${CPLEX_INCLUDE_DIR}"
+            CACHE INTERNAL "Include directory of the CPLEX version.")
 endif ()
 
 # ----- Export the target --------------------------------------------------- #
+# A DLL is imported with its import library, any other library as it is
 if (CPLEX_FOUND)
     set(CPLEX_INCLUDE_DIRS ${CPLEX_INCLUDE_DIR})
-    set(CPLEX_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
-
-    if (UNIX)
-        set(CPLEX_LIBRARIES ${CPLEX_LIBRARIES} dl)
-    endif ()
+    set(CPLEX_LIBRARIES ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
     if (NOT TARGET CPLEX::Cplex)
-        if (WIN32)
+        if (CPLEX_DLL)
             add_library(CPLEX::Cplex SHARED IMPORTED)
             set_target_properties(
                     CPLEX::Cplex PROPERTIES
                     IMPORTED_IMPLIB "${CPLEX_LIBRARY}"
                     IMPORTED_IMPLIB_DEBUG "${CPLEX_LIBRARY_DEBUG}"
                     IMPORTED_LOCATION "${CPLEX_DLL}"
-                    IMPORTED_LOCATION_DEBUG "${CPLEX_DLL}"
-                    INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIRS}"
-                    INTERFACE_LINK_LIBRARIES "${CPLEX_LIBRARIES}")
+                    IMPORTED_LOCATION_DEBUG "${CPLEX_DLL}")
         else ()
             add_library(CPLEX::Cplex UNKNOWN IMPORTED)
             set_target_properties(
                     CPLEX::Cplex PROPERTIES
                     IMPORTED_LOCATION "${CPLEX_LIBRARY}"
-                    IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}"
-                    INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIRS}"
-                    INTERFACE_LINK_LIBRARIES "${CPLEX_LIBRARIES}")
+                    IMPORTED_LOCATION_DEBUG "${CPLEX_LIBRARY_DEBUG}")
         endif ()
+        set_target_properties(
+                CPLEX::Cplex PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${CPLEX_INCLUDE_DIRS}"
+                INTERFACE_LINK_LIBRARIES "${CPLEX_LIBRARIES}")
     endif ()
 endif ()
 
 # Variables marked as advanced are not displayed in CMake GUIs, see:
 # https://cmake.org/cmake/help/latest/command/mark_as_advanced.html
-if (WIN32)
-    mark_as_advanced(CPLEX_INCLUDE_DIR
-            CPLEX_LIBRARY
-            CPLEX_LIBRARY_DEBUG
-            CPLEX_DLL
-            CPLEX_VERSION)
-else ()
-    mark_as_advanced(CPLEX_INCLUDE_DIR
-            CPLEX_LIBRARY
-            CPLEX_LIBRARY_DEBUG
-            CPLEX_VERSION)
-endif ()
+mark_as_advanced(CPLEX_INCLUDE_DIR
+        CPLEX_LIBRARY
+        CPLEX_LIBRARY_DEBUG
+        CPLEX_DLL
+        CPLEX_VERSION)
 
 # --------------------------------------------------------------------------- #
